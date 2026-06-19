@@ -40,6 +40,16 @@ Copy-Item tools\vrunner.init.json.example tools\vrunner.init.json
 
 Shared-сервисы (syntax, docs, templates, ssl, codecheck) уже указывают на `https://mcp.1commerce.ru/...`.
 
+### OneMCP в информационной базе (если ещё не установлено)
+
+Для `1c-data-mcp` / `Invoke-DataMcp.ps1` в ИБ нужны расширение **OneMCP** и инструменты в справочнике `APA_Инструменты`:
+
+1. Установите `vendor/mcp/OneMCP.cfe` в ИБ (Platform Tools или Конфигуратор).
+2. Импортируйте `vendor/mcp/ИнструментыДляРазработки.xml` в `APA_Инструменты`.
+3. Назначьте права на HTTP-сервис `APA_MCP`.
+
+Подробно: [vendor/mcp/README.md](vendor/mcp/README.md).
+
 ## 4. Расширения IDE
 
 Установите:

@@ -48,7 +48,7 @@ WWW-Authenticate: Basic realm="1C:Enterprise 8.5"
 
 ## Предварительные условия в ИБ
 
-1. Установлено расширение **OneMCP.cfe** (из `MCP_1C_Distr`).
+1. Установлено расширение **OneMCP.cfe** (в шаблоне: `vendor/mcp/OneMCP.cfe`, см. [vendor/mcp/README.md](../../vendor/mcp/README.md)).
 2. Создан пользователь ИБ **`mcp`** с паролем **`mcp`** (или другой — тогда поправьте `default.vrd` и параметры скрипта).
 3. Пользователю назначена роль с правами:
    - **Использование** HTTP-сервиса `APA_MCP`;

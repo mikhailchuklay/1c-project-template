@@ -16,6 +16,7 @@ cd my-1c-project
 - Правила, skills, agents и slash-команды **1c-rules** (`.cursor/`, `AGENTS.md`)
 - OpenSpec skeleton (`openspec/`)
 - Инструменты: структура vanessa-bootstrap, автономный DEV-сервер, MCP helper
+- **OneMCP** для `1c-data-mcp`: `vendor/mcp/OneMCP.cfe`, `vendor/mcp/ИнструментыДляРазработки.xml`
 - Шаблоны настроек: `.dev.env.example`, `env.json.example`, `.cursor/mcp.json` с плейсхолдерами
 
 ## Что не входит

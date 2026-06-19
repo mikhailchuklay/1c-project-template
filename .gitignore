@@ -29,6 +29,8 @@ src/cf/lastUploadedConfigDumpInfo.xml
 *.epf
 *.erf
 *.dt
+# Исключение: дистрибутив OneMCP для новых проектов (vendor/mcp/)
+!vendor/mcp/OneMCP.cfe
 
 # VSCode workspace-файл
 my-1c-project.code-workspace
