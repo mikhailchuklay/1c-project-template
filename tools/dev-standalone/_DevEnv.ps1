@@ -2,7 +2,12 @@
 <#
 .SYNOPSIS
     Чтение параметров из .dev.env (или .dev.env.example как fallback).
+    Кроссплатформенно: Windows PowerShell 5.1 и PowerShell 7+ (Windows/Linux/macOS).
 #>
+
+# Определение ОС: работает и в 5.1 (где $IsWindows отсутствует → $null), и в pwsh 7+.
+$script:OnWindows = if ($null -ne $IsWindows) { [bool]$IsWindows } else { $true }
+
 function Get-ProjectRootFromScript {
     param([string]$ScriptRoot)
     return Split-Path (Split-Path $ScriptRoot -Parent) -Parent
@@ -58,6 +63,7 @@ function Get-DevEnvValue {
 function Get-PlatformExe {
     param(
         [hashtable]$Env,
+        # Базовое имя БЕЗ расширения: 'ibcmd' | 'ibsrv'. '.exe' добавляется на Windows.
         [string]$ExeName
     )
 
@@ -66,11 +72,17 @@ function Get-PlatformExe {
         throw "PLATFORM_PATH не задан в .dev.env. Заполните путь к каталогу платформы 1С."
     }
 
-    $exe = Join-Path $platformPath "bin\$ExeName"
-    if (-not (Test-Path $exe)) {
-        throw "Не найден: $exe"
+    # Windows: <PLATFORM_PATH>\bin\*.exe; Linux/macOS: обычно прямо <PLATFORM_PATH>/*
+    # (напр. /opt/1cv8/x86_64/<ver>/). Проверяем оба размещения.
+    $name = if ($script:OnWindows) { "$ExeName.exe" } else { $ExeName }
+    $candidates = @(
+        (Join-Path $platformPath $name),
+        (Join-Path (Join-Path $platformPath 'bin') $name)
+    )
+    foreach ($c in $candidates) {
+        if (Test-Path $c) { return $c }
     }
-    return $exe
+    throw "Не найден '$name' в '$platformPath' (и в '$platformPath/bin')."
 }
 
 function Get-StandaloneDefaults {
@@ -95,7 +107,7 @@ function Get-StandaloneDefaults {
         $publishUrl += '/'
     }
 
-    $standaloneRoot = Join-Path $ProjectRoot 'build\standalone'
+    $standaloneRoot = Join-Path (Join-Path $ProjectRoot 'build') 'standalone'
     $dataPath = Get-DevEnvValue -Env $Env -Key 'STANDALONE_DATA_PATH'
     if ([string]::IsNullOrWhiteSpace($dataPath)) {
         $dataPath = Join-Path $standaloneRoot 'data'
@@ -108,18 +120,18 @@ function Get-StandaloneDefaults {
 
     $ibPath = Get-DevEnvValue -Env $Env -Key 'INFOBASE_PATH'
     if ([string]::IsNullOrWhiteSpace($ibPath)) {
-        $ibPath = Join-Path $ProjectRoot 'build\ib'
+        $ibPath = Join-Path (Join-Path $ProjectRoot 'build') 'ib'
     }
 
     return [ordered]@{
-        ProjectSlug  = $projectSlug
-        HttpBase     = $httpBase
-        Port         = $port
-        ServerName   = $serverName
-        PublishUrl   = $publishUrl
+        ProjectSlug    = $projectSlug
+        HttpBase       = $httpBase
+        Port           = $port
+        ServerName     = $serverName
+        PublishUrl     = $publishUrl
         StandaloneRoot = $standaloneRoot
-        DataPath     = $dataPath
-        ConfigPath   = $configPath
-        IbPath       = $ibPath
+        DataPath       = $dataPath
+        ConfigPath     = $configPath
+        IbPath         = $ibPath
     }
 }
