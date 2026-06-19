@@ -15,7 +15,7 @@
     (INFOBASE_PUBLISH_URL, IB_USER, IB_PASSWORD). Скрипт не содержит проектных
     значений — копируется в любой проект на том же ruleset/тулинге как есть.
 
-    Особенности (см. .cursor/rules/functional-testing.mdc):
+    Особенности (см. .cursor/rules/1commerce-functional-testing.mdc):
       * Basic-auth собирается из UTF-8-байт (кириллический логин иначе → 401).
       * bslcode/querytext по умолчанию схлопываются в одну строку: сервер инжектит
         payload в строковый литерал, экранируя кавычки, но НЕ переводы строк

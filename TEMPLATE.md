@@ -66,7 +66,7 @@ Skills `1c-platform-tools*` появятся из расширения, не и�
 
 Проверка: `INFOBASE_PUBLISH_URL` из `.dev.env` отвечает HTTP 200.
 
-Функциональные проверки через MCP data — см. `.cursor/rules/functional-testing.mdc` и `tools/dev-standalone/Invoke-DataMcp.ps1`.
+Функциональные проверки через MCP data — см. `.cursor/rules/1commerce-functional-testing.mdc` и `tools/dev-standalone/Invoke-DataMcp.ps1`.
 
 ## 7. OpenSpec и 1c-rules
 
