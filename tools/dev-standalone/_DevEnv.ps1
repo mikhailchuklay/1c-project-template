@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Чтение параметров из .dev.env (или .dev.env.example как fallback).
@@ -98,6 +98,9 @@ function Get-StandaloneDefaults {
     }
 
     $port = Get-DevEnvValue -Env $Env -Key 'STANDALONE_PORT' -Default '8314'
+    # Адрес, на котором слушает сервер. localhost — локальная разработка (по умолчанию);
+    # any — публикация наружу (напр. облачная dev-ВМ за SG/туннелем).
+    $address = Get-DevEnvValue -Env $Env -Key 'STANDALONE_ADDRESS' -Default 'localhost'
     $serverName = "$projectSlug-dev"
     $publishUrl = Get-DevEnvValue -Env $Env -Key 'INFOBASE_PUBLISH_URL'
     if ([string]::IsNullOrWhiteSpace($publishUrl)) {
@@ -127,6 +130,7 @@ function Get-StandaloneDefaults {
         ProjectSlug    = $projectSlug
         HttpBase       = $httpBase
         Port           = $port
+        Address        = $address
         ServerName     = $serverName
         PublishUrl     = $publishUrl
         StandaloneRoot = $standaloneRoot

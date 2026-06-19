@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Запуск автономного сервера 1С (ibsrv) для DEV-публикации на localhost.

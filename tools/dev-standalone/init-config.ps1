@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Инициализация конфигурации автономного сервера 1С (config.yml).
@@ -19,7 +19,7 @@ New-Item -ItemType Directory -Force -Path (Split-Path $cfg.ConfigPath -Parent) |
     --db-path="$($cfg.IbPath)" `
     --name="$($cfg.ServerName)" `
     --base="$($cfg.HttpBase)" `
-    --address=localhost `
+    --address="$($cfg.Address)" `
     --port="$($cfg.Port)" `
     --out="$($cfg.ConfigPath)"
 

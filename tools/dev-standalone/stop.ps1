@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Остановка автономного сервера 1С (ibsrv) + снятие «висящих» блокировок.
