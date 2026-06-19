@@ -1,0 +1,118 @@
+---
+description: "Functional-testing methodology for 1C changes — readiness gate, channel selection (1c-data-mcp vs UI), test-data discovery, no-premature-blocker discipline. Load before functional/runtime verification of a change."
+alwaysApply: false
+---
+
+# Functional Testing — methodology & discipline
+
+**When to load this file:** before running any **functional / runtime** verification of a change in a live infobase — i.e. after the static gates pass and you intend to prove the behaviour actually works on data. Triggers: "проверь, что работает", "протестируй на базе", verifying a fill / posting / command, reproducing a bug on real data, or before declaring a runtime blocker.
+
+**Portability.** This file is project-agnostic: it assumes the standard 1c-rules ruleset and the standard tooling stack (`1c-data-mcp` served by the `APA_MCP` HTTP service of the `OneMCP` extension; standalone server `ibsrv` / `ibcmd`). It hard-codes **no** infobase address, port, credentials, or configuration object — those come from `.dev.env` (per project) and the project's `memory.md` (configuration-specific objects and type traps). Drop it into any project on the same ruleset + tooling and it works; only `.dev.env` values and the config-specific examples differ.
+
+**Where this sits in the toolchain (no overlap):**
+
+- `verification-checklist.md` — **static** gates (`syntaxcheck` → `check_1c_code` → `review_1c_code` → impact → XML). Run *first*. This file starts where those stop.
+- `/deploy-and-test` (`.cursor/commands/deploy-and-test.md`) — the **deploy command**: concrete `ibcmd` / Designer steps + UI tests. This file does **not** repeat deploy mechanics; for them, use that command.
+- `docs/1c-data-mcp.md` (`.cursor/skills/mcp-1c-tools/docs/`) — the **tool reference** for `1c-data-mcp` parameter names and value formats.
+- `.dev.env` — per-project parameters used below: `INFOBASE_PUBLISH_URL`, `STANDALONE_PORT`, `STANDALONE_HTTP_BASE`, `IBCMD_CONFIG`, `IB_USER` / `IB_PASSWORD`.
+- project `memory.md` — configuration-specific facts (object names, type traps, local setup deviations). Look there for the concrete objects this project's tests touch.
+
+This file owns the **methodology**: when to test, in what order, through which channel, and what counts as "tested". It introduces no new tools.
+
+## Памятка — MCP authorization here goes through the helper script
+
+The `…/hs/mcp` endpoint requires **Basic auth**, but Cursor's MCP client only attaches to an endpoint reachable **without** authentication (`docs/1c-data-mcp.md`). Consequently the **native `1c-data-mcp` tools normally do NOT appear** in the agent session in this setup — do not wait for them and do not declare a blocker because of their absence. Reach the server through the helper script `tools/dev-standalone/Invoke-DataMcp.ps1`, which performs the UTF-8 Basic auth + MCP handshake for you (usage in *§ `1c-data-mcp` call hygiene → Helper script*). The native-tool path applies only if the endpoint is ever published without auth.
+
+## Principle 0 — No premature blocker
+
+Do **not** declare "functional testing impossible / `1c-data-mcp` unavailable" before working through the readiness gate (below). A tool returning an error, a `503`, or empty content is a **symptom to diagnose**, not a blocker. Only after the readiness gate fails *and* the cause is outside your control (no platform, no infobase, credentials the user must supply) may you hand the blocker back — and then state exactly which readiness step failed and why.
+
+## Channel selection — `1c-data-mcp` vs UI
+
+Pick the cheapest channel that actually proves the behaviour:
+
+| Channel | Use for | Cannot prove |
+|---|---|---|
+| **`1c-data-mcp`** (`execute_code` / `execute_query`) | server-side logic: fill procedures (`ОбработкаЗаполнения` payload), posting movements, register balances, query results, manager-module functions, interceptor payloads in isolation | client-side form behaviour, UI command visibility, `ПриОткрытии` / `ПриИзменении`, layout |
+| **UI tests** (web client via `/deploy-and-test` step 4) | form open / fill-on-screen, command presence on the «Создать на основании» menu, client events, end-to-end user flow | nothing extra it cannot reach, but it is slower and harder to assert precisely |
+
+Default to **`1c-data-mcp`** for logic; escalate to **UI** only for what the table marks as out of reach (form/command/client). Many "form opens pre-filled" requirements split cleanly: the *fill* is data-mcp-testable, the *opens / command appears* is UI-only.
+
+## The readiness gate (run before interpreting any result)
+
+Bring the channel up and **smoke-test it** before trusting any functional result.
+
+Bring-up (standard stack):
+
+1. Deploy current sources into the DEV infobase via `/deploy-and-test` (`ibcmd` import + apply against `IBCMD_CONFIG`).
+2. Start the standalone server: `ibsrv --config={IBCMD_CONFIG}` (listens on `STANDALONE_PORT`). It holds the file-IB lock — stop it before running any `ibcmd` against the same base.
+3. Endpoint = `{INFOBASE_PUBLISH_URL}` + `hs/mcp` (the `APA_MCP` HTTP service, root URL `mcp`, from the `OneMCP` extension).
+
+**Critical toolset fact — the standalone server does NOT publish HTTP services by default.** With only `http: { base: ... }` in `config.yml`, every `/hs/*` request returns **503** while the web client at the base URL still returns `200`. HTTP services must be listed explicitly; `http` becomes a **list**:
+
+```yaml
+http:
+  - base: {STANDALONE_HTTP_BASE}
+    http-services:
+      service:
+        - name: APA_MCP
+          root: mcp
+          publish: true
+```
+
+The standalone-server config carries no credentials — every HTTP request must send Basic auth (`IB_USER` / `IB_PASSWORD`).
+
+Smoke checklist — all must pass before you read functional output as truth:
+
+1. Server process up; base URL returns `200` (not just "no connection error").
+2. `…/hs/mcp` returns `200` to a JSON-RPC `initialize` + `tools/list` (a `503` here = HTTP service not published — fix `config.yml` as above, do not conclude "no data").
+3. A trivial `execute_query` (`ВЫБРАТЬ 1`) returns the expected `1`.
+4. A trivial `execute_code` (assign `Результат = "OK"`) returns `OK`.
+
+If 1–4 pass, empty / wrong functional results are about **your code or your query**, not the channel. If any fail, fix that rung first.
+
+## `1c-data-mcp` call hygiene (mandatory)
+
+These are quirks of the `APA_MCP` / `comol/mcp_designer_tools` stack. Violating them produces *false negatives* that look like logic bugs:
+
+- **Single line only.** `execute_code` / `execute_query` inject the payload into a server-side string literal escaping quotes **but not newlines**. Any `\n` → `"Неопознанный оператор"` (code) or silently empty (query). Write BSL as one line (statements separated by `;`); write queries without `|` continuations. Flatten before sending (`-replace "`r"," " -replace "`n"," "`).
+- **Return via `Результат`.** `execute_code` returns the value assigned to the `Результат` variable; nothing else comes back.
+- **UTF-8 + explicit Basic auth.** Send credentials as proper UTF-8 (PowerShell default CP1251 mangles Cyrillic logins → `401`); every request must carry Basic auth from `.dev.env`.
+- **Tool parameter names** come from `docs/1c-data-mcp.md` — confirm before the first call, do not guess aliases.
+
+**Helper script.** `tools/dev-standalone/Invoke-DataMcp.ps1` encapsulates all of the above — it reads `INFOBASE_PUBLISH_URL` / `IB_USER` / `IB_PASSWORD` from `.dev.env`, builds UTF-8 Basic auth, runs the MCP handshake, flattens newlines, and parses JSON / SSE responses. Use it instead of hand-rolling `Invoke-WebRequest`:
+
+```powershell
+tools\dev-standalone\Invoke-DataMcp.ps1 code  -Text 'Результат = Строка(ТекущаяДатаСеанса());'
+tools\dev-standalone\Invoke-DataMcp.ps1 query -Text 'ВЫБРАТЬ КОЛИЧЕСТВО(*) КАК К ИЗ Справочник.Контрагенты'
+tools\dev-standalone\Invoke-DataMcp.ps1 tools   # smoke: tools/list
+```
+
+It is project-agnostic (no hard-coded address / credentials); copy it to any project on the same ruleset + tooling and it picks up that project's `.dev.env`.
+
+## Test-data discovery before assertion
+
+You cannot assert on a fill / posting without a **real record that matches the scenario**. Before testing logic:
+
+1. Query the base for a record meeting the exact precondition (e.g. a document with the target outstanding-balance / status, not just any document). Confirm counts are non-zero first to rule out an empty test base.
+2. Resolve the concrete reference values the code needs from real data, and watch for **type traps** — an object you assume is a `Справочник` may be a `ПланВидовХарактеристик`, a `Документ`, etc. The configuration's specific traps are recorded in the project's `memory.md`; check there first.
+3. Only then run the logic against that record and assert on specific fields, not "no error".
+
+Skipping discovery and testing against a random / empty record is the main source of "it returned empty, must be broken" false alarms.
+
+## Testing interceptors / event payloads in isolation
+
+For `&Перед` / `&После` / `&Вместо` interceptors and «Создать на основании» command registration: do **not** try to fully mock the base platform context (it pulls in structures the base code mutates). Instead test the **payload your interceptor adds** in isolation — construct the minimal input your code reads, run only your branch, and assert on the effect (e.g. `РежимЗаписи = "НеЗаписывать"` was set, the fill produced the expected tabular rows). The full menu-appears / form-opens path is verified via UI, not by mocking the base.
+
+## Anti-patterns (retrospective findings)
+
+- **Declaring a blocker before the readiness gate** — Principle 0 violation; a `503` was a `config.yml` fix, not an impossibility.
+- **Reading functional output before the smoke test passes** — empty results get blamed on "no data" when the real cause is the newline-injection quirk or an unpublished HTTP service.
+- **Multi-line payloads to `execute_code` / `execute_query`** — silent false negatives.
+- **Asserting against a random record** — test data must match the scenario's precondition, found by query, not assumed.
+- **Gathering metadata facts late** — resolve concrete types/values (incl. type traps from `memory.md`) during discovery, before writing the test payload.
+- **Trying to test client/UI behaviour through `1c-data-mcp`** — wrong channel; use UI for form/command/client events.
+
+## What "functionally tested" means in the delivery summary
+
+State, concisely: which channel(s) were used; which precondition record(s) the test ran against; what was asserted and the observed result; and explicitly which parts remain **UI-only / untested** (e.g. "fill verified via `1c-data-mcp`; menu-appears + form-opens not run — requires UI session"). An untested client path declared "done" is a defect.

@@ -1,0 +1,14 @@
+{
+    "$schema": "https://raw.githubusercontent.com/silverbulleters/vanessa-runner/develop/vanessa-runner-schema.json",
+    "default": {
+        "--ibconnection": "/S\"{SERVER}:{PORT}\\{INFOBASE_NAME}\"",
+        "--db-user": "",
+        "--db-pwd": "",
+        "--root": ".",
+        "--workspace": ".",
+        "--v8version": "{PLATFORM_VERSION}",
+        "--locale": "ru",
+        "--language": "ru",
+        "--ordinaryapp": "0"
+    }
+}

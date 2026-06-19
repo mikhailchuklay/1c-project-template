@@ -1,0 +1,11 @@
+{
+    "language-1c-bsl.autoDetect": "off",
+    "1c-platform-tools.ipc.enabled": true,
+    "1c-platform-tools.ipc.port": 40241,
+    "1c-platform-tools.ipc.token": "",
+    "1c-platform-tools.defaultEnvProfile": "local",
+    "1c-platform-tools.vrunner.initSettingsPath": "tools/vrunner.init.json",
+    "1c-platform-tools.paths.cf": "src/cf",
+    "1c-platform-tools.paths.cfe": "src/cfe",
+    "1c-platform-tools.paths.out": "build/out"
+}

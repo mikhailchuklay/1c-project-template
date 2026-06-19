@@ -1,0 +1,71 @@
+{
+    "mcpServers": {
+        "mcp-1c-platform-tools": {
+            "command": "node",
+            "args": [
+                "${env:USERPROFILE}\\.cursor\\extensions\\yellow-hammer.mcp-1c-platform-tools-0.1.8-universal\\out\\src\\index.js"
+            ],
+            "env": {
+                "ONEC_IPC_HOST": "127.0.0.1",
+                "ONEC_IPC_PORT": "40241",
+                "ONEC_IPC_TOKEN": ""
+            },
+            "description": "1C: Platform Tools вЂ” Р·Р°РіСЂСѓР·РєР°/РІС‹РіСЂСѓР·РєР° РєРѕРЅС„РёРіСѓСЂР°С†РёРё, Р·Р°РїСѓСЃРє РљРѕРЅС„РёРіСѓСЂР°С‚РѕСЂР°/РџСЂРµРґРїСЂРёСЏС‚РёСЏ, СЃР±РѕСЂРєР° EPF/ERF С‡РµСЂРµР· IPC СЂР°СЃС€РёСЂРµРЅРёСЏ"
+        },
+        "rlm-tools-bsl": {
+            "type": "http",
+            "url": "http://127.0.0.1:9000/mcp",
+            "description": "RLM tools for BSL вЂ” РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ; РІРєР»СЋС‡РёС‚Рµ РїСЂРё Р»РѕРєР°Р»СЊРЅРѕР№ РёРЅРґРµРєСЃР°С†РёРё"
+        },
+        "1c-code-metadata-mcp": {
+            "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}/mcp",
+            "connection_id": "1c_metadata_{PROJECT_SLUG}_001",
+            "description": "РџСЂРѕРµРєС‚РЅС‹Р№ codemeta (cf). Р—Р°РјРµРЅРёС‚Рµ {PROJECT_SLUG} РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїСЂРѕРµРєС‚Р°."
+        },
+        "1c-graph-metadata-mcp": {
+            "url": "https://mcp.1commerce.ru/graph-{PROJECT_SLUG}/mcp",
+            "connection_id": "1c_graph_{PROJECT_SLUG}_001",
+            "description": "РџСЂРѕРµРєС‚РЅС‹Р№ graph (cf). Р—Р°РјРµРЅРёС‚Рµ {PROJECT_SLUG} РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїСЂРѕРµРєС‚Р°."
+        },
+        "1c-ext-codemeta-mcp": {
+            "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}-ext/mcp",
+            "connection_id": "1c_metadata_ext_{PROJECT_SLUG}_001",
+            "description": "РџСЂРѕРµРєС‚РЅС‹Р№ codemeta СЂР°СЃС€РёСЂРµРЅРёСЏ (cfe). РЈРґР°Р»РёС‚Рµ Р±Р»РѕРє, РµСЃР»Рё РїСЂРѕРµРєС‚ Р±РµР· СЂР°СЃС€РёСЂРµРЅРёСЏ."
+        },
+        "1c-ext-graph-mcp": {
+            "url": "https://mcp.1commerce.ru/graph-{PROJECT_SLUG}-ext/mcp",
+            "connection_id": "1c_graph_ext_{PROJECT_SLUG}_001",
+            "description": "РџСЂРѕРµРєС‚РЅС‹Р№ graph СЂР°СЃС€РёСЂРµРЅРёСЏ (cfe). РЈРґР°Р»РёС‚Рµ Р±Р»РѕРє, РµСЃР»Рё РїСЂРѕРµРєС‚ Р±РµР· СЂР°СЃС€РёСЂРµРЅРёСЏ."
+        },
+        "1c-syntax-checker-mcp": {
+            "url": "https://mcp.1commerce.ru/syntax/mcp",
+            "connection_id": "1c_lsp_service_001",
+            "description": "BSL syntax validation via BSL Language Server"
+        },
+        "1C-docs-mcp": {
+            "url": "https://mcp.1commerce.ru/help/mcp",
+            "connection_id": "1c_docs_service_001",
+            "description": "1C platform documentation search (docsearch, docinfo)"
+        },
+        "1c-templates-mcp": {
+            "url": "https://mcp.1commerce.ru/templates/mcp",
+            "connection_id": "1c_templates_service_001",
+            "description": "Code templates library and implementation examples search"
+        },
+        "1c-code-check-mcp": {
+            "url": "https://mcp.1commerce.ru/codecheck/mcp",
+            "connection_id": "1c_code_check_service_001",
+            "description": "1C code review and quality checking (1РЎ:РќР°РїР°СЂРЅРёРє) вЂ” check_1c_code, review_1c_code, ITS docs"
+        },
+        "1c-ssl-mcp": {
+            "url": "https://mcp.1commerce.ru/ssl/mcp",
+            "connection_id": "1c_ssl_service_001",
+            "description": "Standard Subsystems Library (Р‘РЎРџ / SSL) function search"
+        },
+        "1c-data-mcp": {
+            "url": "{INFOBASE_PUBLISH_URL}/hs/mcp",
+            "connection_id": "1c_data_mcp_001",
+            "description": "1C data MCP on DEV publish. Р—Р°РјРµРЅРёС‚Рµ {INFOBASE_PUBLISH_URL} РїРѕСЃР»Рµ РЅР°СЃС‚СЂРѕР№РєРё .dev.env"
+        }
+    }
+}

@@ -1,0 +1,34 @@
+# Окружение и секреты
+.env
+.dev.env
+env.json
+env.local.json
+memory.md
+
+# Результаты сборки и отчёты
+build/
+out/
+allure-report/
+.scannerwork/
+
+# Зависимости OneScript
+oscript_modules/
+
+# Локальный env-профиль запуска (не коммитится)
+.vscode/.env-profile
+
+# Служебные файлы выгрузки конфигурации
+ConfigDumpInfo.xml
+src/cf/ConfigDumpInfo.xml
+src/cf/lastUploadedCommit.txt
+src/cf/lastUploadedConfigDumpInfo.xml
+
+# Бинарники 1С
+*.cf
+*.cfe
+*.epf
+*.erf
+*.dt
+
+# VSCode workspace-файл
+my-1c-project.code-workspace

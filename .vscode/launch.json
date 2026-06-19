@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Отладка 1С (конфигурация)",
+            "type": "1c-platform-tools",
+            "request": "launch",
+            "platformPath": "${env:PROGRAMFILES}/1cv8",
+            "platformVersion": "${config:1c-platform-tools.platformVersion}",
+            "rootProject": "${workspaceFolder}/src/cf",
+            "debugServerHost": "localhost",
+            "debugServerPort": 1550,
+            "autoAttachTypes": [
+                "ManagedClient",
+                "Server"
+            ]
+        },
+        {
+            "name": "Подключение к отладке 1С",
+            "type": "1c-platform-tools",
+            "request": "attach",
+            "platformPath": "${env:PROGRAMFILES}/1cv8",
+            "platformVersion": "${config:1c-platform-tools.platformVersion}",
+            "rootProject": "${workspaceFolder}/src/cf",
+            "debugServerHost": "localhost",
+            "debugServerPort": 1550,
+            "autoAttachTypes": [
+                "ManagedClient",
+                "Server"
+            ]
+        }
+    ]
+}
