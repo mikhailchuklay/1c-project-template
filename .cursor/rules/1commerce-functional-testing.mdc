@@ -36,7 +36,33 @@ Pick the cheapest channel that actually proves the behaviour:
 | **`1c-data-mcp`** (`execute_code` / `execute_query`) | server-side logic: fill procedures (`ОбработкаЗаполнения` payload), posting movements, register balances, query results, manager-module functions, interceptor payloads in isolation | client-side form behaviour, UI command visibility, `ПриОткрытии` / `ПриИзменении`, layout |
 | **UI tests** (web client via `/deploy-and-test` step 4) | form open / fill-on-screen, command presence on the «Создать на основании» menu, client events, end-to-end user flow | nothing extra it cannot reach, but it is slower and harder to assert precisely |
 
-Default to **`1c-data-mcp`** for logic; escalate to **UI** only for what the table marks as out of reach (form/command/client). Many "form opens pre-filled" requirements split cleanly: the *fill* is data-mcp-testable, the *opens / command appears* is UI-only.
+Default to **`1c-data-mcp`** for logic; escalate to **UI** for what the table marks as out of reach (form/command/client). Many "form opens pre-filled" requirements split cleanly: the *fill* is data-mcp-testable, the *opens / command appears / layout* is UI-only.
+
+**Agent-owned delivery rule:** when **you** implement form/UI behaviour (not analysis-only), you **must** run the UI channel yourself before declaring done — see § Programmatic form runtime gate and `verification-checklist.mdc → Gate 6`. The user is not the default tester.
+
+## Programmatic form runtime gate (Gate 6 companion)
+
+**Problem this closes:** `Form/Module.bsl` can compile and pass `syntaxcheck` yet fail at open time (`Поле объекта не обнаружено`, wrong `ВидПоляФормы`, …). `1c-data-mcp` runs in **server** HTTP-service context — `ПолучитьФорму` / `ПолучитьФормуНовогоЭлемента` are typically **unavailable** there. A test that returns `SKIP [form]` is **not** verification.
+
+**Mandatory sequence** after static gates, when Gate 6 triggers:
+
+1. Deploy to DEV infobase (same revision as the diff).
+2. Run **automated UI smoke** for each affected form (new object + existing object if both paths differ):
+   - project script in `tools/dev-standalone/` when present (`Invoke-*Form*`, `Verify-*` form step);
+   - else `/deploy-and-test` or `1c-tester` with `INFOBASE_PUBLISH_URL`;
+   - else agent-driven web-client open with explicit assertions (controls visible, no extension init errors in event log).
+3. Only then: delivery summary + OpenSpec `tasks.md` ticks for form items.
+
+**Forbidden substitutions for Gate 6:**
+
+| Looks like a test | Actually proves |
+|---|---|
+| `syntaxcheck` / `check_1c_code` / `review_1c_code` | BSL text only, not live form elements |
+| `Invoke-*FunctionalTest.ps1` / server-side API probe | Domain API or posting pipeline, not form layout |
+| `execute_code` + `ПолучитьФорму*` in data-mcp | Usually **unavailable** — `SKIP` ≠ PASS |
+| "Reload extension, please check UI" | Handoff to user — **blocker**, not done |
+
+**Extending automation:** when adding a new programmatic form, add or extend a `tools/dev-standalone/*Form*Smoke*.ps1` (or wire into `Verify-*`) in the **same change** whenever Gate 6 applies — do not leave UI verification manual-only if the project already has the publish URL and web stack.
 
 ## The readiness gate (run before interpreting any result)
 
@@ -112,7 +138,12 @@ For `&Перед` / `&После` / `&Вместо` interceptors and «Созд�
 - **Asserting against a random record** — test data must match the scenario's precondition, found by query, not assumed.
 - **Gathering metadata facts late** — resolve concrete types/values (incl. type traps from `memory.md`) during discovery, before writing the test payload.
 - **Trying to test client/UI behaviour through `1c-data-mcp`** — wrong channel; use UI for form/command/client events.
+- **Substituting API functional PASS for form verification** — e.g. integration/API tests green while `Form/Module.bsl` was never opened in UI.
+- **Delivering `SKIP [form]` as success** — record as blocked Gate 6, not as tested.
+- **Asking the user to visually confirm** what the agent could run via `INFOBASE_PUBLISH_URL` / `1c-tester` — user is not the default QA; only escalate when automation is genuinely blocked after diagnosis.
 
 ## What "functionally tested" means in the delivery summary
 
-State, concisely: which channel(s) were used; which precondition record(s) the test ran against; what was asserted and the observed result; and explicitly which parts remain **UI-only / untested** (e.g. "fill verified via `1c-data-mcp`; menu-appears + form-opens not run — requires UI session"). An untested client path declared "done" is a defect.
+State, concisely: which channel(s) were used; which precondition record(s) the test ran against; what was asserted and the observed result.
+
+For **form/UI changes** (Gate 6): state UI smoke script or `1c-tester` result (**PASS/FAIL/blocked**), form qualified name, scenarios (new / existing). **`SKIP` / untested UI is not "functionally tested".** An untested client path declared "done" is a defect.

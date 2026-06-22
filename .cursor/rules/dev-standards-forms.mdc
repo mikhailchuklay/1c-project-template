@@ -35,6 +35,10 @@ All typical form modifications are performed **programmatically**, not visually.
 КонецЕсли;
 ```
 
+## Verification before delivery
+
+Programmatic form changes (`Элементы.Добавить`, `ИзменитьРеквизиты`, `Переместить`, visibility/command wiring) require **Gate 6** — see `verification-checklist.mdc` and `1commerce-functional-testing.mdc → Programmatic form runtime gate`. Static validators do not execute form open handlers; API-only functional tests do not replace UI smoke.
+
 ## Form Commands
 
 - When creating commands that modify data — enable "Modifies stored data" flag.

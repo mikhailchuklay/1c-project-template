@@ -71,6 +71,35 @@ When XML was edited:
 - For non-trivial metadata edits (new objects, attributes, tabular sections, forms): prefer the `1c-metadata-manage` skill over hand-edited XML. If hand edits were used, additionally cross-check `metadata-xml-workarounds.md` for the recurring traps (LineNumber, PagesGroupExtInfo, Page.enabled, UID uniqueness).
 - For `Form.xml` edits: also confirm the form opens in Configurator without warnings — schema validity is necessary but not sufficient.
 
+### Gate 6 — UI runtime (managed-form behaviour changes)
+
+**Load** `1commerce-functional-testing.mdc` for channel selection and project scripts.
+
+**Triggers** — run when **any** of the following is true (if in doubt, run):
+
+- `Form/Module.bsl` was edited and the change affects what the user sees or how the form initializes at open time: `Элементы.Добавить`, `ИзменитьРеквизиты`, `Переместить`, `УстановитьДействие`, handlers wired to new elements, or procedures named like `*НастроитьФорму*`, `*УправлениеФормой*`.
+- Form event handlers were added or changed (`ПриСозданииНаСервере`, `ПриЧтенииНаСервере`, `ПриОткрытии`, element `ПриИзменении`, …).
+- OpenSpec / `tasks.md` / the user scenario explicitly describes form layout, visibility, or controls the user must see.
+
+**Does not trigger** for: comment-only edits; refactoring with no element graph change; pure server logic in form module that does not run on open (rare — when in doubt, trigger).
+
+**What static gates cannot catch (why this gate exists):** invalid or unavailable properties on programmatic form elements (`Поле объекта не обнаружено`), wrong `ВидПоляФормы` / `ВидГруппыФормы` values, element placement bugs — `syntaxcheck` / `check_1c_code` / `review_1c_code` do **not** execute `ПриСозданииНаСервере` against a live form.
+
+**Pass criterion** — **all** must hold:
+
+1. Extension/configuration is loaded into the target DEV infobase (same revision as the diff).
+2. **Automated UI smoke** for the affected form(s) passes — preferred order:
+   - project-specific script under `tools/dev-standalone/` if one exists for this form (e.g. `Invoke-*Form*Smoke.ps1`, `Verify-*` step);
+   - else `/deploy-and-test` UI step or `1c-tester` subagent against `INFOBASE_PUBLISH_URL`;
+   - else agent-run web-client navigation to open the form (create + existing object) with assertion on expected controls and **no** extension init errors in the event log.
+3. Delivery summary lists: form qualified name, scenarios exercised (new / existing), and smoke result.
+
+**`SKIP` is not `PASS`.** A functional test that returns `SKIP [form]` because `ПолучитьФорму*` is unavailable in `1c-data-mcp` server context does **not** satisfy Gate 6. API-only tests (HTTP integrations, posting pipelines, queries) do **not** satisfy Gate 6.
+
+**When `INFOBASE_PUBLISH_URL` is empty:** do not declare form/UI tasks done; do not tick OpenSpec form tasks; state *"Gate 6 blocked — configure INFOBASE_PUBLISH_URL or run manual UI smoke"* in **Follow-ups**. The user is not the default tester — absence of automation is a **blocker**, not an implicit handoff.
+
+**When UI automation fails:** fix and re-run Gate 6; do not deliver "please check in UI" as a substitute for a failed gate.
+
 ## Soft gates — run when applicable
 
 These gates are not always required, but their absence in the listed scenarios is a defect.
@@ -114,8 +143,9 @@ After all gates pass, the delivery report MUST contain:
 1. **What was done** — 1–3 lines, no preamble.
 2. **Files changed** — every path in backticks, one line per file describing the nature of the change.
 3. **Context sources** — required for non-trivial BSL / metadata changes (per `AGENTS.md → MCP Tool Calling → A.3`). List the sources actually used (templates, project code, metadata, platform / БСП / ITS docs, ITS standards) and briefly state why any normally relevant source was skipped. Skipping a relevant source silently counts as a defect. Omit this section only for docs-fix / quick-fix tasks where no BSL / metadata change was made.
-4. **Risks / nuances** — only real ones. If Gate 4 fell back to graceful-degradation mode (no impact-analysis MCP exposed), record it here verbatim. If there are no real risks, omit the section.
-5. **Follow-ups** — any defects observed but **not** fixed (out-of-scope dead code, pre-existing lints, downstream callers flagged by Gate 4 that need future review). Empty = omit.
+4. **Risks / nuances** — only real ones. If Gate 4 fell back to graceful-degradation mode (no impact-analysis MCP exposed), record it here verbatim. If Gate 6 was blocked or UI smoke was `SKIP`, record it here — **do not** mark the change done. If there are no real risks, omit the section.
+5. **Verification** — for form/UI changes: Gate 6 result (script name, PASS/FAIL/blocked). For other runtime changes: functional channel used (`1c-data-mcp` / UI) and assertion summary. Omit only for docs-fix / pure static review.
+6. **Follow-ups** — any defects observed but **not** fixed (out-of-scope dead code, pre-existing lints, downstream callers flagged by Gate 4 that need future review, **Gate 6 blocked**). Empty = omit.
 
 Do not include in the delivery summary:
 
@@ -131,3 +161,6 @@ Do not include in the delivery summary:
 - **Looping on AI non-determinism** — if `check_1c_code` returns different items each run on the **same** code, take the strictest set and stop. Do not burn the 3-call budget on noise.
 - **Marking the task done** with un-removed `Debug.*` log entries or temporary `ПоказатьЗначение` calls — soft gate A failure.
 - **Auto-running `1c-code-reviewer`** when the user did not ask — soft gate C failure, and a direct violation of `subagents.md`.
+- **Declaring form/UI work done after static gates + API functional tests only** — Gate 6 failure; `syntaxcheck` does not validate programmatic form element properties at runtime.
+- **Treating `SKIP [form]` in data-mcp as verified** — wrong channel; Gate 6 still open.
+- **Ticking OpenSpec `tasks.md` form items** without Gate 6 PASS — soft gate B failure.
