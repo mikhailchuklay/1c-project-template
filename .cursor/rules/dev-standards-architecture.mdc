@@ -173,6 +173,19 @@ Visual form editing in extensions — **minimize**. Changes — programmatically
 - When a limited result set is needed — use `ПЕРВЫЕ N`.
 - Index all fields that participate in filters/joins via metadata.
 
+**Project-delta** (stricter than ITS defaults; adapted from [dev-rules request.md](https://github.com/yellow-hammer/dev-rules/blob/main/docs/request.md), CC-BY-SA 4.0 — see `1commerce-bsp-integration-checklists.mdc → Sources`):
+
+- **[Project rule — stricter than ITS standard]** When RLS is active for the queried tables — use `РАЗРЕШЕННЫЕ` (or the appropriate RLS-aware virtual table) instead of relying on implicit access.
+- Replace `В()` / `НЕ В()` on large value lists with an **inner join** to a value table or temporary table — better plan and index use.
+- For composite / multi-type fields — use `Выразить()` with an explicit target type instead of implicit casting.
+- Prefer `ССЫЛКА Тип` over `ТИПЗНАЧЕНИЯ() = ТИП(...)` when filtering by reference type.
+- Name temporary tables meaningfully (`ВТ_` prefix is mandatory); name nested subqueries when they improve readability.
+- Prefer **boolean algebra** (`И`, `ИЛИ`, `НЕ`) over `ВЫБОР … КОНЕЦ` in query text when the logic is a simple predicate.
+- Do not call `РезультатЗапроса.Пустой()` as a separate round-trip when the same result set will be iterated — check during `Выбрать()` / first fetch.
+- Put join conditions in **`ПО`**, filter predicates in **`ГДЕ`** — do not duplicate join logic in `ГДЕ`.
+- Build dynamic query text via **query fragments** (`ОбъединитьТекстыЗапроса`, structured parts) — not string concatenation of SQL keywords.
+- Be cautious with indexes on temporary tables — index only columns used in subsequent joins/filters.
+
 ### Cross-Platform Compatibility
 - **COM objects** (`Новый COMОбъект(...)`) are **PROHIBITED** unless explicitly specified in the task.
 - For Excel — use spreadsheet document or БСП, not `Excel.Application`.

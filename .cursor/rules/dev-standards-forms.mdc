@@ -38,3 +38,25 @@ All typical form modifications are performed **programmatically**, not visually.
 ## Form Commands
 
 - When creating commands that modify data — enable "Modifies stored data" flag.
+
+## Form UX (project-delta)
+
+Adapted from [dev-rules forms.md](https://github.com/yellow-hammer/dev-rules/blob/main/docs/forms.md) (CC-BY-SA 4.0 — see `1commerce-bsp-integration-checklists.mdc → Sources`). Full BSP hook checklists — `1commerce-bsp-integration-checklists.mdc`.
+
+### Visibility and availability
+
+- Centralize form element visibility/availability in one server procedure (e.g. `ОбновитьВидимостьДоступностьЭлементовФормы`) called from relevant event handlers — avoid scattering `Элементы.*.Видимость` across many handlers.
+- Prefer **boolean expressions** in `Видимость` / `Доступность` properties when the condition is a simple predicate.
+
+### Naming conventions for added UI containers
+
+- Service tab for extension-specific fields: `{PREFIX}СтраницаСпециальная` (or `{PREFIX}ГруппаСпециальная` when tabs are absent).
+- Follow existing project patterns discovered via `search_forms` before inventing new container names.
+
+### List forms
+
+- When the standard list form supports user settings — place filters in `ГруппаПользовательскихНастроек` rather than ad-hoc top-level groups.
+
+### Document forms — selection UX
+
+- For tabular-section row selection — prefer the configuration's standard pick pattern (`Подбор` / `Заполнить` commands) over custom one-off dialogs unless the task explicitly requires otherwise.

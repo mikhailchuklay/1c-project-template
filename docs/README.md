@@ -8,3 +8,4 @@
 | [../deploy/mcp-publish/README.md](../deploy/mcp-publish/README.md) | Публикация HTTP-сервиса MCP на ИБ |
 | [../openspec/README.md](../openspec/README.md) | Spec-driven development (OpenSpec) |
 | [../AGENTS.md](../AGENTS.md) | Правила работы AI-агента в проекте |
+| [external-regulations.md](external-regulations.md) | Внешние регламенты (dev-rules), CC-BY-SA, обновление чеклистов |

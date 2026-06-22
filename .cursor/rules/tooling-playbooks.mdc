@@ -96,6 +96,16 @@ Use the smallest set that closes the real context gaps. Do not promote a task to
 6. **search_code** (`detail_level="L3"`, high `top_k`) → **codesearch** — post-refactor verification that no old references remain.
 7. **check_1c_code** + **review_1c_code** — validate the result.
 
+## New Metadata Object / BSP Integration
+
+Load **`1commerce-bsp-integration-checklists.mdc`** before writing code when creating a new `Документ.*` (or similar registrable object) or wiring БСП hooks: print, input-based-on, form blocking, date prohibition, versioning.
+
+1. **1commerce-bsp-integration-checklists.mdc** — run the relevant checklist section; resolve each item via `ssl_search` → optional `its_help` → runtime `search_metadata` / `codesearch`.
+2. **get_object_dossier** — passport of a similar existing object as a local pattern.
+3. **templatesearch** / **search_code** → **codesearch** — mirror wiring from a sibling object in the configuration.
+4. **ssl_search** — canonical БСП API for each hook not covered by local patterns.
+5. After implementation: **syntaxcheck** → **check_1c_code** → **review_1c_code**; **trace_impact** when public managers or subscriptions changed.
+
 ## Generating / Modifying Metadata XML
 
 1. **metadatasearch** (`names_only=true`) — similar objects as examples.

@@ -143,3 +143,33 @@ Set the `Purpose` (Назначение) of the extension in its properties:
 | AddOn | `AddOn` | Full new functionality |
 
 The `Purpose` value affects update behaviour and the way the platform reapplies the extension after a base-configuration update.
+
+---
+
+## Multi-extension layout
+
+When several CFE extensions coexist in one project (see also `1commerce-bsp-integration-checklists.mdc → Multi-extension layout`; external pointer: [dev-rules extensions](https://github.com/yellow-hammer/dev-rules/blob/main/docs/extensions.md), CC-BY-SA 4.0):
+
+### Separation strategy
+
+| Extension role | Purpose tag | When to use |
+|---|---|---|
+| **Main** | `Customization` / `AddOn` | Primary functional changes: new attributes, forms, business logic |
+| **Library** | `AddOn` | Reusable shared code consumed by other extensions |
+| **Hotfix** | `Patch` | Minimal interceptors only; short-lived fixes pending base-configuration update |
+
+Prefer **one extension per functional area**. Do not duplicate interceptors on the same base method across multiple extensions.
+
+### Interceptor priority (when multiple strategies are possible)
+
+1. **`&После`** — preferred for additive behaviour without touching the original body.
+2. **`&Перед`** — when preconditions or early exit are needed before the original runs.
+3. **`&ИзменениеИКонтроль`** — only when the method body must be modified; markers and `ПродолжитьВызов()` mandatory.
+4. **Platform `&Вместо` / full replacement** — **last resort**; highest merge risk on base-configuration update.
+
+### Atomicity criterion
+
+- **Separate extension** — when the feature is independently deliverable, has its own lifecycle, or may be disabled without breaking the main extension.
+- **Same extension** — when changes are tightly coupled and share the same release cadence.
+
+Modification priority across all layers: event subscriptions → extensions → typical code (`dev-standards-architecture.mdc §2`).

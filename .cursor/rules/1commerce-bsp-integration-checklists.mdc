@@ -1,0 +1,145 @@
+---
+description: "BSP integration pointer-checklists for new documents, print, input-based-on, form blocking — ssl_search-driven, configuration-agnostic. Load before creating metadata objects or wiring БСП hooks."
+alwaysApply: false
+---
+
+# BSP Integration — pointer checklists
+
+**When to load this file:** before creating a new `Документ.*` (or similar registrable object), wiring print commands, input-based creation, form blocking for a new object type, or auditing whether an existing object has all standard БСП hooks. Triggers: «новый документ», «подключить печать», «создание на основании», «блокировка формы», «проверь БСП-хуки».
+
+**Portability.** This file is project-agnostic: it hard-codes **no** infobase address, configuration name, or module names from a specific ERP/CRM/UT. Each checklist item ends with an `ssl_search` query template; the agent resolves the actual API at task time and confirms presence in the target configuration via `search_metadata` / `codesearch` when wiring is required.
+
+**Where this sits in the toolchain (no overlap):**
+
+- `its_help` → `fetch_its` — authoritative platform standards (v8std). This file does **not** replace them.
+- `ssl_search` — authoritative БСП / SSL API discovery. This file provides **when** and **what to search for**, not the full API text.
+- `review_1c_code` / `check_1c_code` — post-edit validation. This file is **pre-edit discipline**.
+- `dev-standards-architecture.mdc` / `dev-standards-forms.mdc` — project-delta details (queries, form UX). This file points there; do not duplicate.
+
+**Explicit ban:** Do not treat this file as a substitute for `fetch_its` or `ssl_search`. Do not paste ITS or BSP article text here. Do not embed configuration-specific module names (TradeCRM, UT, ERP, CRM prefixes).
+
+---
+
+## Sources & sync
+
+**Purpose.** Pointer-checklists only. Full normative text — via `its_help` → `fetch_its` and `ssl_search`, not from this file.
+
+**Primary external source (checklist structure adapted under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)):**
+
+- [yellow-hammer/dev-rules](https://github.com/yellow-hammer/dev-rules) — site: [yellow-hammer.github.io/dev-rules](https://yellow-hammer.github.io/dev-rules)
+
+| dev-rules doc | Used for section | Last synced |
+|---|---|---|
+| `docs/metadata/documents.md` | New document hooks | 2026-06-22 |
+| `docs/printed_forms.md` | Print commands | 2026-06-22 |
+| `docs/input_based_on.md` | Input-based creation | 2026-06-22 |
+| `docs/blocking_forms.md` | Form blocking (БСП) | 2026-06-22 |
+| `docs/extensions.md` | Multi-CFE (pointer only) | 2026-06-22 |
+| `docs/request.md` | Query project-delta refs | 2026-06-22 |
+| `docs/forms.md` | Form UX refs | 2026-06-22 |
+
+**Authoritative sources (always win on conflict):**
+
+- ITS v8std — `its_help` → `fetch_its`
+- BSP / SSL — **`ssl_search`** (primary for checklist items) + BSP doc via `its_help` when needed
+- Live configuration shape — `search_metadata` / `codesearch` **only at task time**, not baked into this rule
+
+**Configuration binding policy:** this rule is **BSP/configuration-agnostic**. Do **not** embed TradeCRM-, UT-, CRM-, or ERP-specific module names. Each checklist item ends with an `ssl_search` query (and optional `its_help` follow-up). If a BSP subsystem is absent in the target configuration, the agent discovers that at runtime via `search_metadata` / `codesearch` and documents the skip or alternative — do not maintain a per-configuration name table in this file.
+
+**How to refresh this rule:** re-read dev-rules rows above; validate `ssl_search` queries still return relevant BSP APIs; bump `Last synced` dates; do not paste full article text or configuration-specific module names into this file.
+
+**Attribution:** Checklist structure derived from [yellow-hammer/dev-rules](https://github.com/yellow-hammer/dev-rules) (CC-BY-SA 4.0). See also `docs/external-regulations.md` in the project repo.
+
+---
+
+## Checklist item format
+
+Each numbered item follows this template:
+
+```
+N. <Task> — ssl_search: «<Russian query>» → use the discovered API;
+   optional: its_help → fetch_its for platform standard;
+   at wiring time: search_metadata / codesearch to confirm subsystem exists in target IB;
+   project-delta: <one project rule if applicable>.
+```
+
+**`ssl_search` limitation (honest):** it searches **BSP documentation**, not live configuration metadata. A subsystem may exist in BSP but be disabled or renamed in a specific configuration — the runtime confirm step remains mandatory when wiring.
+
+---
+
+## New document — BSP hook checklist
+
+Run **before** writing manager/object modules. Use `get_object_dossier` on a similar existing document in the configuration as a local pattern reference (`search_code` / `codesearch`).
+
+1. **Posting** — `ssl_search`: «обработка проведения документа шаблон»; `codesearch` on a similar posted document in the project; `its_help`: posting standards if needed.
+2. **Unposting / cancel posting** — `ssl_search`: «отмена проведения документа»; confirm handler exists if posting is used.
+3. **Fill on create** — `ssl_search`: «обработка заполнения документа»; check `ОбработкаЗаполнения` pattern in similar object.
+4. **Date prohibition (change lock)** — `ssl_search`: «дата запрета изменения перед записью документа» → typically `ДатыЗапретаИзменения.ПроверитьДатуЗапретаИзмененияПередЗаписьюДокумента`; wire in `ПередЗаписью` (object module).
+5. **Versioning** — `ssl_search`: «версионирование объектов подключить новый документ» → event subscription / `ВерсионированиеОбъектовСобытия`; confirm versioning subsystem is enabled in config.
+6. **Access restriction (RLS)** — `its_help`: RLS for new metadata object; project rule: design with RLS in `dev-standards-architecture.mdc §3 → Security`.
+7. **Attached files** — `ssl_search`: «присоединенные файлы новый документ» if the object should support files.
+8. **Related documents** — `ssl_search`: «связанные документы подключение» if the object participates in document chains.
+9. **Print commands** — see section **Print** below.
+10. **Input-based creation** — see section **Input-based-on** below.
+11. **Form blocking** — see section **Form blocking** below (conditional).
+12. **Numbering** — `ssl_search`: «нумерация документов БСП» if not using platform auto-numbering only.
+13. **Predefined / exchange** — skip unless task explicitly requires exchange or predefined data.
+
+After wiring: `syntaxcheck` → `check_1c_code` → `review_1c_code`; `trace_impact` if public managers or subscriptions changed.
+
+---
+
+## Print
+
+1. **Register print commands** — `ssl_search`: «ДобавитьКомандыПечати процедура менеджера документа» → `УправлениеПечатью` subsystem; implement in manager module export procedure.
+2. **Posting check before print** — project-delta: set `КомандаПечати.ПроверкаПроведенияПередПечатью = Истина` by default unless the task explicitly requires printing unposted documents.
+3. **Redirect pattern** — if the configuration uses a dedicated print module per object (`{PREFIX}ИмяОбъекта`), `codesearch` for an existing redirect from `Печать` / `ДобавитьКомандыПечати` in a sibling document; do not invent module names — discover from the project.
+4. **BSP doc** — `its_help` on `УправлениеПечатью` / printed forms if `ssl_search` results are ambiguous.
+5. **Runtime confirm** — `search_metadata` for `ОбщийМодуль.УправлениеПечатью` or subsystem presence before declaring «print subsystem unavailable».
+
+---
+
+## Input-based-on
+
+1. **Register in creation menu** — `ssl_search`: «ПриОпределенииОбъектовСКомандамиСозданияНаОсновании» → wire in the appropriate `*Переопределяемый` module discovered by search.
+2. **Custom fill from basis** — `ssl_search`: «СозданиеНаОснованииПереопределяемый»; implement fill logic in manager `ОбработкаЗаполнения` or dedicated procedure per BSP pattern.
+3. **Manager API** — `ssl_search`: «создание на основании менеджер документа» for standard manager methods.
+4. **Related documents UI** — `ssl_search`: «связанные документы форма списка» if the list form should show links.
+5. **Runtime confirm** — `codesearch` for an existing «создание на основании» wiring in a similar document; mirror the pattern.
+
+Functional proof: UI channel for command visibility (`1commerce-functional-testing.mdc`); server fill — `1c-data-mcp` if available.
+
+---
+
+## Form blocking (conditional)
+
+Apply only when the configuration uses БСП form-blocking for comparable objects. **Do not assume** `БлокировкаИзмененияОбъектов` exists — confirm at runtime.
+
+1. **Discover BSP API** — `ssl_search`: «блокировка редактирования формы объекта».
+2. **Primary path** — if search returns `БлокировкаИзмененияОбъектов` (or equivalent) **and** `search_metadata` / `codesearch` confirms the module/subsystem in the target IB: wire `ПриСозданииНаСервере` / `ПриЧтенииНаСервере` / `ПослеЗаписиНаСервере` per BSP doc.
+3. **Fallback** — if subsystem absent: use `ssl_search`: «ЗапретРедактированияРеквизитовОбъектов» + «ДатыЗапретаИзменения ОбъектПриЧтенииНаСервере»; document which path was chosen and why.
+4. **Custom blocking module** — for new object types, `codesearch` for `{PREFIX}БлокировкаИзмененияОбъектов` pattern in the project before creating a new module.
+5. **Date prohibition linkage** — ensure form read-only state is consistent with date prohibition (section New document §4).
+
+---
+
+## Query & form UX project-delta (pointers only)
+
+Do not duplicate full rules — load companions when editing queries or forms:
+
+| Topic | Load |
+|---|---|
+| `РАЗРЕШЕННЫЕ`, `В()` → join, `Выразить`, query fragments | `dev-standards-architecture.mdc §3 → Queries` |
+| Form tabs, `{PREFIX}СтраницаСпециальная`, visibility procedure | `dev-standards-forms.mdc` |
+| Multi-CFE strategy, `&Вместо` last resort | `extension-patterns.mdc → Multi-extension layout` |
+
+---
+
+## Multi-extension layout (pointer)
+
+When several CFE extensions touch the same adopted object:
+
+1. Prefer **one extension per functional area**; avoid duplicating interceptors on the same method across extensions.
+2. Modification priority — `dev-standards-architecture.mdc §2`: event subscriptions → extensions → typical code.
+3. `&ИзменениеИКонтроль` / platform `&Вместо` — **last resort**; details in `extension-patterns.mdc`.
+4. dev-rules reference: `docs/extensions.md` (strategy only — verify against project `extension-patterns.mdc`).

@@ -20,5 +20,6 @@ This file is the **router** for managed-form work. Load it first, then load only
 | Client-side async code (`Асинх` / `Ждать`) | `async-methods.md` |
 | Programmatic modification of typical forms (element placement, fill checking, form commands) | `dev-standards-forms.md` |
 | Working on an adopted form of an extension | `extension-patterns.md`, `dev-standards-architecture.md §2` |
+| Form blocking / BSP hooks for a new object type | `1commerce-bsp-integration-checklists.md` (Form blocking section), `dev-standards-forms.md` |
 
 Each companion file is self-contained — load only the ones that match the task. Do not preload the whole set "to be safe".

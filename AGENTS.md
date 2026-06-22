@@ -288,6 +288,11 @@ Load the corresponding file when the task matches the rule's scenario.
 
 - **metadata-xml-workarounds** — recurring pitfalls when generating or hand-editing 1C metadata XML and managed-form XML (TabularSection `LineNumber`, `PagesGroupExtInfo` typo, `Page.enabled`, UID uniqueness, post-edit validation hook). Load when authoring or fixing metadata XML directly outside the `1c-metadata-manage` skill. Companion for `Form.xml` work — see `## Forms` above. File: `.cursor/rules/metadata-xml-workarounds.mdc`.
 
+## Project-specific (1commerce)
+
+- **1commerce-functional-testing** — functional/runtime verification methodology (`1c-data-mcp` vs UI, readiness gate). Load before proving behaviour on a live infobase. File: `.cursor/rules/1commerce-functional-testing.mdc`.
+- **1commerce-bsp-integration-checklists** — BSP hook pointer-checklists for new documents, print, input-based-on, form blocking (`ssl_search`-driven, configuration-agnostic). Load before creating metadata objects or wiring БСП integrations. File: `.cursor/rules/1commerce-bsp-integration-checklists.mdc`.
+
 ## Quality
 
 - **anti-patterns** — full catalog of 1C anti-patterns, performance guidelines, code-review scoring rubric. Load during code review, performance investigation, or anti-pattern check. File: `.cursor/rules/anti-patterns.mdc`.
