@@ -38,7 +38,7 @@ dev-rules — curated-выжимка со ссылками на ИТС и БСП
 2. Проверить `ssl_search`-запросы из `1commerce-bsp-integration-checklists.mdc` — возвращают ли актуальные API.
 3. Обновить rule и project-delta при необходимости.
 4. Поднять даты `Last synced` в таблице `Sources & sync`.
-5. Синхронизировать шаблон: `.\tools\export-project-template.ps1` → `D:\infobases-files\1c-project-template`.
+5. Синхронизировать шаблон: `.\tools\export-project-template.ps1` → `{PROJECT_ROOT}`.
 
 ## Атрибуция (CC-BY-SA 4.0)
 

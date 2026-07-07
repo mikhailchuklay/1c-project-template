@@ -45,7 +45,7 @@ File is placed at the project root (next to `.git/`).
       "server": "srv01",
       "ref": "MyApp_Test",
       "user": "Admin",
-      "password": "123",
+      "password": "",
       "aliases": ["test", "тест"]
     }
   ],

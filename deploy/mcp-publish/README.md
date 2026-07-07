@@ -2,7 +2,7 @@
 
 Инструкция по **отдельной** IIS-публикации HTTP-сервиса MCP для работы `1c-data-mcp` в Cursor и других MCP-клиентах.
 
-Основана на дистрибутиве `MCP_1C_Distr` и фактической настройке сервера `{PROD_HOST}` (IIS 10, платформа 8.5.1.1302).
+Основана на дистрибутиве `MCP_1C_Distr` и типовой настройке IIS + платформы `{PLATFORM_VERSION}`.
 
 ---
 
@@ -49,7 +49,7 @@ WWW-Authenticate: Basic realm="1C:Enterprise 8.5"
 ## Предварительные условия в ИБ
 
 1. Установлено расширение **OneMCP.cfe** (в шаблоне: `vendor/mcp/OneMCP.cfe`, см. [vendor/mcp/README.md](../../vendor/mcp/README.md)).
-2. Создан пользователь ИБ **`mcp`** с паролем **`mcp`** (или другой — тогда поправьте `default.vrd` и параметры скрипта).
+2. Создан технический пользователь ИБ **`{MCP_USER}`** с паролем **`{MCP_PASSWORD}`** (передаётся в `install-mcp-publication.ps1`, не храните реальные значения в репозитории).
 3. Пользователю назначена роль с правами:
    - **Использование** HTTP-сервиса `APA_MCP`;
    - **Чтение** (и при необходимости запись) объектов, к которым обращаются инструменты MCP.
@@ -62,12 +62,12 @@ WWW-Authenticate: Basic realm="1C:Enterprise 8.5"
 
 ### 1. IIS Application — обязательно
 
-Простого каталога в `C:\inetpub\wwwroot\` **недостаточно**. Публикация 1С на IIS должна быть зарегистрирована как **приложение** (Application), не только виртуальный каталог.
+Простого каталога в `{IIS_WWWROOT}\` **недостаточно**. Публикация 1С на IIS должна быть зарегистрирована как **приложение** (Application), не только виртуальный каталог.
 
 Скрипт `install-mcp-publication.ps1` делает это автоматически:
 
 ```text
-appcmd add app /site.name:"Default Web Site" /path:/{PROJECT_SLUG}-mcp /physicalPath:C:\inetpub\wwwroot\{PROJECT_SLUG}-mcp
+appcmd add app /site.name:"Default Web Site" /path:/{PROJECT_SLUG}-mcp /physicalPath:{IIS_WWWROOT}\{PROJECT_SLUG}-mcp
 ```
 
 **Симптом без регистрации:** даже точная копия рабочего `default.vrd` из `/{PROJECT_SLUG}/` в новой папке отдаёт **HTTP 500**.
@@ -106,11 +106,11 @@ HTTP-сервис MCP поставляется расширением **OneMCP**
 Рабочий формат (как в `MCP_1C_Distr`):
 
 ```xml
-ib="Srvr=&quot;{SERVER}:{PORT}&quot;;Ref=&quot;{PROJECT_SLUG}&quot;;Usr='mcp';Pwd='mcp';"
+ib="Srvr=&quot;{SERVER}:{PORT}&quot;;Ref=&quot;{PROJECT_SLUG}&quot;;Usr='{MCP_USER}';Pwd='{MCP_PASSWORD}';"
 ```
 
 - Учётные данные — в атрибуте `ib`, **не** отдельный элемент `<usr>` (на этой платформе надёжнее именно `ib`).
-- Внутри строки подключения — **одинарные** кавычки: `Usr='mcp';Pwd='mcp';`.
+- Внутри строки подключения — **одинарные** кавычки: `Usr='{MCP_USER}';Pwd='{MCP_PASSWORD}';`.
 - Неверный пользователь/пароль в `ib` → **500** (не 401).
 
 ### 5. UTF-8 без BOM
@@ -140,7 +140,7 @@ base="/{PROJECT_SLUG}-mcp"
     <handlers>
         <add name="1C Web-service Extension" path="*" verb="*"
              modules="IsapiModule"
-             scriptProcessor="C:\Program Files\1cv8\8.5.1.1302\bin\wsisapi.dll"
+             scriptProcessor="{PLATFORM_PATH}\bin\wsisapi.dll"
              resourceType="Unspecified" requireAccess="None" />
     </handlers>
 </system.webServer>
@@ -171,7 +171,7 @@ base="/{PROJECT_SLUG}-mcp"
 
 | Файл | Назначение |
 |---|---|
-| `default.vrd` / `default-APA_MCP.vrd` | **Продакшен** — MCP-only, OneMCP (`APA_MCP`), встроенный `mcp/mcp` |
+| `default.vrd` / `default-APA_MCP.vrd` | **Продакшен** — MCP-only, OneMCP (`APA_MCP`); учётные данные передаются через `-McpUser` / `-McpPassword` при развёртывании |
 | `default-noauth.vrd` | Диагностика без учётных данных (ожидается 401) |
 | `default-all-ext-http.vrd` | Диагностика: все HTTP-сервисы расширений, без `Usr` |
 | `default-copy-main-noauth.vrd` | Диагностика: копия рабочего `default.vrd` основной публикации |
@@ -185,7 +185,7 @@ base="/{PROJECT_SLUG}-mcp"
 PowerShell **от имени администратора**:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "X:\dev-projects\{PROJECT_SLUG}\deploy\mcp-publish\install-mcp-publication.ps1" -McpUser mcp -McpPassword mcp
+powershell -ExecutionPolicy Bypass -File "{PROJECT_ROOT}\deploy\mcp-publish\install-mcp-publication.ps1" -McpUser "{MCP_USER}" -McpPassword "{MCP_PASSWORD}"
 ```
 
 **Ожидаемый результат:**
@@ -228,13 +228,13 @@ powershell -ExecutionPolicy Bypass -File "...\install-mcp-publication.ps1" -Diag
 ### Шаг 3 — продакшен с учётными данными
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "...\install-mcp-publication.ps1" -McpUser mcp -McpPassword mcp
+powershell -ExecutionPolicy Bypass -File "...\install-mcp-publication.ps1" -McpUser "{MCP_USER}" -McpPassword "{MCP_PASSWORD}"
 ```
 
 | Ответ | Действие |
 |---|---|
 | `/hs/mcp 200` | Готово, перезапустить Cursor |
-| `/hs/mcp 401` | Пользователь `mcp` не подхватывается — проверить `Usr`/`Pwd` в `ib`, существование пользователя в ИБ |
+| `/hs/mcp 401` | Учётные данные IB не подхватываются — проверить `Usr`/`Pwd` в `ib`, существование пользователя в ИБ |
 | `/hs/mcp 403` | Нет прав на HTTP-сервис `APA_MCP` |
 | `/hs/mcp 404` | OneMCP не установлен или неверное `service name` |
 | `/hs/mcp 500` | Неверный пароль в `ib` или повреждён `default.vrd` |
@@ -276,8 +276,8 @@ Invoke-WebRequest -Uri "http://{PROD_HOST}/{PROJECT_SLUG}-mcp/hs/mcp" -UseBasicP
 
 ## Безопасность
 
-- MCP-публикация с встроенным `mcp/mcp` **не требует** HTTP Basic — endpoint доступен любому, кто знает URL. Ограничьте доступ сетью (firewall, VPN).
-- Технический пользователь `mcp` должен иметь **минимально достаточные** права (только то, что нужно инструментам MCP).
+- MCP-публикация с встроенными учётными данными IB **не требует** HTTP Basic — endpoint доступен любому, кто знает URL. Ограничьте доступ сетью (firewall, VPN).
+- Технический пользователь `{MCP_USER}` должен иметь **минимально достаточные** права (только то, что нужно инструментам MCP).
 - Основная публикация `/{PROJECT_SLUG}/` **не изменяется** — пользовательская аутентификация сохраняется.
 
 ---
@@ -287,7 +287,7 @@ Invoke-WebRequest -Uri "http://{PROD_HOST}/{PROJECT_SLUG}-mcp/hs/mcp" -UseBasicP
 ```powershell
 # Удалить IIS Application и каталог
 & "$env:windir\system32\inetsrv\appcmd.exe" delete app "Default Web Site/{PROJECT_SLUG}-mcp"
-Remove-Item "C:\inetpub\wwwroot\{PROJECT_SLUG}-mcp" -Recurse -Force
+Remove-Item "{IIS_WWWROOT}\{PROJECT_SLUG}-mcp" -Recurse -Force
 ```
 
 В `.cursor/mcp.json` убрать или закомментировать `1c-data-mcp`, либо вернуть URL основной публикации (будет 401 — инструменты не заработают без отдельной MCP-публикации).

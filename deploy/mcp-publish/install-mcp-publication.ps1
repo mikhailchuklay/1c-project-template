@@ -19,9 +19,9 @@ param(
     [ValidateSet('mcp', 'APA_MCP')]
     [string] $ServiceName = 'APA_MCP',
 
-    [string] $McpUser = 'mcp',
+    [string] $McpUser,
 
-    [string] $McpPassword = 'mcp',
+    [string] $McpPassword,
 
     [switch] $DiagnosticNoAuth,
 
@@ -32,8 +32,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+$needsCredentials = -not $DiagnosticNoAuth -and -not $DiagnosticAllExtHttp -and -not $DiagnosticCopyMain
+if ($needsCredentials -and ([string]::IsNullOrWhiteSpace($McpUser) -or [string]::IsNullOrWhiteSpace($McpPassword))) {
+    throw 'Production deploy requires -McpUser and -McpPassword (dedicated IB user for MCP publication; do not commit real values to the repo).'
+}
+
 $srcDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$dstDir = 'C:\inetpub\wwwroot\{PROJECT_SLUG}-mcp'
+$dstDir = '{IIS_WWWROOT}\{PROJECT_SLUG}-mcp'
 $baseUrl = 'http://{PROD_HOST}/{PROJECT_SLUG}-mcp'
 $mcpUrl = "$baseUrl/hs/mcp"
 

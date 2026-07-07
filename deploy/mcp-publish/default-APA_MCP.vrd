@@ -3,7 +3,7 @@
 		xmlns:xs="http://www.w3.org/2001/XMLSchema"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		base="/{PROJECT_SLUG}-mcp"
-		ib="Srvr=&quot;{SERVER}:{PORT}&quot;;Ref=&quot;{PROJECT_SLUG}&quot;;Usr='mcp';Pwd='mcp';">
+		ib="Srvr=&quot;{SERVER}:{PORT}&quot;;Ref=&quot;{PROJECT_SLUG}&quot;;">
 	<ws enable="false"
 			pointEnableCommon="true"
 			publishExtensionsByDefault="true"/>

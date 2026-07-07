@@ -151,7 +151,7 @@ if ($segments -notcontains $ovmBin) { $segments = @($ovmBin) + $segments }
 Версия платформы:
 
 ```json
-"--v8version": "8.5.1.1302"
+"--v8version": "{PLATFORM_VERSION}"
 ```
 
 Учётные данные в `env.json` **не хранятся** — только в локальном профиле.
@@ -177,8 +177,8 @@ if ($segments -notcontains $ovmBin) { $segments = @($ovmBin) + $segments }
 Параметры для слэш-команд и субагентов 1c-rules. Минимально заполните:
 
 ```ini
-PLATFORM_VERSION=8.5.1
-PLATFORM_PATH=C:\Program Files\1cv8\8.5.1.1302
+PLATFORM_VERSION=
+PLATFORM_PATH={PLATFORM_PATH}
 INFOBASE_KIND=server
 INFOBASE_PATH={SERVER}:{PORT}/{PROJECT_SLUG}
 IB_USER=ваш_пользователь
@@ -217,7 +217,7 @@ opm install -l
 Если `.ai-rules.json` **отсутствует** — полная установка:
 
 ```powershell
-cd D:\infobases-files\{PROJECT_SLUG}
+cd {PROJECT_ROOT}
 $src = Join-Path $env:TEMP '1c-rules'
 if (-not (Test-Path (Join-Path $src 'install.ps1'))) {
     git clone --depth 1 https://github.com/comol/ai_rules_1c.git $src
@@ -239,7 +239,7 @@ if (Test-Path (Join-Path $src '.git')) {
 } else {
     git clone --depth 1 https://github.com/comol/ai_rules_1c.git $src
 }
-cd D:\infobases-files\{PROJECT_SLUG}
+cd {PROJECT_ROOT}
 & "$src\install.ps1" update -Source $src -AssumeYes
 ```
 
@@ -392,7 +392,7 @@ git config --global user.email "ваш_email@example.com"
 | OneScript | `oscript -version` | `2.0.x` |
 | OPM | `opm --version` | `1.x.x` |
 | vrunner | `.\oscript_modules\bin\vrunner.bat version` | `2.6.1` |
-| Платформа | `Test-Path "C:\Program Files\1cv8\8.5.1.1302\bin\1cv8.exe"` | `True` |
+| Платформа | `Test-Path "{PLATFORM_PATH}\bin\1cv8.exe"` | `True` |
 | MCP IPC | Reload Window, Settings → MCP | `mcp-1c-platform-tools` connected |
 | 1c-rules | `Test-Path .ai-rules.json, memory.md` | оба `True` |
 | Rules | `(Get-ChildItem .cursor\rules\*.mdc).Count` | ~29 |
