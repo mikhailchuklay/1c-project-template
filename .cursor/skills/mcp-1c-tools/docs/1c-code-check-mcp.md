@@ -29,6 +29,8 @@
 
 `its_help` → get document IDs → `fetch_its` for each ID → read the full content. **Never ignore ITS article references without `fetch_its`.**
 
+For BSLLS / ACC / EDT diagnostic codes (e.g. from `syntaxcheck`), prefer `v8std_explain_diagnostics` on `v8std-mcp` first for navigation to standard ids, then `fetch_its` when normative ITS text is required. See [`docs/v8std-mcp.md`](v8std-mcp.md).
+
 ## Notes on AI tools
 
 `ask_1c_ai`, `rewrite_1c_code`, `modify_1c_code` are non-deterministic. Their output is a draft hint, not authority. Generated / rewritten code is **always** re-validated: `syntaxcheck` + `check_1c_code` + `review_1c_code`.

@@ -25,9 +25,10 @@ Project-delta (правила строже ИТС) — в:
 
 ## Авторитетные источники (приоритет выше dev-rules)
 
-1. **ИТС** — `its_help` → `fetch_its` (стандарты платформы v8std)
+1. **ИТС** — `its_help` → `fetch_its` (нормативные стандарты платформы v8std)
 2. **БСП / SSL** — `ssl_search` (канонический API подсистем)
 3. **1С:Напарник** — `check_1c_code`, `review_1c_code` (проверка после правок)
+4. **v8std.ru** — `v8std_explain_diagnostics`, `v8std_explain_snippet`, `v8std_search` → `v8std_get_page` через `v8std-mcp` ([ai.v8std.ru/mcp](https://ai.v8std.ru/mcp)) — адаптированная навигация по стандартам и мост «диагностика линтера → std»; **не заменяет** п. 1 для нормативных решений
 
 dev-rules — curated-выжимка со ссылками на ИТС и БСП; не заменяет их.
 

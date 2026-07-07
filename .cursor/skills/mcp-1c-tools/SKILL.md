@@ -27,7 +27,7 @@ If `docs/<server>.md` conflicts with the descriptor exposed by the current envir
 
 - Before writing code / a query / metadata XML — pick the MCP tool that best fits the task (template search, metadata check, syntax validation, code review).
 - For impact analysis and code navigation — decide which server to use first (`graph` → `code-metadata` → `Grep` — see *Fallback chain* below).
-- For ITS standards (`its_help` → `fetch_its`) and platform documentation (`docinfo` / `docsearch`).
+- For ITS standards (`its_help` → `fetch_its`), v8std diagnostic/standard navigation (`v8std_explain_diagnostics`, `v8std_explain_snippet`, `v8std_search` → `v8std_get_page`), and platform documentation (`docinfo` / `docsearch`).
 - For code templates and project memory (`templatesearch`, `remember`, `recall`).
 
 > Short obligation rules and verification budgets live in `AGENTS.md → MCP Tool Calling` (sections A, B, C). This skill owns the MCP catalog, routing, and fallback details.
@@ -44,6 +44,7 @@ If `docs/<server>.md` conflicts with the descriptor exposed by the current envir
 | **1c-code-check-mcp** | 1С:Напарник — code review, technical check, AI rewrite/modify, ITS documentation | [`docs/1c-code-check-mcp.md`](docs/1c-code-check-mcp.md) |
 | **1c-syntax-checker-mcp** | BSL syntax and style via BSL Language Server: `syntaxcheck` (code as text) and `syntaxcheck_file` (check a file on disk by path, optionally line-filtered; exposed only when a sources directory is mounted — prefer it over `syntaxcheck` when available, it is cheaper) | [`docs/1c-syntax-checker-mcp.md`](docs/1c-syntax-checker-mcp.md) |
 | **1c-data-mcp** | Live-IB execution: BSL fragment run (`vcexecutecode`), query run (`vcexecutequery`), query parse-check (`validatequery`), last event-log error (`vcloggetlasterror`) | [`docs/1c-data-mcp.md`](docs/1c-data-mcp.md) |
+| **v8std-mcp** | v8std.ru — adapted ITS standards, BSLLS/ACC/EDT diagnostic bridge, snippet-to-standard mapping (complements ITS, not a replacement) | [`docs/v8std-mcp.md`](docs/v8std-mcp.md) |
 
 ## Fallback chain (highest priority to lowest)
 
@@ -66,8 +67,9 @@ These servers have no `Grep` / `rg` equivalent; call them only when their knowle
 2. `1c-ssl-mcp` — БСП / SSL reusable APIs and patterns.
 3. `1C-docs-mcp` — versioned platform documentation.
 4. `1c-code-check-mcp` — 1С:Напарник checks, ITS standards (`its_help` → `fetch_its` for every document used), AI drafts.
-5. `1c-syntax-checker-mcp` — BSL syntax / style validation after edits (prefer `syntaxcheck_file` over `syntaxcheck` when it is exposed — file check by path is more economical than passing code text).
-6. `1c-data-mcp` — execution against the **live** infobase (run a BSL fragment, run a query, parse-check a query, fetch the last event-log error). No `Grep` / `rg` equivalent — there is no offline substitute for "what does this running IB do right now". Call only when the question genuinely requires the live IB; default to read-only fragments and ask before any mutation. Details — [`docs/1c-data-mcp.md`](docs/1c-data-mcp.md).
+5. `v8std-mcp` — diagnostic-to-standard bridge and adapted standard navigation. Use after `syntaxcheck` BSLLS codes (`v8std_explain_diagnostics`), for BSL/SDBL snippets (`v8std_explain_snippet`), or topic search (`v8std_search` → `v8std_get_page`). **Does not replace** `its_help` → `fetch_its` for normative decisions. Details — [`docs/v8std-mcp.md`](docs/v8std-mcp.md).
+6. `1c-syntax-checker-mcp` — BSL syntax / style validation after edits (prefer `syntaxcheck_file` over `syntaxcheck` when it is exposed — file check by path is more economical than passing code text).
+7. `1c-data-mcp` — execution against the **live** infobase (run a BSL fragment, run a query, parse-check a query, fetch the last event-log error). No `Grep` / `rg` equivalent — there is no offline substitute for "what does this running IB do right now". Call only when the question genuinely requires the live IB; default to read-only fragments and ask before any mutation. Details — [`docs/1c-data-mcp.md`](docs/1c-data-mcp.md).
 
 ## Quick map: "task → MCP tool"
 
@@ -80,5 +82,7 @@ These servers have no `Grep` / `rg` equivalent; call them only when their knowle
 | Metadata search by name / structure | `search_metadata` (JSON templates) | `metadatasearch` |
 | Object usage search | `find_objects_using_object` / `find_usages_of_object` | `graph_dependencies` (`direction="reverse"`) |
 | Description / synonym / comment search | `search_metadata_by_description` | `metadatasearch` (`names_only=true`) |
+| BSLLS/ACC/EDT code → standard | `v8std_explain_diagnostics` (`v8std-mcp`) | `v8std_search` → `v8std_get_page`; `its_help` → `fetch_its` for normative text |
+| BSL/SDBL snippet → standards | `v8std_explain_snippet` (`v8std-mcp`) | `v8std_get_page`; `review_1c_code` for compliance |
 
 Step-by-step playbooks per task type (writing code, review, architecture, error fixing, performance, refactoring, metadata XML, forms, integrations, documentation, comparing platform versions) — `content/rules/tooling-playbooks.md`.

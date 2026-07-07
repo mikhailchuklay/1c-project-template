@@ -44,7 +44,8 @@ Use the smallest set that closes the real context gaps. Do not promote a task to
 5. **docinfo** — verify method/property existence; **docsearch** — search by description.
 6. **review_1c_code** — style and ITS compliance.
 7. **check_1c_code** — bugs and performance issues.
-8. **its_help** → **fetch_its** — cross-check against ITS standards.
+8. **v8std_explain_snippet** / **v8std_explain_diagnostics** (`v8std-mcp`, if available) — map suspect code or linter codes to standard ids; then **v8std_get_page** for adapted text.
+9. **its_help** → **fetch_its** — normative cross-check (authoritative over v8std); mandatory when compliance is disputed or project rules may differ.
 
 ## Architecture Design
 
@@ -61,18 +62,19 @@ Use the smallest set that closes the real context gaps. Do not promote a task to
 ## Error Fixing
 
 1. **vcloggetlasterror** (`1c-data-mcp`, if available) — fetch the exact text, timestamp and affected metadata of the last error from the live IB before forming hypotheses. Avoids guessing what the user "probably saw". Skip when the failing scenario is not yet reproduced in the connected IB.
-2. **syntaxcheck** — syntax errors.
-3. **check_1c_code** — logic and performance issues.
-4. **search_function** — locate the failing procedure/function.
-5. **search_code** → **codesearch** — related patterns (`detail_level="L0"` for the full body of a specific routine).
-6. **get_module_structure** — module context around the error.
-7. **trace_call_chain** → **get_method_call_hierarchy** — how the error propagates through the call chain.
-8. **docinfo** — verify function/method names; **docsearch** — fallback by description.
-9. **metadatasearch** / **get_metadata_details** — verify metadata names and attributes.
-10. **validatequery** (`1c-data-mcp`, if available) — when the suspect path is a query string, parse-check it before deeper investigation.
-11. **vcexecutequery** (`1c-data-mcp`, if available) — read-only query against the live IB to confirm a data-state hypothesis without changing production code.
-12. **vcexecutecode** (`1c-data-mcp`, if available) — run a small read-only BSL fragment in the live IB to verify a platform-version-specific behaviour. Default to read-only; **never** wrap a mutation without explicit user consent (see `docs/1c-data-mcp.md → Safety`).
-13. **modify_1c_code** — targeted AI fix (treat output as a draft, re-validate).
+2. **syntaxcheck** — syntax errors; collect BSLLS diagnostic codes from warnings when present.
+3. **v8std_explain_diagnostics** (`v8std-mcp`, if available) — when `syntaxcheck` or the user provides BSLLS/ACC/EDT codes; then **v8std_get_page** on returned ids for fix context.
+4. **check_1c_code** — logic and performance issues.
+5. **search_function** — locate the failing procedure/function.
+6. **search_code** → **codesearch** — related patterns (`detail_level="L0"` for the full body of a specific routine).
+7. **get_module_structure** — module context around the error.
+8. **trace_call_chain** → **get_method_call_hierarchy** — how the error propagates through the call chain.
+9. **docinfo** — verify function/method names; **docsearch** — fallback by description.
+10. **metadatasearch** / **get_metadata_details** — verify metadata names and attributes.
+11. **validatequery** (`1c-data-mcp`, if available) — when the suspect path is a query string, parse-check it before deeper investigation.
+12. **vcexecutequery** (`1c-data-mcp`, if available) — read-only query against the live IB to confirm a data-state hypothesis without changing production code.
+13. **vcexecutecode** (`1c-data-mcp`, if available) — run a small read-only BSL fragment in the live IB to verify a platform-version-specific behaviour. Default to read-only; **never** wrap a mutation without explicit user consent (see `docs/1c-data-mcp.md → Safety`).
+14. **modify_1c_code** — targeted AI fix (treat output as a draft, re-validate).
 
 ## Performance Optimization
 

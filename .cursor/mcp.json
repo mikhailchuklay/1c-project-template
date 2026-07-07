@@ -66,6 +66,11 @@
             "url": "{INFOBASE_PUBLISH_URL}/hs/mcp",
             "connection_id": "1c_data_mcp_001",
             "description": "1C data MCP on DEV publish. Р—Р°РјРµРЅРёС‚Рµ {INFOBASE_PUBLISH_URL} РїРѕСЃР»Рµ РЅР°СЃС‚СЂРѕР№РєРё .dev.env"
+        },
+        "v8std-mcp": {
+            "type": "http",
+            "url": "https://ai.v8std.ru/mcp",
+            "description": "v8std.ru — стандарты 1С, диагностики BSLLS/АПК/EDT (дополнение к ITS, не замена)"
         }
     }
 }
