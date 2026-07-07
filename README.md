@@ -4,7 +4,9 @@
 
 ## Репозиторий
 
-Приватный репозиторий: [github.com/mikhailchuklay/1c-project-template](https://github.com/mikhailchuklay/1c-project-template)
+Публичный шаблон: [github.com/mikhailchuklay/1c-project-template](https://github.com/mikhailchuklay/1c-project-template)
+
+Изменения в `master` — через **Pull Request** (fork или feature-ветка). Прямой push в `master` — только у владельца репозитория.
 
 ```powershell
 git clone https://github.com/mikhailchuklay/1c-project-template.git my-1c-project
