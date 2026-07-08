@@ -78,5 +78,37 @@ Whenever editing metadata XML by hand, after the change run:
 
 - `verify_xml` from `1c-code-metadata-mcp` against the appropriate XSD (`get_xsd_schema` first if unsure of the type).
 - Then a sanity load via `1c-metadata-manage/tools/1c-meta-validate/scripts/meta-validate.ps1`.
+- For extensions, run `1c-cfe-manage/scripts/cfe-validate.ps1` **before every load from XML**
+  (checks 14–15 below).
 
 This catches structural issues (missing required elements, wrong type names, broken references) before they reach the platform.
+
+## 6. Extension load pitfalls — the platform hangs or fails silently (incident 2026-07-08)
+
+These constructs pass a naive load attempt but make the platform misbehave. The Designer of
+platform **8.5.1** gives diagnostics where **8.3.27** stays silent — prefer 8.5.1 for extension loads.
+
+- **Rights on non-securable objects → infinite hang.** A role granting rights on `CommonModule`
+  (or `Enum`, `DefinedType`, `EventSubscription`, `ScheduledJob`, `StyleItem`, `Language`, `Role`)
+  sends `/LoadConfigFromFiles` into an infinite CPU loop — no error, empty `/Out`. Caught by
+  `role-validate` / `cfe-validate` check 14.
+- **Exchange-plan content must be data objects only.** `DataProcessor`, `Subsystem`, `Role`,
+  `HTTPService` in `ExchangePlans/*/Ext/Content.xml` fail the load. Caught by `cfe-validate` check 15.
+- **`DefinedType` / type sets are forbidden in extensions** — a resource/attribute cannot reference a
+  `DefinedType` («использование наборов типов и определяемых типов в расширении недопустимо»). Use
+  concrete types; if that names base-config objects, keep the object in the adapter layer (name it
+  `<prefix>_<CONF>_*`), not in a "portable core".
+- **HTTP-service rights are per-Method** (`HTTPService.X.URLTemplate.Y.Method.Z`), not on the service
+  object — a `Use` on the bare service is silently dropped.
+- **You cannot borrow-and-extend a typical HTTP service** (add `URLTemplate` children to an adopted
+  `HTTPService`) in any existing compatibility mode; create your own `HTTPService` with a free
+  `RootURL` instead.
+- **`-listFile` / `-partial` does not create new objects** — only updates existing ones («Неизвестный
+  объект метаданных»). Add new objects with a full directory `/LoadConfigFromFiles` or a `.cfe`.
+- **XML format version must be uniform** across the extension (all files `version="2.21"`, matching a
+  platform dump) — a mismatch aborts the load («Версия формата загружаемого файла отличается…»).
+- **`ConfigDumpInfo.xml` is not required for load** — a hand-written / out-of-sync one is best deleted
+  (the platform regenerates it on dump).
+- **Diagnosis rule:** a load that runs >2 min with the `1cv8` process burning CPU is a bad-metadata
+  hang, not a slow load — bisect the extension against a known-good platform dump on a scratch copy of
+  the base rather than restarting blindly.

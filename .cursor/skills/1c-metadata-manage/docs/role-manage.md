@@ -144,7 +144,21 @@ TotalsControl — only for totals management, usually not needed.
 
 ### Types WITHOUT Rights in Roles
 
-Enum, FunctionalOption, DefinedType, CommonModule, CommonPicture, CommonTemplate — do not appear in Rights.xml.
+Enum, FunctionalOption(Parameter), DefinedType, CommonModule, CommonPicture, CommonTemplate,
+Language, EventSubscription, ScheduledJob, StyleItem, Role — do not appear in Rights.xml.
+
+**`role-validate` reports rights on these types as an ERROR (not a warning).** Rationale
+(incident 2026-07-08): a role granting rights on such a non-securable object — e.g. `CommonModule` —
+sends Designer `/LoadConfigFromFiles` into an infinite CPU loop with no error message and an empty
+`/Out` log (reproduced on platform 8.3.27 and 8.5.1). The load never completes and the failure is
+silent, so the validator must catch it before load.
+
+### HTTP-service access — grant on Methods, not on the service
+
+Access to an `HTTPService` is granted per **Method**, on objects
+`HTTPService.<Name>.URLTemplate.<Template>.Method.<Method>` (right `Use`) — **not** on the service
+object itself. A `Use` right written on the bare `HTTPService.<Name>` is silently dropped by the
+platform on load, leaving the role without HTTP access (works only under an administrator).
 
 ### Nested Objects (rights: View, Edit)
 

@@ -930,6 +930,85 @@ if ($script:borrowedFormsWithTree.Count -eq 0) {
 	Report-OK "13. TypeLink: clean"
 }
 
+# --- Check 14: role rights on non-securable objects (Designer hang!) ---
+# A role granting rights on CommonModule and similar types sends Designer
+# /LoadConfigFromFiles into an infinite CPU loop with no error and empty /Out
+# (verified on 8.3.27 / 8.5.1, incident 2026-07-08).
+$forbiddenRightsTypes = @(
+	"Enum","CommonModule","DefinedType","CommonPicture","CommonTemplate",
+	"Language","FunctionalOption","FunctionalOptionsParameter",
+	"EventSubscription","ScheduledJob","StyleItem","Style","Role"
+)
+$check14Ok = $true
+$rightsChecked = 0
+$rolesDir = Join-Path $configDir "Roles"
+if (Test-Path $rolesDir) {
+	foreach ($rf in (Get-ChildItem -Path $rolesDir -Recurse -Filter "Rights.xml" | Sort-Object FullName)) {
+		$rel = $rf.FullName.Substring($configDir.Length + 1)
+		try {
+			[xml]$rdoc = Get-Content $rf.FullName -Raw -Encoding UTF8
+		} catch {
+			Report-Error "14. ${rel}: XML parse failed: $($_.Exception.Message)"
+			$check14Ok = $false
+			continue
+		}
+		foreach ($obj in $rdoc.DocumentElement.ChildNodes) {
+			if ($obj.LocalName -ne "object") { continue }
+			$objName = ""
+			foreach ($c in $obj.ChildNodes) { if ($c.LocalName -eq "name") { $objName = $c.InnerText; break } }
+			if (-not $objName) { continue }
+			$rightsChecked++
+			$objType = $objName.Split(".")[0]
+			if ($objType -in $forbiddenRightsTypes) {
+				Report-Error "14. ${rel}: rights on $objName - '$objType' is not a securable object; Designer hangs in an infinite loop loading such a role"
+				$check14Ok = $false
+			}
+		}
+	}
+}
+if ($check14Ok) {
+	Report-OK "14. Role rights: $rightsChecked object(s), no non-securable types"
+}
+
+# --- Check 15: exchange plan content — data objects only ---
+# ExchangePlan content may include only objects that hold data. DataProcessor,
+# Subsystem, Role, HTTPService etc. in Ext/Content.xml cause load failure
+# (explicit on 8.5.1, silent misbehaviour on 8.3.27; incident 2026-07-08).
+$allowedXPlanContentTypes = @(
+	"Constant","Catalog","Document","Sequence",
+	"ChartOfCharacteristicTypes","ChartOfAccounts","ChartOfCalculationTypes",
+	"InformationRegister","AccumulationRegister","AccountingRegister",
+	"CalculationRegister","BusinessProcess","Task"
+)
+$check15Ok = $true
+$xplanItemsChecked = 0
+$xplansDir = Join-Path $configDir "ExchangePlans"
+if (Test-Path $xplansDir) {
+	foreach ($cf in (Get-ChildItem -Path $xplansDir -Recurse -Filter "Content.xml" | Sort-Object FullName)) {
+		$rel = $cf.FullName.Substring($configDir.Length + 1)
+		try {
+			[xml]$cdoc = Get-Content $cf.FullName -Raw -Encoding UTF8
+		} catch {
+			Report-Error "15. ${rel}: XML parse failed: $($_.Exception.Message)"
+			$check15Ok = $false
+			continue
+		}
+		foreach ($md in $cdoc.SelectNodes("//*[local-name()='Metadata']")) {
+			$mdName = $md.InnerText
+			if (-not $mdName) { continue }
+			$xplanItemsChecked++
+			$mdType = $mdName.Split(".")[0]
+			if ($mdType -notin $allowedXPlanContentTypes) {
+				Report-Error "15. ${rel}: '$mdName' cannot be exchange plan content - '$mdType' is not a data object type"
+				$check15Ok = $false
+			}
+		}
+	}
+}
+if ($check15Ok) {
+	Report-OK "15. ExchangePlan content: $xplanItemsChecked item(s), data objects only"
+}
+
 # --- Final output ---
 & $finalize
 
