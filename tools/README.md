@@ -2,9 +2,23 @@
 
 Предназначен для хранения любых сторонних утилит, необходимых для настройки проекта или для дополнительной установки.
 
-* `*.json` — файлы настроек запуска vanessa-runner, vanessa-automation, xunit и yaxunit
-* `*.cmd` / `*.sh` — скрипты настройки git для Windows и Unix
-* `init-project-structure.ps1` — создание каталогов vanessa-bootstrap (см. `project-structure.json`)
-* `syntax-check-excludes.txt` — файл настроек исключений для синтаксического контроля
+## Каталоги и скрипты
 
-Значение параметров для JSON-файлов смотрите по схеме в каждом из файлов или в справке соответствующего продукта.
+| Путь | Назначение |
+|------|------------|
+| `dev-standalone/` | Автономный DEV-сервер (`ibsrv`): init/start/stop/restart, `Invoke-DataMcp`, `_DevEnv.ps1` / `_DevEnv.sh` |
+| `dev-env/` | Профили IDE: Linux (`linux/apply.sh`, MCP launcher) |
+| `prepare-objlist.sh` | Разбор `objlist.txt` → `build/out/*.txt` |
+| `load-objlist-config.sh` | Частичная загрузка `src/cf` через ibcmd |
+| `load-objlist-extensions.sh` | Частичная загрузка `src/cfe/*` через ibcmd |
+| `deploy-extension.sh` | stop → import → apply → restart для CFE |
+| `mcp-platform-tools-launcher.sh` | MCP Platform Tools на Linux (Cursor Remote) |
+| `fix-1c-platform-tools-vrunner-cmd.ps1` | Workaround quoting vrunner на Windows |
+| `init-project-structure.ps1` | Каталоги vanessa-bootstrap (`project-structure.json`) |
+| `lists/` | Опциональные проектные списки partial-load |
+
+* `*.json` — настройки vanessa-runner / автотестов  
+* `vrunner.init.json.example` — шаблон подключения к ИБ  
+* `syntax-check-excludes.txt` — исключения синтаксического контроля (при необходимости)
+
+Значение параметров JSON — по схеме в файле или в справке продукта. Параметры DEV — в `.dev.env` (см. [docs/dev-environment.md](../docs/dev-environment.md)).

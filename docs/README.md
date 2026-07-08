@@ -3,7 +3,8 @@
 | Документ | Описание |
 |----------|----------|
 | [initial-setup-playbook.md](initial-setup-playbook.md) | Начальная настройка: структура, OneScript, ИБ, MCP, skills, Git |
-| [dev-environment.md](dev-environment.md) | DEV vs PROD: ИБ, автономный сервер, публикация на localhost |
+| [dev-environment.md](dev-environment.md) | DEV vs PROD, ibsrv, Linux-профиль IDE, deploy-extension |
+| [../tools/dev-env/README.md](../tools/dev-env/README.md) | Профили Cursor/VS Code (Windows vs Linux) |
 | [project-structure.md](project-structure.md) | Дерево каталогов vanessa-bootstrap и автоматическая инициализация |
 | [../deploy/mcp-publish/README.md](../deploy/mcp-publish/README.md) | Публикация HTTP-сервиса MCP на ИБ |
 | [../openspec/README.md](../openspec/README.md) | Spec-driven development (OpenSpec) |
