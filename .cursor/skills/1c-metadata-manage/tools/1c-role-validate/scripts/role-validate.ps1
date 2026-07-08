@@ -133,6 +133,26 @@ $script:nestedRights = @("View","Edit")
 $script:channelRights = @("Use")
 $script:commandRights = @("View")
 
+# --- Types that are NOT securable: rights on them are invalid ---
+# CRITICAL: Designer /LoadConfigFromFiles hangs in an infinite CPU loop (no error,
+# empty /Out) when a role grants rights on such an object (verified on 8.3.27 and
+# 8.5.1, incident 2026-07-08: CommonModule.* rights in an extension role).
+$script:forbiddenRightsTypes = @{
+	"Enum" = "rights are inherited from configuration, explicit grant is impossible"
+	"CommonModule" = "common modules have no rights in roles"
+	"DefinedType" = "data type, not a securable object"
+	"CommonPicture" = "resource, not a securable object"
+	"CommonTemplate" = "resource, not a securable object"
+	"Language" = "configuration element, not a securable object"
+	"FunctionalOption" = "not a securable object"
+	"FunctionalOptionsParameter" = "not a securable object"
+	"EventSubscription" = "not a securable object"
+	"ScheduledJob" = "not a securable object"
+	"StyleItem" = "style resource, not a securable object"
+	"Style" = "style resource, not a securable object"
+	"Role" = "roles have no rights on roles"
+}
+
 # --- 2. Output helpers ---
 
 $script:errors = 0
@@ -303,8 +323,12 @@ foreach ($obj in $objects) {
 	$objectType = Get-ObjectType $objName
 	$isNested = Is-NestedObject $objName
 
-	# Check object type is known
-	if (-not $isNested -and -not $script:knownRights.ContainsKey($objectType)) {
+	# Check object type is known / securable
+	if (-not $isNested -and $script:forbiddenRightsTypes.ContainsKey($objectType)) {
+		$reason = $script:forbiddenRightsTypes[$objectType]
+		Report-Error "${objName}: type '$objectType' is not a securable object ($reason); Designer hangs in an infinite loop loading a role with such rights"
+	}
+	elseif (-not $isNested -and -not $script:knownRights.ContainsKey($objectType)) {
 		Report-Warn "${objName}: unknown object type '$objectType'"
 	}
 
