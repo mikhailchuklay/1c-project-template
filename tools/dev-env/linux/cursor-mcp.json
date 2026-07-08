@@ -1,10 +1,8 @@
 {
     "mcpServers": {
         "mcp-1c-platform-tools": {
-            "command": "node",
-            "args": [
-                "${env:USERPROFILE}\\.cursor\\extensions\\yellow-hammer.mcp-1c-platform-tools-0.1.8-universal\\out\\src\\index.js"
-            ],
+            "command": "@PROJECT_ROOT@/tools/mcp-platform-tools-launcher.sh",
+            "args": [],
             "env": {
                 "ONEC_IPC_HOST": "127.0.0.1",
                 "ONEC_IPC_PORT": "40241",
@@ -15,7 +13,7 @@
         "rlm-tools-bsl": {
             "type": "http",
             "url": "http://127.0.0.1:9000/mcp",
-            "description": "RLM tools for BSL — опционально; включите при локальной индексации"
+            "description": "RLM tools for BSL — индексация и поиск по проекту"
         },
         "1c-code-metadata-mcp": {
             "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}/mcp",
@@ -47,6 +45,10 @@
             "connection_id": "1c_docs_service_001",
             "description": "1C platform documentation search (docsearch, docinfo)"
         },
+        "v8std": {
+            "url": "https://ai.v8std.ru/mcp",
+            "description": "Стандарты разработки 1С (v8std.ru) и расшифровка диагностик BSL LS / EDT / АПК"
+        },
         "1c-templates-mcp": {
             "url": "https://mcp.1commerce.ru/templates/mcp",
             "connection_id": "1c_templates_service_001",
@@ -65,12 +67,7 @@
         "1c-data-mcp": {
             "url": "{INFOBASE_PUBLISH_URL}/hs/mcp",
             "connection_id": "1c_data_mcp_001",
-            "description": "1C data MCP on DEV publish. Замените {INFOBASE_PUBLISH_URL} после настройки .dev.env"
-        },
-        "v8std": {
-            "type": "http",
-            "url": "https://ai.v8std.ru/mcp",
-            "description": "Стандарты разработки 1С (v8std.ru) и расшифровка диагностик BSL LS / EDT / АПК"
+            "description": "1C data MCP on DEV publish. Replace {INFOBASE_PUBLISH_URL} from .dev.env (no trailing slash)."
         }
     }
 }

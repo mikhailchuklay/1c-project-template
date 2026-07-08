@@ -44,7 +44,7 @@ Use the smallest set that closes the real context gaps. Do not promote a task to
 5. **docinfo** — verify method/property existence; **docsearch** — search by description.
 6. **review_1c_code** — style and ITS compliance.
 7. **check_1c_code** — bugs and performance issues.
-8. **v8std_explain_snippet** / **v8std_explain_diagnostics** (`v8std-mcp`, if available) — map suspect code or linter codes to standard ids; then **v8std_get_page** for adapted text.
+8. **v8std_explain_snippet** / **v8std_explain_diagnostics** (`v8std`, if available) — map suspect code or linter codes to standard ids; then **v8std_get_page** for adapted text.
 9. **its_help** → **fetch_its** — normative cross-check (authoritative over v8std); mandatory when compliance is disputed or project rules may differ.
 
 ## Architecture Design
@@ -63,7 +63,7 @@ Use the smallest set that closes the real context gaps. Do not promote a task to
 
 1. **vcloggetlasterror** (`1c-data-mcp`, if available) — fetch the exact text, timestamp and affected metadata of the last error from the live IB before forming hypotheses. Avoids guessing what the user "probably saw". Skip when the failing scenario is not yet reproduced in the connected IB.
 2. **syntaxcheck** — syntax errors; collect BSLLS diagnostic codes from warnings when present.
-3. **v8std_explain_diagnostics** (`v8std-mcp`, if available) — when `syntaxcheck` or the user provides BSLLS/ACC/EDT codes; then **v8std_get_page** on returned ids for fix context.
+3. **v8std_explain_diagnostics** (`v8std`, if available) — when `syntaxcheck` or the user provides BSLLS/ACC/EDT codes; then **v8std_get_page** on returned ids for fix context.
 4. **check_1c_code** — logic and performance issues.
 5. **search_function** — locate the failing procedure/function.
 6. **search_code** → **codesearch** — related patterns (`detail_level="L0"` for the full body of a specific routine).

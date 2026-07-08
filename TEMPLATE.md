@@ -72,6 +72,15 @@ Skills `1c-platform-tools*` появятся из расширения, не и�
 ```powershell
 .\tools\dev-standalone\init-config.ps1
 .\tools\dev-standalone\start.ps1
+.\tools\dev-standalone\restart.ps1   # после config apply
+```
+
+На Linux (Cursor Remote):
+
+```bash
+bash tools/dev-env/linux/apply.sh      # MCP + launch/settings
+bash tools/dev-standalone/init-config.sh
+bash tools/dev-standalone/start.sh
 ```
 
 Проверка: `INFOBASE_PUBLISH_URL` из `.dev.env` отвечает HTTP 200.
