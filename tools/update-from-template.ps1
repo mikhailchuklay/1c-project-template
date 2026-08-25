@@ -134,23 +134,38 @@ Write-Step "Template cache: $cache"
 Write-Step "URL: $TemplateUrl  ref: $Ref"
 
 if (Test-Path (Join-Path $cache '.git')) {
-    git -C $cache fetch --depth 1 origin $Ref
-    if ($LASTEXITCODE -ne 0) { throw "git fetch failed" }
-    git -C $cache checkout -B sync FETCH_HEAD
-    if ($LASTEXITCODE -ne 0) {
-        git -C $cache reset --hard "origin/$Ref"
-        if ($LASTEXITCODE -ne 0) { throw "git reset failed" }
+    $prevEa = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    git -C $cache fetch --depth 1 origin $Ref 2>&1 | Out-Host
+    $fetchCode = $LASTEXITCODE
+    $ErrorActionPreference = $prevEa
+    if ($fetchCode -ne 0) { throw "git fetch failed ($fetchCode)" }
+    $ErrorActionPreference = 'Continue'
+    git -C $cache checkout -B sync FETCH_HEAD 2>&1 | Out-Host
+    $coCode = $LASTEXITCODE
+    if ($coCode -ne 0) {
+        git -C $cache reset --hard "origin/$Ref" 2>&1 | Out-Host
+        $coCode = $LASTEXITCODE
     }
+    $ErrorActionPreference = $prevEa
+    if ($coCode -ne 0) { throw "git checkout/reset failed ($coCode)" }
 } else {
     if (Test-Path $cache) { Remove-Item -Path $cache -Recurse -Force }
-    git clone --depth 1 --branch $Ref $TemplateUrl $cache
-    if ($LASTEXITCODE -ne 0) {
-        # branch might be default only
-        git clone --depth 1 $TemplateUrl $cache
-        if ($LASTEXITCODE -ne 0) { throw "git clone failed" }
-        git -C $cache fetch --depth 1 origin $Ref
-        git -C $cache checkout -B sync FETCH_HEAD
+    $prevEa = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    git clone --depth 1 --branch $Ref $TemplateUrl $cache 2>&1 | Out-Host
+    $cloneCode = $LASTEXITCODE
+    if ($cloneCode -ne 0) {
+        git clone --depth 1 $TemplateUrl $cache 2>&1 | Out-Host
+        $cloneCode = $LASTEXITCODE
+        if ($cloneCode -eq 0) {
+            git -C $cache fetch --depth 1 origin $Ref 2>&1 | Out-Host
+            git -C $cache checkout -B sync FETCH_HEAD 2>&1 | Out-Host
+            $cloneCode = $LASTEXITCODE
+        }
     }
+    $ErrorActionPreference = $prevEa
+    if ($cloneCode -ne 0) { throw "git clone failed ($cloneCode)" }
 }
 
 $platformExclude = @(
