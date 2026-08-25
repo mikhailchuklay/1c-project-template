@@ -1,0 +1,51 @@
+---
+description: "1C configuration storage (хранилище) — hard gate when CONFIG_STORAGE_ENABLED=true: lock objects, commit with comment/label, never unbind. Load for storage-bound config edits or explicit lock/commit requests."
+alwaysApply: false
+---
+
+# Configuration Storage (хранилище разработки)
+
+Load when `.dev.env` has `CONFIG_STORAGE_ENABLED=true` and the task changes configuration objects destined for the IB / `src/cf`, **or** the user asks to lock / commit / label / unlock storage objects. Playbook: `.cursor/skills/1c-configuration-storage/SKILL.md`.
+
+## Project init — must ask
+
+When creating or first filling `.dev.env` / following `TEMPLATE.md`, **ask once**: does this project use 1C configuration storage? Yes → `CONFIG_STORAGE_ENABLED=true` + URL, user, password (password may be empty). No → `ENABLED=false` or leave empty. Do not skip this question during project setup. Outside init, if `ENABLED` is unset and a storage-bound edit is in scope — ask the same question once.
+
+## Parameters (`.dev.env` SSOT)
+
+| Parameter | Class | Empty |
+|---|---|---|
+| `CONFIG_STORAGE_ENABLED` | Highly desirable (storage ops) | = regimen off |
+| `CONFIG_STORAGE_URL` | Highly desirable when enabled | Ask once if gate in scope |
+| `CONFIG_STORAGE_USER` | Highly desirable when enabled | Ask once if gate in scope |
+| `CONFIG_STORAGE_PASSWORD` | Defaulted | Omit `/ConfigurationRepositoryP` |
+
+Do not read storage credentials from `memory.md` or invent them.
+
+## Hard gate (scope C)
+
+**Before** editing metadata XML / configuration BSL that will be loaded into the IB or placed into storage:
+
+1. Refresh from storage when a current baseline is needed.
+2. Lock **only** the objects to change.
+3. Edit only after successful lock.
+4. Commit with comment + set label.
+5. Unlock by default (keep locks only if the task explicitly says so).
+
+**Exceptions (no gate):** docs / rules / skills / OpenSpec without BSL or metadata XML; pure review/analysis; git-only edits not loaded into the IB and not committed to storage.
+
+## Bans
+
+- Never unbind the IB (`/ConfigurationRepositoryUnbindCfg` or equivalents).
+- No speculative extra locks.
+- No commit without comment and label.
+- Do not use `vrunner lockrepo` as the primary lock path.
+
+## Comment and label
+
+- **Comment:** short summary of what changed + links to Jira and/or Omnidesk (both if both exist).
+- **Label:** Jira issue key if present (e.g. `EPRIBOR-1234`); otherwise Omnidesk ticket id.
+
+## Unlock
+
+After successful commit — unlock. Skip unlock only when the task explicitly requests keeping objects locked.

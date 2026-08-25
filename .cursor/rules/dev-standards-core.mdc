@@ -41,7 +41,7 @@ Both these parameters and the practices they govern — adding a project prefix 
 
 ### Infobase / deployment parameters
 
-Used by `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test` and the `1c-tester` subagent. **Not consulted at all for pure code, review, analysis, or documentation tasks** — pure code work proceeds even when this entire block is empty.
+Used by `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test`, the `1c-tester` subagent, and configuration-storage ops when enabled. **Not consulted at all for pure code, review, analysis, or documentation tasks** — pure code work proceeds even when this entire block is empty.
 
 | Parameter | Effect | Class | Behavior when empty |
 |---|---|---|---|
@@ -54,6 +54,10 @@ Used by `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test
 | `{LOG_PATH}` | Designer log file (must be writable) | Defaulted | Empty = `$env:TEMP\1cv8.log` (Windows) / `$TMPDIR/1cv8.log` (POSIX). The directory always exists; any writable path works equally well — **never ask up front**. Re-ask only if the resolved path turns out to be non-writable at runtime. |
 | `{INFOBASE_PUBLISH_URL}` | Web-publish URL of the test infobase for `1c-tester` UI tests | **Highly desirable** — критично для UI-тестирования | Empty = UI tests are silently skipped, the rest of `/deploy-and-test` still runs; only ask if the user explicitly requested UI tests |
 | `{IBCMD_CONFIG}` | Path to standalone-server `config.yml` for `ibcmd`-based ops | Defaulted | Empty = fallback to Designer (per `.dev.env.example`) |
+| `{CONFIG_STORAGE_ENABLED}` | `true` enables configuration-storage gate/skill | Highly desirable for storage-bound ops; **ask at project init** (see `TEMPLATE.md` / `AGENTS.md`) | Empty = regimen off |
+| `{CONFIG_STORAGE_URL}` | Storage URL (`http://…` / tcp / path) | Highly desirable when enabled | Ask at init if yes; else when gate in scope |
+| `{CONFIG_STORAGE_USER}` | Storage user | Highly desirable when enabled | Ask at init if yes; else when gate in scope |
+| `{CONFIG_STORAGE_PASSWORD}` | Storage password | Defaulted | Empty = omit `/ConfigurationRepositoryP` |
 
 ### Subagent model parameters
 

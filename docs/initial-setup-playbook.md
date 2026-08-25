@@ -186,6 +186,8 @@ IB_PASSWORD=ваш_пароль
 INFOBASE_PUBLISH_URL=http://{PROD_HOST}/{PROJECT_SLUG}/
 ```
 
+**Хранилище конфигурации (обязательный вопрос при init):** спросите один раз, ведётся ли проект через хранилище 1С. Да → `CONFIG_STORAGE_ENABLED=true` + `CONFIG_STORAGE_URL` / `USER` / `PASSWORD`. Нет → `CONFIG_STORAGE_ENABLED=false` или пусто. Подробно: `TEMPLATE.md` §2, `AGENTS.md`, `.cursor/rules/configuration-storage.mdc`.
+
 ## 5. Зависимости проекта (vanessa-runner)
 
 После того как `oscript` и `opm` доступны в PATH:
