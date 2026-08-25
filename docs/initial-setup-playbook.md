@@ -209,14 +209,14 @@ opm install -l
 
 Каталог `oscript_modules/` не коммитится — каждый разработчик ставит зависимости локально.
 
-## 6. Правила и навыки разработки 1С (1c-rules)
+## 6. Правила и навыки разработки 1С
 
-Регламент: репозиторий [comol/ai_rules_1c](https://github.com/comol/ai_rules_1c), документ **`AGENT-INSTALL.md`**.  
-В проекте после установки: `AGENTS.md`, `.ai-rules.json`, `.cursor/rules/`, `.cursor/agents/`, `.cursor/commands/`, `.cursor/skills/`, шаблоны `USER-RULES.md` и `memory.md`.
+Проекты из [1c-project-template](https://github.com/mikhailchuklay/1c-project-template) уже содержат `AGENTS.md`, `.cursor/rules/`, agents, commands, skills.  
+Базовый апстрим `comol/ai_rules_1c` нужен **мейнтейнерам шаблона** (обновление самого template), не каждому проектному `/updaterules`.
 
-### 6.1. Первая установка
+### 6.1. Первая установка (только если проект без правил)
 
-Если `.ai-rules.json` **отсутствует** — полная установка:
+Если клонировали шаблон — этот шаг **пропустите**. Если репозиторий пустой и нет `.cursor/rules`:
 
 ```powershell
 cd {PROJECT_ROOT}
@@ -229,25 +229,22 @@ if (-not (Test-Path (Join-Path $src 'install.ps1'))) {
 
 Установщик создаёт `.dev.env` (если нет), рендерит `.cursor/mcp.json`, копирует правила и навыки, генерирует `openspec/project.md` при наличии `Configuration.xml`.
 
-### 6.2. Обновление (проект уже с правилами)
+### 6.2. Обновление правил (проект из шаблона) — основной путь
 
-Если `.ai-rules.json` **уже есть** — обновление без перезаписи пользовательских правок:
+Слэш-команда **`/updaterules`** или скрипт:
 
 ```powershell
-$src = Join-Path $env:TEMP '1c-rules'
-if (Test-Path (Join-Path $src '.git')) {
-    git -C $src fetch --depth 1 origin HEAD
-    git -C $src reset --hard FETCH_HEAD
-} else {
-    git clone --depth 1 https://github.com/comol/ai_rules_1c.git $src
-}
 cd {PROJECT_ROOT}
-& "$src\install.ps1" update -Source $src -AssumeYes
+# При необходимости задайте в .dev.env:
+# RULES_TEMPLATE_URL=https://github.com/mikhailchuklay/1c-project-template.git
+# RULES_TEMPLATE_REF=master
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template.ps1
 ```
 
-Альтернатива в Cursor: слэш-команда **`/updaterules`**.
+Скрипт клонирует/обновляет кэш шаблона и копирует `.cursor/rules`, skills (кроме Platform Tools), agents, commands, `AGENTS.md`, `.dev.env.example`.  
+**Не трогает:** `.dev.env`, `memory.md`, `USER-RULES.md`, `.cursor/mcp.json`, `src/`, `openspec/specs|changes`.
 
-Файлы с локальными правками помечаются `userModified` в `.ai-rules.json` и не перезаписываются. Чтобы взять версию из дистрибутива: `update -Force` или `update -ForcePaths <путь>`.
+После обновления: сравните diff `AGENTS.md`; новые ключи из `.dev.env.example` (например `CONFIG_STORAGE_*`) перенесите в `.dev.env`.
 
 ### 6.3. Что ставится
 
