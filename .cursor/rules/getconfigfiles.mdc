@@ -20,6 +20,8 @@ alwaysApply: false
 
 Only `INFOBASE_PATH` and `PLATFORM_PATH` are blocking — if either is empty, **ask the user** (do not guess) and write the value to `.dev.env`. For `IB_USER` / `IB_PASSWORD` / `LOG_PATH` apply the documented defaults from the table silently. When substituting templates: if `LOG_PATH` is empty, replace `{LOG_PATH}` with `"$env:TEMP\1cv8.log"`.
 
+If `CONFIG_STORAGE_ENABLED=true` in `.dev.env`, also follow `.cursor/rules/configuration-storage.mdc` when the export is part of a change that will later be locked/committed back to storage (export alone does not require a lock).
+
 ## Steps
 
 **Step 1.** Compose the list of objects to export in `repoobjects.txt` (one full metadata-object name per line, e.g. `Справочник.Контрагенты`). Build the list via `metadatasearch` or `search_metadata` (see `content/skills/mcp-1c-tools/SKILL.md`).

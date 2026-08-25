@@ -23,11 +23,25 @@ Select-String -Path . -Pattern '\{PROJECT_SLUG\}|\{PROJECT_NAME\}|\{INFOBASE_PUB
 Copy-Item .dev.env.example .dev.env
 # Заполните: PLATFORM_VERSION, PLATFORM_PATH, INFOBASE_PATH, PREFIX, COMPANY, DEVELOPER
 # Для DEV standalone: STANDALONE_PORT, STANDALONE_HTTP_BASE, INFOBASE_PUBLISH_URL
+# Хранилище конфигурации — см. блок ниже (агент обязан спросить явно)
 Copy-Item env.json.example env.json
 # Заполните --ibconnection и --v8version
 Copy-Item tools\vrunner.init.json.example tools\vrunner.init.json
 # При необходимости — серверная ИБ
 ```
+
+### Хранилище конфигурации (обязательный вопрос)
+
+Агент (и человек при ручном заполнении) **обязан один раз спросить**:
+
+> Проект ведётся через хранилище конфигурации 1С (хранилище разработки)?
+
+| Ответ | Действие в `.dev.env` |
+|-------|------------------------|
+| **Да** | `CONFIG_STORAGE_ENABLED=true`, заполнить `CONFIG_STORAGE_URL`, `CONFIG_STORAGE_USER`, `CONFIG_STORAGE_PASSWORD` (пароль может быть пустым) |
+| **Нет** | `CONFIG_STORAGE_ENABLED=false` (или оставить пустым = выкл.) |
+
+Регламент при `true`: `.cursor/rules/configuration-storage.mdc`, skill `1c-configuration-storage`. Не хранить URL/логин/пароль хранилища в `memory.md`.
 
 `memory.md` и `USER-RULES.md` уже пустые шаблоны — дополняйте по мере работы.
 
@@ -109,6 +123,7 @@ git commit -m "Initial project from 1c-project-template"
 ## Проверка готовности
 
 - [ ] Нет секретов в git (`grep` по паролям, IP prod-сервера)
+- [ ] Задан ответ по хранилищу: `CONFIG_STORAGE_ENABLED` = `true` (с URL/USER) или `false`/пусто
 - [ ] `src/cf` содержит выгрузку или пуст с README
 - [ ] MCP tools видны в Cursor после Reload Window
 - [ ] `openspec/changes/` — только `README.md`
