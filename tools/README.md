@@ -15,6 +15,8 @@
 | `mcp-platform-tools-launcher.sh` | MCP Platform Tools на Linux (Cursor Remote) |
 | `fix-1c-platform-tools-vrunner-cmd.ps1` | Workaround quoting vrunner на Windows |
 | `init-project-structure.ps1` | Каталоги vanessa-bootstrap (`project-structure.json`) |
+| `update-from-template.ps1` | Синхронизация rules/skills/agents/commands из git-шаблона (`/updaterules`) |
+| `export-project-template.ps1` | Сборка/экспорт чистого шаблона из проектного репозитория (для мейнтейнеров) |
 | `lists/` | Опциональные проектные списки partial-load |
 
 * `*.json` — настройки vanessa-runner / автотестов  

@@ -101,10 +101,11 @@ bash tools/dev-standalone/start.sh
 
 Функциональные проверки через MCP data — см. `.cursor/rules/1commerce-functional-testing.mdc` и `tools/dev-standalone/Invoke-DataMcp.ps1`.
 
-## 7. OpenSpec и 1c-rules
+## 7. OpenSpec и правила агента
 
 - OpenSpec: `openspec/specs/`, `openspec/changes/` — пустой skeleton готов.
-- Обновление правил: `/updaterules` или `install.ps1 update` из [1c-rules](https://github.com/comol/ai_rules_1c).
+- **Обновление правил из шаблона:** `/updaterules` → `tools/update-from-template.ps1` (источник: [1c-project-template](https://github.com/mikhailchuklay/1c-project-template)). Опционально в `.dev.env`: `RULES_TEMPLATE_URL`, `RULES_TEMPLATE_REF`.
+- Первичная установка «голого» `comol/ai_rules_1c` через `install.ps1` — только если проект **не** из этого шаблона; для шаблонных проектов не нужна.
 
 ## 8. Git
 

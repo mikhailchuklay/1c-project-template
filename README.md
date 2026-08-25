@@ -15,7 +15,8 @@ cd my-1c-project
 
 ## Что входит
 
-- Правила, skills, agents и slash-команды **1c-rules** (`.cursor/`, `AGENTS.md`)
+- Правила, skills, agents и slash-команды (`.cursor/`, `AGENTS.md`) на базе 1c-rules + доработки шаблона
+- Обновление правил в клонах: **`/updaterules`** → `tools/update-from-template.ps1` (источник — этот репозиторий)
 - OpenSpec skeleton (`openspec/`)
 - Инструменты: структура vanessa-bootstrap, автономный DEV-сервер, MCP helper
 - **OneMCP** для `1c-data-mcp`: `vendor/mcp/OneMCP.cfe`, `vendor/mcp/ИнструментыДляРазработки.xml`

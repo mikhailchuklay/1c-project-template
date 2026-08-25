@@ -1,42 +1,79 @@
 ---
-description: "Update the 1c-rules ruleset from GitHub (https://github.com/comol/ai_rules_1c)"
+description: "Update agent rules from 1c-project-template (https://github.com/mikhailchuklay/1c-project-template)"
 ---
 
-# /updaterules — update 1c-rules
+# /updaterules — sync rules from project template
 
-Source: `https://github.com/comol/ai_rules_1c`.
+**Source of truth for this command:** [mikhailchuklay/1c-project-template](https://github.com/mikhailchuklay/1c-project-template) (`master` by default).
 
-Action: update managed files in the current installation to the latest repository version (on-demand rules, subagent descriptions, slash commands, SKILL packages, MCP config, OpenSpec bundle, rendered `AGENTS.md`). Preserve:
+Projects created from this template should **not** run `comol/ai_rules_1c` `install.ps1 update` as the primary path — that installer expects the `content/` layout of `ai_rules_1c` and will miss template overlays (e.g. `configuration-storage`, 1commerce rules, `CONFIG_STORAGE_*`).
 
-- `USER-RULES.md` and `memory.md` — one-time templates, never overwritten;
-- contents of `openspec/specs/` and `openspec/changes/` — copied in skip-if-exists mode;
-- any managed file marked `userModified: true` in `.ai-rules.json`.
+## What is synced
+
+From the template clone into the **current project**:
+
+- `.cursor/rules/**`
+- `.cursor/skills/**` except `1c-platform-tools*` (those come from the IDE extension)
+- `.cursor/agents/**`
+- `.cursor/commands/**`
+- `AGENTS.md`
+- `.dev.env.example`
+
+Stamp file written: `.rules-template-sync.json` (commit / URL / time).
+
+## What is preserved
+
+- `.dev.env`, `memory.md`, `USER-RULES.md`
+- `.cursor/mcp.json`
+- `src/`, `build/`, `openspec/specs/`, `openspec/changes/` (except READMEs if you copy docs manually)
 
 ## Steps
 
-1. Make sure `.ai-rules.json` exists at the project root. If it is missing, this is a first install: run `init` by `AGENT-INSTALL.md`, not `/updaterules`.
+1. Confirm the project root contains `.cursor/rules` (template-based project). If the project was installed only via `ai_rules_1c` `install.ps1 init` and never used this template, ask before overwriting.
 
-2. Run the PowerShell channel from the project root. `install.ps1` expects a local path in `-Source`, so first clone or update the source into a cache under `$env:TEMP`:
+2. Optional overrides in `.dev.env` (create keys if missing):
 
-```powershell
-$src = Join-Path $env:TEMP '1c-rules'
-if (Test-Path (Join-Path $src '.git')) {
-    git -C $src fetch --depth 1 origin HEAD
-    git -C $src reset --hard FETCH_HEAD
-} else {
-    git clone --depth 1 https://github.com/comol/ai_rules_1c.git $src
-}
-& "$src\install.ps1" update -Source $src -AssumeYes
+```env
+RULES_TEMPLATE_URL=https://github.com/mikhailchuklay/1c-project-template.git
+RULES_TEMPLATE_REF=master
 ```
 
-3. Check installer output:
-   - `Update complete.` — success;
-   - `User-modified files detected: N` — files with local edits; they are marked `userModified` and preserved;
-   - `Verification OK` / `Verification found N mismatch(es)` — state of freshly placed files.
+3. From the project root run:
 
-4. If PowerShell is unavailable (restricted environment, no `git`/`pwsh`), execute *Update / add / remove* from `AGENT-INSTALL.md` through the agent channel: re-place managed files from the updated clone, re-render `AGENTS.md`, and update `version` and `updatedAt` in `.ai-rules.json`. Do not touch `USER-RULES.md` or `memory.md`.
+```powershell
+# Prefer the script already in the project; if missing, fetch once from template:
+if (-not (Test-Path .\tools\update-from-template.ps1)) {
+    $tmp = Join-Path $env:TEMP '1c-project-template-bootstrap'
+    if (-not (Test-Path (Join-Path $tmp '.git'))) {
+        git clone --depth 1 https://github.com/mikhailchuklay/1c-project-template.git $tmp
+    } else {
+        git -C $tmp pull --ff-only
+    }
+    New-Item -ItemType Directory -Force -Path .\tools | Out-Null
+    Copy-Item "$tmp\tools\update-from-template.ps1" .\tools\update-from-template.ps1 -Force
+}
 
-## Parameters
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template.ps1
+```
 
-- `-AssumeYes` — answers "yes" to confirmations and keeps user edits (`keep`) on conflicting files. For a fully automated run (CI), add `-NonInteractive`.
-- `-Tools cursor,claude-code` — not needed: active tools are read from `.ai-rules.json`.
+Dry-run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template.ps1 -DryRun
+```
+
+Skip overwriting `AGENTS.md` / `.dev.env.example`:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template.ps1 -SkipAgentsMd -SkipDevEnvExample
+```
+
+4. After sync:
+
+- Diff `AGENTS.md` if the project had local edits — merge back anything project-specific into `USER-RULES.md` or contribute to the template.
+- If `.dev.env.example` gained new keys (e.g. `CONFIG_STORAGE_*`), copy them into `.dev.env`. For storage: ask once whether the project uses configuration storage (`TEMPLATE.md` §2).
+- Reload the Cursor window if slash commands look stale.
+
+## Not in scope
+
+Refreshing the template itself from `comol/ai_rules_1c` — that is a **template maintainer** task (`install.ps1` / export into the template repo), not a per-project `/updaterules`.
