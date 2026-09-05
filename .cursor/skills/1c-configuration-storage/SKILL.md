@@ -30,12 +30,13 @@ Build a temporary `-objects` XML listing **only** objects to lock/commit. Do not
 
 1. Optional: `/ConfigurationRepositoryUpdateCfg` when refresh is required.
 2. `/ConfigurationRepositoryLock -objects <xml>`
-3. Edit sources under `src/cf` (or agreed path).
-4. If loading into IB: `ibcmd infobase config import files` (+ `apply`) using `INFOBASE_PATH` / `IB_USER`.
-5. `/ConfigurationRepositoryCommit -objects <xml> -comment <text>`
-6. `/ConfigurationRepositorySetLabel -name <label> [-comment <text>]`
-7. `/ConfigurationRepositoryUnlock -objects <xml>` unless the task says keep locks.
-8. Record storage version in the change report / OpenSpec `tasks.md` when relevant.
+3. **Gate.** Lock must succeed for every object in the XML (`DumpResult=0`, log has no “захвачен … другим пользователем”). If not — **blocker**: name each object and the holding user, stop. Do **not** run step 5. Resume from this step after they unlock. Rule: `.cursor/rules/configuration-storage.mdc` → *Lock failure is a blocker*.
+4. Edit sources under `src/cf` (or agreed path).
+5. If loading into IB: `ibcmd infobase config import files` (+ `apply`) using `INFOBASE_PATH` / `IB_USER`. A storage-bound **file** IB still requires step 3 to have passed.
+6. `/ConfigurationRepositoryCommit -objects <xml> -comment <text>`
+7. `/ConfigurationRepositorySetLabel -name <label> [-comment <text>]`
+8. `/ConfigurationRepositoryUnlock -objects <xml>` unless the task says keep locks.
+9. Record storage version in the change report / OpenSpec `tasks.md` when relevant.
 
 ## Designer flags
 
@@ -61,6 +62,7 @@ Omit `/ConfigurationRepositoryP` and `/P` when passwords are empty. Use `/S` ins
 - `vrunner lockrepo` as primary lock — it runs UpdateCfg `-force` first and may fail with empty output; use Designer `/ConfigurationRepositoryLock`.
 - Committing without label.
 - Leaving objects locked after a successful commit without an explicit “keep lock” request.
+- Import / apply / `/LoadConfigFromFiles` into a storage-bound IB **before** a successful lock (including “file IB does not need a lock”, “try import anyway”, loading only the free objects).
 
 ## Reference scripts
 

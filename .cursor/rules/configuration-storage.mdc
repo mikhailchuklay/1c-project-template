@@ -1,5 +1,5 @@
 ---
-description: "1C configuration storage (хранилище) — hard gate when CONFIG_STORAGE_ENABLED=true: lock objects, commit with comment/label, never unbind. Load for storage-bound config edits or explicit lock/commit requests."
+description: "1C configuration storage (хранилище) — hard gate when CONFIG_STORAGE_ENABLED=true: lock first; failed lock is a blocker (no IB import); commit with comment/label; never unbind. Load for storage-bound config edits or explicit lock/commit requests."
 alwaysApply: false
 ---
 
@@ -27,12 +27,23 @@ Do not read storage credentials from `memory.md` or invent them.
 **Before** editing metadata XML / configuration BSL that will be loaded into the IB or placed into storage:
 
 1. Refresh from storage when a current baseline is needed.
-2. Lock **only** the objects to change.
+2. Lock **only** the objects to change. The lock must succeed for **every** object this task will load or commit. Failure = blocker (see below) — do not continue.
 3. Edit only after successful lock.
-4. Commit with comment + set label.
-5. Unlock by default (keep locks only if the task explicitly says so).
+4. Only then load into the IB (`ibcmd infobase config import` + `apply`, or Designer `/LoadConfigFromFiles` + `/UpdateDBCfg`).
+5. Commit with comment + set label.
+6. Unlock by default (keep locks only if the task explicitly says so).
 
 **Exceptions (no gate):** docs / rules / skills / OpenSpec without BSL or metadata XML; pure review/analysis; git-only edits not loaded into the IB and not committed to storage.
+
+## Lock failure is a blocker
+
+If `/ConfigurationRepositoryLock` does not succeed for the full object set — **stop**. Typical Designer text: `Объект захвачен для редактирования другим пользователем`.
+
+Do **not** import, apply, `/LoadConfigFromFiles`, or `/UpdateDBCfg` those objects. Do not load a subset that happened to be free. Do not retry import “to save time”, “because it is a file IB”, or “encoding first”.
+
+`INFOBASE_KIND=file` does not waive the lock when the IB is bound to storage (`CONFIG_STORAGE_ENABLED=true`). Do not unbind. Do not switch to another infobase to bypass the gate unless the user explicitly names that base and accepts that storage will not receive the change.
+
+Report each object (1C full name, e.g. `ОбщийМодуль.к_ОбменЗаказамиССайтом`) and the holding user. Wait until they unlock, then resume from **lock**, not from import.
 
 ## Bans
 
@@ -40,6 +51,7 @@ Do not read storage credentials from `memory.md` or invent them.
 - No speculative extra locks.
 - No commit without comment and label.
 - Do not use `vrunner lockrepo` as the primary lock path.
+- No IB load of changed objects before a successful lock of those same objects.
 
 ## Comment and label
 
