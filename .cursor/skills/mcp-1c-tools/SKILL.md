@@ -1,6 +1,6 @@
 ---
 name: mcp-1c-tools
-description: "Catalog of MCP servers for 1C development — search, code navigation, metadata, code review, docs, ITS, templates. Use whenever a 1C task requires calling tools from any 1c-*-mcp / 1C-*-mcp server. Each server has its own detail file under `docs/` — load it when you are about to call tools from that server, and only if the server is actually available in the current session."
+description: "Catalog of MCP servers for 1C development — search, code navigation, metadata, code review, docs, ITS, templates, local RLM. Use whenever a 1C task requires calling tools from any 1c-*-mcp / 1C-*-mcp / rlm-tools-bsl server. Each server has its own detail file under `docs/` — load it when you are about to call tools from that server, and only if the server is actually available in the current session."
 ---
 
 # MCP tools for 1C — dispatcher
@@ -26,7 +26,7 @@ If `docs/<server>.md` conflicts with the descriptor exposed by the current envir
 ## When to use this skill
 
 - Before writing code / a query / metadata XML — pick the MCP tool that best fits the task (template search, metadata check, syntax validation, code review).
-- For impact analysis and code navigation — decide which server to use first (`graph` → `code-metadata` → `Grep` — see *Fallback chain* below).
+- For impact analysis and code navigation — decide which server to use first (`graph` → `code-metadata` → `Grep`, or `rlm-tools-bsl` if both graph and code-metadata are unavailable — see *Fallback chain* below).
 - For ITS standards (`its_help` → `fetch_its`), v8std diagnostic/standard navigation (`v8std_explain_diagnostics`, `v8std_explain_snippet`, `v8std_search` → `v8std_get_page`), and platform documentation (`docinfo` / `docsearch`).
 - For code templates and project memory (`templatesearch`, `remember`, `recall`).
 
@@ -38,6 +38,7 @@ If `docs/<server>.md` conflicts with the descriptor exposed by the current envir
 |---|---|---|
 | **1c-graph-metadata-mcp** | Graph metadata (Neo4j / Cypher): structural object passport, impact analysis, call graph, usage search, business semantic search | [`docs/1c-graph-metadata-mcp.md`](docs/1c-graph-metadata-mcp.md) |
 | **1c-code-metadata-mcp** | Metadata and BSL code search, navigation (modules, procedures, functions, call hierarchy), forms, XSD schemas, validation | [`docs/1c-code-metadata-mcp.md`](docs/1c-code-metadata-mcp.md) |
+| **rlm-tools-bsl** | Local dump search (Python sandbox + optional SQLite BSL index). **Availability substitute only** — use when **both** graph and code-metadata are not exposed | [`docs/rlm-tools-bsl.md`](docs/rlm-tools-bsl.md) |
 | **1c-templates-mcp** | Code template library + project vector memory (`remember` / `recall`) | [`docs/1c-templates-mcp.md`](docs/1c-templates-mcp.md) |
 | **1c-ssl-mcp** | Standard Subsystems Library (БСП / SSL) search | [`docs/1c-ssl-mcp.md`](docs/1c-ssl-mcp.md) |
 | **1C-docs-mcp** | 1C platform documentation (search by description / by exact name) | [`docs/1C-docs-mcp.md`](docs/1C-docs-mcp.md) |
@@ -54,10 +55,11 @@ Use only the applicable branch; stop as soon as the collected evidence is suffic
 
 `Grep` / `rg` substitute only the project-indexing layer. Before falling back to them for 1C project-source search, exhaust:
 
-1. `1c-graph-metadata-mcp` — `search_code`, `search_metadata`, `search_metadata_by_description`, `get_object_dossier`, `trace_impact`, `trace_call_chain` as appropriate.
-2. `1c-code-metadata-mcp` — default indexed search / navigation (`codesearch`, `metadatasearch`, `search_function`, `search_forms`, `get_module_structure`, etc.).
-3. `1c-code-metadata-mcp` with `grep=true` — substring retry inside the MCP index **only after** indexed / semantic / exact search did not find enough and only for tools that expose the parameter: `codesearch`, `metadatasearch`, `search_function`, `helpsearch`, `search_forms`. Typical scenarios: exact identifier, fragment of a query, metadata path, event handler name, error text, or literal string where semantic search is likely to miss.
-4. Only then `Grep` / `rg` — with a mandatory short note in the response listing which project-index MCP attempts were tried and why they did not return what was needed.
+1. `1c-graph-metadata-mcp` — `search_code`, `search_metadata`, `search_metadata_by_description`, `get_object_dossier`, `trace_impact`, `trace_call_chain` as appropriate. Skip this step if the server is not exposed.
+2. `1c-code-metadata-mcp` — default indexed search / navigation (`codesearch`, `metadatasearch`, `search_function`, `search_forms`, `get_module_structure`, etc.). Skip this step if the server is not exposed.
+3. `1c-code-metadata-mcp` with `grep=true` — substring retry inside the MCP index **only after** indexed / semantic / exact search did not find enough and only for tools that expose the parameter: `codesearch`, `metadatasearch`, `search_function`, `helpsearch`, `search_forms`. Typical scenarios: exact identifier, fragment of a query, metadata path, event handler name, error text, or literal string where semantic search is likely to miss. Skip if step 2 was skipped.
+4. **Availability substitute — `rlm-tools-bsl`.** Run this step **only** when steps 1–3 could not run because **neither** graph **nor** code-metadata is exposed in the current session, **and** `rlm-tools-bsl` **is** exposed (`rlm_start` in the tool schema). Then `rlm_projects(action="list")` if the project name is unknown → `rlm_start(project=...)` → `rlm_execute` (helpers from the start response; never `grep` on dump root) → `rlm_end`. Empty results from an **available** graph or code-metadata server do **not** trigger RLM. Details — [`docs/rlm-tools-bsl.md`](docs/rlm-tools-bsl.md).
+5. Only then `Grep` / `rg` — with a mandatory short note in the response listing which project-index MCP attempts were tried (including RLM if step 4 applied, or why it was skipped) and why they did not return what was needed.
 
 ### External knowledge
 

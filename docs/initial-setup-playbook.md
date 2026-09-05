@@ -279,7 +279,7 @@ Test-Path AGENTS.md, .ai-rules.json, USER-RULES.md, memory.md
 | Сервер | Назначение |
 |--------|------------|
 | `mcp-1c-platform-tools` | Команды Platform Tools через IPC |
-| `rlm-tools-bsl` | Локальный поиск по BSL (`127.0.0.1:9000`) |
+| `rlm-tools-bsl` | Локальный поиск по BSL (`127.0.0.1:9000`). Запасной канал, если graph и code-metadata недоступны |
 | `1c-syntax-checker-mcp` | Проверка синтаксиса BSL |
 | `1C-docs-mcp` | Справка платформы |
 | `1c-templates-mcp` | Шаблоны кода |

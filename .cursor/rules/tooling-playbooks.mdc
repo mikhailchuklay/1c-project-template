@@ -5,7 +5,7 @@ alwaysApply: false
 
 # Tool Usage by Task — Playbooks
 
-The MCP server catalog, fallback order (`graph → code-metadata → grep=true retry → Grep` for project-source search), and per-server tool descriptors live in the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`, `docs/<server>.md`). `AGENTS.md` only defines the short obligation rules and points here.
+The MCP server catalog, fallback order (`graph → code-metadata → grep=true retry → Grep` for project-source search; if both graph and code-metadata are unavailable → `rlm-tools-bsl` when exposed), and per-server tool descriptors live in the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`, `docs/<server>.md`). `AGENTS.md` only defines the short obligation rules and points here.
 
 ## Minimum Evidence Matrix
 
