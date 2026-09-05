@@ -15,7 +15,7 @@
         "rlm-tools-bsl": {
             "type": "http",
             "url": "http://127.0.0.1:9000/mcp",
-            "description": "RLM tools for BSL — опционально; включите при локальной индексации"
+            "description": "RLM tools for BSL — локальный поиск по dump; запасной канал, если graph и code-metadata недоступны"
         },
         "1c-code-metadata-mcp": {
             "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}/mcp",
