@@ -2,7 +2,7 @@
 
 Execution of BSL code, queries and event-log inspection **inside the project's live infobase** via the HTTP service `hs/mcp` published on that infobase (tools from [comol/mcp_designer_tools](https://github.com/comol/mcp_designer_tools), loaded into the *Конструктор MCP серверов для 1С* on the IB side).
 
-> Load this file only if the `1c-data-mcp` server is actually available in the current session (its tools are visible in the agent tool schema). Mere presence in `mcp-servers.json` or in `.cursor/mcp.json` does not count as availability — the HTTP endpoint `{INFOBASE_PUBLISH_URL}/hs/mcp` must respond and must be reachable **without** authentication. Setup and troubleshooting — `content/commands/checkmcp.md` (section about `1c-data-mcp`).
+> Two ways this server is reachable. (1) Native tools in the session schema — only when `{INFOBASE_PUBLISH_URL}/hs/mcp` answers **without** authentication. (2) Project standalone server `ibsrv`: Cursor does not send `Authorization`, an anonymous call returns **503**, and the same call with HTTP Basic (`IB_USER` / `IB_PASSWORD` from `.dev.env`; empty password is valid, the header is still `user:`) returns **200**. Native tools then stay hidden. That is expected. Call `tools/dev-standalone/Invoke-DataMcp.ps1` (start/stop the server with `start.ps1` / `stop.ps1` in the same folder). Do **not** call `mcp_auth` and do **not** use the COM connector. Methodology — `.cursor/rules/1commerce-functional-testing.mdc`. Probe — `.cursor/commands/checkmcp.md`.
 
 ## Tool catalog
 
@@ -45,4 +45,14 @@ The implementation runs `Выполнить(bslcode)` inside a procedure where t
 
 ## Availability check
 
-If the server is offline (web publication down, `mcp` HTTP service not published, or publication requires Basic auth and the MCP client gets `401`/`403`), the tools simply do not appear in the agent's tool schema. Do **not** synthesize their behaviour from memory and do **not** invent fake "execution" output — fall back to the verification path that does not need the live IB (static MCP analyzers + reading code in the dump + asking the user to run the snippet in the Configurator). Setup / fix steps — `content/commands/checkmcp.md`.
+If the native tools are absent, do **not** synthesize their behaviour and do **not** invent execution output.
+
+Distinguish the cause before falling back to static-only verification:
+
+- **Anonymous 503, Basic 200** — the standalone publication is up and the HTTP service is published. Use `tools/dev-standalone/Invoke-DataMcp.ps1`. Do not treat this as a down server, do not call `mcp_auth`, do not switch to COM, and do not rewrite `default.vrd` to force anonymous access.
+- **Basic also 503**, while the publication root returns 200 — `http-services` for `APA_MCP` / root `mcp` is missing from the standalone `config.yml`. Fix that list and restart via `stop.ps1` then `start.ps1`. See `.cursor/rules/1commerce-functional-testing.mdc`.
+- **Connection refused / publication root down** — `ibsrv` is not running. Start it with `tools/dev-standalone/start.ps1`. Do not `Stop-Process` it by hand: `stop.ps1` also removes `lock.pid` and the registry lock, without which the next start fails or is skipped.
+- **401** — the Basic header was built wrong (PowerShell's default encoding breaks a Cyrillic `IB_USER`) or the password does not match. An empty `IB_PASSWORD` is a real empty password, not "auth not configured".
+- **404** — the `mcp` HTTP service is not published.
+
+Only when the publication cannot be brought up (no platform, no infobase, credentials the user must supply) fall back to static MCP analyzers, the configuration dump, and asking the user to run the snippet in the Configurator. Setup / fix steps — `.cursor/commands/checkmcp.md`.

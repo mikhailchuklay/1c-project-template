@@ -304,8 +304,9 @@ URL берётся из `INFOBASE_PUBLISH_URL` в `.dev.env`:
 http://{PROD_HOST}/{PROJECT_SLUG}/hs/mcp
 ```
 
-Эндпоинт должен быть доступен **без пароля** (анонимный доступ в `default.vrd`).
-Скрипты публикации: `deploy/mcp-publish/`.
+Для публикации на IIS эндпоинт должен быть доступен **без пароля** (анонимный доступ в `default.vrd`), иначе нативные инструменты Cursor не появятся. Скрипты публикации: `deploy/mcp-publish/`.
+
+Локальный DEV на автономном сервере (`tools/dev-standalone/`) устроен иначе: `default.vrd` нет. Анонимный `GET /hs/mcp` отвечает **503**, тот же запрос с Basic (`IB_USER` / `IB_PASSWORD` из `.dev.env`; пустой пароль допустим, логин кодируется в UTF-8) — **200**. Cursor заголовок `Authorization` не шлёт, поэтому нативные инструменты не появляются. Агент вызывает `tools/dev-standalone/Invoke-DataMcp.ps1`. Сервер поднимают и останавливают только `start.ps1` / `stop.ps1`. К файловой базе через COM и через `mcp_auth` не подключаться.
 
 ## 8. Навыки AI-агента (skills)
 
@@ -413,10 +414,10 @@ OneScript установлен, но не в PATH. См. [раздел 3.2](#32-
 
 Проверьте `env.local.json`: `--db-user` и `--db-pwd`.
 
-### MCP `1c-data-mcp` не подключается (401)
+### MCP `1c-data-mcp` не подключается
 
-Настройте анонимный доступ к HTTP-сервису `mcp` на веб-публикации ИБ.
-См. `deploy/mcp-publish/README.md`.
+- **IIS, HTTP 401.** Настройте анонимный доступ к HTTP-сервису `mcp`. См. `deploy/mcp-publish/README.md`.
+- **Автономный сервер, HTTP 503 без Authorization.** Это обычный анонимный ответ `ibsrv`, а не «сервер лежит». Повторите запрос с Basic (`IB_USER` / `IB_PASSWORD`). Если с Basic тоже 503, а корень публикации отвечает 200 — в `config.yml` не перечислен HTTP-сервис `APA_MCP` (`root: mcp`). Если соединение отклонено — сервер не запущен: `tools/dev-standalone/start.ps1`. Не останавливайте `ibsrv` через диспетчер задач: `stop.ps1` снимает `lock.pid`.
 
 ### Расширение не видит проект
 

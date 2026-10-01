@@ -170,6 +170,8 @@ Individual rule and subagent files therefore do **not** repeat the disclaimer "o
 
 The single source of truth for MCP server catalog, task→tool mapping, and fallback order is the **`mcp-1c-tools`** skill (`.cursor/skills/mcp-1c-tools/SKILL.md`). Load it before choosing 1C MCP tools; load the matching `.cursor/skills/mcp-1c-tools/docs/<server>.md` only for parameter-rich calls or when arguments are not obvious. A server counts as available only when its tools are exposed in the current session.
 
+**Exception — `1c-data-mcp` on the project standalone server (`ibsrv`).** Cursor's MCP client does not send `Authorization`. On this publication an anonymous `GET` of `/hs/mcp` returns **503** while the same call with HTTP Basic (`IB_USER` / `IB_PASSWORD` from `.dev.env`; an empty password is valid and the header is still sent; that does not change the Designer/ibcmd rule that an empty `IB_PASSWORD` omits `/N` and `/P`) returns **200**. The native tools therefore stay out of the session even when the server is up. That is not "server unavailable" and not an OAuth `needsAuth` state: do **not** call `mcp_auth`, and do **not** connect to the infobase through the COM connector. Load `.cursor/rules/1commerce-functional-testing.mdc` and call `tools/dev-standalone/Invoke-DataMcp.ps1`. Start and stop `ibsrv` only through `tools/dev-standalone/start.ps1` and `stop.ps1` — a raw `Stop-Process` leaves `lock.pid` / registry locks, and the next start then fails or is skipped.
+
 Step-by-step playbooks per task type (writing code, review, architecture, error fixing, performance, refactoring, metadata XML, forms, integrations, documentation, platform-version comparison) live in `.cursor/rules/tooling-playbooks.mdc`.
 
 ### A. Priority and obligation

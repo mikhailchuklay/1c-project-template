@@ -81,7 +81,13 @@ bash tools/dev-standalone/restart.sh   # после ibcmd config apply
 ```powershell
 Invoke-WebRequest "http://localhost:8314/{PROJECT_SLUG}-dev/" -UseBasicParsing
 # Ожидается StatusCode 200
+
+# /hs/mcp без Authorization на ibsrv отвечает 503. Это не «сервис не опубликован».
+# С Basic (IB_USER / IB_PASSWORD, пустой пароль допустим, логин в UTF-8) ожидается 200.
+.\tools\dev-standalone\Invoke-DataMcp.ps1 tools
 ```
+
+Нативные инструменты `1c-data-mcp` в Cursor при этом не появляются: клиент не передаёт `Authorization`. Не вызывайте `mcp_auth` и не открывайте файловую базу через COM. Если с Basic тоже 503, а корень публикации 200 — в `config.yml` нет `http-services` → `APA_MCP` / `root: mcp`.
 
 `IBCMD_CONFIG` в `.dev.env` указывает на `build/standalone/config.yml`.
 
