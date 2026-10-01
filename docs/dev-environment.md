@@ -83,7 +83,9 @@ Invoke-WebRequest "http://localhost:8314/{PROJECT_SLUG}-dev/" -UseBasicParsing
 # Ожидается StatusCode 200
 
 # /hs/mcp без Authorization на ibsrv отвечает 503. Это не «сервис не опубликован».
-# С Basic (IB_USER / IB_PASSWORD, пустой пароль допустим, логин в UTF-8) ожидается 200.
+# С Basic (IB_USER / IB_PASSWORD из .dev.env, логин в UTF-8) ожидается 200.
+# Пароль — пароль пользователя ИБ, не предполагайте, что он пустой.
+# IIS без анонимного доступа вызывается так же: Basic из .dev.env.
 .\tools\dev-standalone\Invoke-DataMcp.ps1 tools
 ```
 
