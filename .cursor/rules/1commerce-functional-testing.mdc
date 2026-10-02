@@ -21,7 +21,9 @@ This file owns the **methodology**: when to test, in what order, through which c
 
 ## Памятка — MCP authorization here goes through the helper script
 
-The `…/hs/mcp` endpoint requires **Basic auth**, but Cursor's MCP client only attaches to an endpoint reachable **without** authentication (`docs/1c-data-mcp.md`). Consequently the **native `1c-data-mcp` tools normally do NOT appear** in the agent session in this setup — do not wait for them and do not declare a blocker because of their absence. Reach the server through the helper script `tools/dev-standalone/Invoke-DataMcp.ps1`, which performs the UTF-8 Basic auth + MCP handshake for you (usage in *§ `1c-data-mcp` call hygiene → Helper script*). The native-tool path applies only if the endpoint is ever published without auth.
+On IIS / Apache `/hs/mcp` should be published **without** authentication (`default.vrd`): that is what makes the native `1c-data-mcp` tools appear. `ibsrv` is not anonymous, and neither is an IIS / Apache publication that was left requiring authentication. In every non-anonymous case the call is the same. Cursor's MCP client does not send `Authorization`, so the native tools do not appear — do not wait for them, do not call `mcp_auth` (this is not OAuth), and do not declare a blocker because of their absence. An anonymous `GET` returning **503** (`ibsrv`) or **401** (IIS) is the unauthenticated response of a published service, not proof that the server is down. Reach it through `tools/dev-standalone/Invoke-DataMcp.ps1` (UTF-8 Basic auth + MCP handshake; usage in *§ `1c-data-mcp` call hygiene → Helper script*).
+
+**No COM.** Live infobase access for this stack is the standalone web publication. Do not open the file infobase through the COM connector when `/hs/mcp` is the intended channel.
 
 ## Principle 0 — No premature blocker
 
@@ -71,7 +73,7 @@ Bring the channel up and **smoke-test it** before trusting any functional result
 Bring-up (standard stack):
 
 1. Deploy current sources into the DEV infobase via `/deploy-and-test` (`ibcmd` import + apply against `IBCMD_CONFIG`).
-2. Start the standalone server: `ibsrv --config={IBCMD_CONFIG}` (listens on `STANDALONE_PORT`). It holds the file-IB lock — stop it before running any `ibcmd` against the same base.
+2. Start the standalone server with `tools/dev-standalone/start.ps1` (listens on `STANDALONE_PORT`, config from `IBCMD_CONFIG`). It holds the file-IB lock — stop it with `tools/dev-standalone/stop.ps1` before any `ibcmd` against the same base. Do not `Stop-Process` `ibsrv` by hand: `stop.ps1` also removes `lock.pid` and the registry lock; a raw kill leaves them, and the next `start.ps1` then reports the server as already running or fails to bind.
 3. Endpoint = `{INFOBASE_PUBLISH_URL}` + `hs/mcp` (the `APA_MCP` HTTP service, root URL `mcp`, from the `OneMCP` extension).
 
 **Critical toolset fact — the standalone server does NOT publish HTTP services by default.** With only `http: { base: ... }` in `config.yml`, every `/hs/*` request returns **503** while the web client at the base URL still returns `200`. HTTP services must be listed explicitly; `http` becomes a **list**:
@@ -86,12 +88,12 @@ http:
           publish: true
 ```
 
-The standalone-server config carries no credentials — every HTTP request must send Basic auth (`IB_USER` / `IB_PASSWORD`).
+The standalone-server config carries no credentials — every HTTP request must send Basic auth of the infobase user (`IB_USER` / `IB_PASSWORD` from `.dev.env`, UTF-8). The password is whatever that user has in the infobase; read it from `.dev.env` and do not assume it is empty. A blank `IB_PASSWORD` means that user has an empty password: still send `Authorization: Basic` (`user:`). A blank field is not "auth is off".
 
 Smoke checklist — all must pass before you read functional output as truth:
 
 1. Server process up; base URL returns `200` (not just "no connection error").
-2. `…/hs/mcp` returns `200` to a JSON-RPC `initialize` + `tools/list` (a `503` here = HTTP service not published — fix `config.yml` as above, do not conclude "no data").
+2. `…/hs/mcp` returns `200` to a JSON-RPC `initialize` + `tools/list` **with Basic auth**. Anonymous 503 (`ibsrv`) or anonymous 401 (IIS that was not published anonymously) plus Basic 200 means the service is published and only the missing header was wrong — the call is the same in both cases. Basic 503 while the base URL is 200 means `http-services` is missing from `config.yml` (fix the list above and restart via `stop.ps1` / `start.ps1`). Do not conclude "no data" from either status.
 3. A trivial `execute_query` (`ВЫБРАТЬ 1`) returns the expected `1`.
 4. A trivial `execute_code` (assign `Результат = "OK"`) returns `OK`.
 
@@ -132,7 +134,8 @@ For `&Перед` / `&После` / `&Вместо` interceptors and «Созд�
 
 ## Anti-patterns (retrospective findings)
 
-- **Declaring a blocker before the readiness gate** — Principle 0 violation; a `503` was a `config.yml` fix, not an impossibility.
+- **Declaring a blocker before the readiness gate** — Principle 0 violation. Anonymous `503` on `/hs/mcp` is the unauthenticated response; confirm with Basic before editing `config.yml`. Basic `503` with the site root at `200` is a missing `http-services` entry, not "no data".
+- **COM or `mcp_auth` instead of the helper script** — the standalone publication is HTTP Basic of the infobase user. `mcp_auth` does not attach Cursor to it, and the COM connector is not a fallback.
 - **Reading functional output before the smoke test passes** — empty results get blamed on "no data" when the real cause is the newline-injection quirk or an unpublished HTTP service.
 - **Multi-line payloads to `execute_code` / `execute_query`** — silent false negatives.
 - **Asserting against a random record** — test data must match the scenario's precondition, found by query, not assumed.

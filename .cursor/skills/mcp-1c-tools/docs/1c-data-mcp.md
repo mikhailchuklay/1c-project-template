@@ -2,7 +2,7 @@
 
 Execution of BSL code, queries and event-log inspection **inside the project's live infobase** via the HTTP service `hs/mcp` published on that infobase (tools from [comol/mcp_designer_tools](https://github.com/comol/mcp_designer_tools), loaded into the *Конструктор MCP серверов для 1С* on the IB side).
 
-> Load this file only if the `1c-data-mcp` server is actually available in the current session (its tools are visible in the agent tool schema). Mere presence in `mcp-servers.json` or in `.cursor/mcp.json` does not count as availability — the HTTP endpoint `{INFOBASE_PUBLISH_URL}/hs/mcp` must respond and must be reachable **without** authentication. Setup and troubleshooting — `content/commands/checkmcp.md` (section about `1c-data-mcp`).
+> Two ways this server is reachable. (1) Native tools in the session schema — when `{INFOBASE_PUBLISH_URL}/hs/mcp` answers **without** authentication. That is the correct IIS / Apache publish (`default.vrd`). (2) Any publication that is not anonymous: the standalone server `ibsrv`, or IIS / Apache that was not published that way. The call is the same in both of those cases. Cursor does not send `Authorization`. An anonymous call returns **503** on `ibsrv` and typically **401** on IIS; the same call with HTTP Basic (`IB_USER` / `IB_PASSWORD` from `.dev.env`) returns **200**. The password is the infobase user's password; do not assume it is empty. A blank `IB_PASSWORD` still sends the header (`user:`). Native tools stay hidden. Call `tools/dev-standalone/Invoke-DataMcp.ps1` (start/stop `ibsrv` with `start.ps1` / `stop.ps1` in the same folder). Do **not** call `mcp_auth` and do **not** use the COM connector. Methodology — `.cursor/rules/1commerce-functional-testing.mdc`. Probe — `.cursor/commands/checkmcp.md`.
 
 ## Tool catalog
 
@@ -45,4 +45,14 @@ The implementation runs `Выполнить(bslcode)` inside a procedure where t
 
 ## Availability check
 
-If the server is offline (web publication down, `mcp` HTTP service not published, or publication requires Basic auth and the MCP client gets `401`/`403`), the tools simply do not appear in the agent's tool schema. Do **not** synthesize their behaviour from memory and do **not** invent fake "execution" output — fall back to the verification path that does not need the live IB (static MCP analyzers + reading code in the dump + asking the user to run the snippet in the Configurator). Setup / fix steps — `content/commands/checkmcp.md`.
+If the native tools are absent, do **not** synthesize their behaviour and do **not** invent execution output.
+
+Distinguish the cause before falling back to static-only verification:
+
+- **Anonymous 401 / 403, or anonymous 503, and Basic 200** — the publication is up and not anonymous. `ibsrv` answers 503 without a header; IIS / Apache that was not published anonymously answers 401 / 403. The call is the same: `tools/dev-standalone/Invoke-DataMcp.ps1`. Do not treat this as a down server, do not call `mcp_auth`, and do not switch to COM. On IIS / Apache, anonymous `default.vrd` is still the right publish so the native tools appear; it is not a precondition for the helper script. On `ibsrv` there is no `default.vrd` to rewrite.
+- **Basic also 503**, while the publication root returns 200 — `http-services` for `APA_MCP` / root `mcp` is missing from the standalone `config.yml`. Fix that list and restart via `stop.ps1` then `start.ps1`. See `.cursor/rules/1commerce-functional-testing.mdc`.
+- **Connection refused / publication root down** — `ibsrv` is not running. Start it with `tools/dev-standalone/start.ps1`. Do not `Stop-Process` it by hand: `stop.ps1` also removes `lock.pid` and the registry lock, without which the next start fails or is skipped.
+- **401 after Basic was sent** — the header was built wrong (PowerShell's default encoding breaks a Cyrillic `IB_USER`) or `IB_PASSWORD` does not match the infobase user. Read the password from `.dev.env`; do not assume it is empty. A blank `IB_PASSWORD` is that user's empty password, not "auth not configured". An anonymous 401, before any header, is the non-anonymous publication case above.
+- **404** — the `mcp` HTTP service is not published.
+
+Only when the publication cannot be brought up (no platform, no infobase, credentials the user must supply) fall back to static MCP analyzers, the configuration dump, and asking the user to run the snippet in the Configurator. Setup / fix steps — `.cursor/commands/checkmcp.md`.

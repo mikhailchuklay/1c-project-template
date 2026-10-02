@@ -21,7 +21,7 @@ The source of truth for images, ports, and environment variables is [docs.onerpa
 | `1c-code-metadata-mcp` | 8000 | `comol/1c_code_metadata_mcp:latest` | Metadata/code/forms/XSD | Yes — configuration dump |
 | `1c-graph-metadata-mcp` | 8006 | `comol/1c_graph_metadata_mcp:latest` | Graph search (Neo4j) | Yes — dump + Neo4j |
 | `1c-code-check-mcp` | 8007 | `comol/1c_code_checker_mcp:latest` | 1C:Assistant, ITS | No (Assistant token) |
-| `1c-data-mcp` | 80 / project | — (HTTP service on the infobase, **not** docker) | 1C data management and analysis (HTTP service published on the infobase itself) | Yes — `INFOBASE_PUBLISH_URL` in `.dev.env` + `mcp` HTTP service published on the infobase **with anonymous access** |
+| `1c-data-mcp` | 80 / project | — (HTTP service on the infobase, **not** docker) | 1C data management and analysis (HTTP service published on the infobase itself) | Yes — `INFOBASE_PUBLISH_URL` in `.dev.env` + `mcp` HTTP service published. Native tools need an anonymous publish (correct for IIS / Apache). A non-anonymous publish — `ibsrv`, or IIS that was not published that way — is called with Basic the same way. See the authentication note below |
 | `v8std` | — | — (hosted HTTP, **not** docker) | v8std.ru standards navigation, BSLLS/ACC/EDT diagnostic bridge | No — public `https://ai.v8std.ru/mcp` |
 
 > Exact image names may differ by version. If `docker pull` fails with `manifest unknown`, check the current list at [docs.onerpa.ru/mcp-servery-1c/servery.md](https://docs.onerpa.ru/mcp-servery-1c/servery.md).
@@ -30,7 +30,12 @@ The source of truth for images, ports, and environment variables is [docs.onerpa
 
 > `1c-data-mcp` is **not** a docker container — it is an HTTP service (`hs/mcp`) published on the project's infobase. The 1c-rules installer derives its URL from `INFOBASE_PUBLISH_URL` in `.dev.env`: `<INFOBASE_PUBLISH_URL_BASE>/hs/mcp` (trailing `/` and trailing locale segment like `/ru/`, `/en/` are stripped). Docker / `docker ps` / `docker run` steps in this file do not apply to it — instead, verify that the HTTP service `mcp` is published on the infobase and that the URL responds. If `INFOBASE_PUBLISH_URL` is empty when the installer runs, the MCP config will contain the literal placeholder `{INFOBASE_PUBLISH_URL}/hs/mcp` — fill in `.dev.env` and re-run `install.ps1 update` (or edit the MCP config manually).
 >
-> **Authentication.** The `1c-data-mcp` endpoint MUST be reachable WITHOUT a password — the MCP client does not send an `Authorization` header to `/hs/mcp`. If the publication requires Basic auth, the HTTP probe below returns **401** or **403** and the server's tools never appear in the agent's session. Fix in `default.vrd` of the web publication:
+> **Authentication.** Cursor's MCP client does not send an `Authorization` header to `/hs/mcp`, so native tools appear only when the endpoint answers without a password. Two publications differ:
+>
+> - **IIS / Apache (`default.vrd`).** Anonymous access is the correct publish: that is what makes the native tools appear. A probe that returns **401** or **403** means the publication is not anonymous. Fix `default.vrd` as below so the native tools show up. Until then, call the endpoint the same way as `ibsrv` — do not wait on the publish change and do not treat 401 as "server down".
+> - **Not anonymous (`ibsrv`, or IIS / Apache that was not published anonymously).** The call is the same. There is no `Authorization` from Cursor. On `ibsrv` an anonymous `GET /hs/mcp` returns **503**; on IIS it is typically **401**. The same request with HTTP Basic (`IB_USER` / `IB_PASSWORD` from `.dev.env`) returns **200**. The password is the infobase user's password; do not assume it is empty. Do not call `mcp_auth` and do not use COM. Call the tools through `Invoke-DataMcp.ps1`. Native tools stay absent; that is success for this setup. Start/stop `ibsrv` with `start.ps1` / `stop.ps1` only.
+>
+> IIS / Apache fragment:
 >
 > ```xml
 > <!-- default.vrd — fragment that enables anonymous access for HTTP services -->
@@ -140,8 +145,9 @@ if (-not $infobasePublishUrl) {
     }
     Write-Host ("{0,-26} {1,-5} {2}" -f '1c-data-mcp', '-', $code)
     switch -Regex ([string]$code) {
-        '^401$' { Write-Warning "1c-data-mcp ответил HTTP 401 — публикация требует Basic-аутентификацию. MCP-клиент НЕ передаёт пароль; в default.vrd добавьте <usr name=`"...`" pwd=`"`"/> (технический пользователь без пароля) и перезапустите веб-сервер." }
-        '^403$' { Write-Warning "1c-data-mcp ответил HTTP 403 — у пользователя по умолчанию нет прав на HTTP-сервис mcp. Добавьте роль с правом `Использование` на HTTP-сервис в назначения роли пользователя из default.vrd." }
+        '^401$' { Write-Warning "1c-data-mcp ответил HTTP 401 без Authorization. Для нативных инструментов на IIS/Apache публикация должна быть анонимной (default.vrd). Пока её нет, вызов тот же, что у ibsrv: повторите с Basic (UTF-8, IB_USER/IB_PASSWORD из .dev.env). Пароль берите как есть; пустое поле — пустой пароль этого пользователя, заголовок всё равно нужен. Кириллический логин в кодировке по умолчанию PowerShell даёт ложный 401." }
+        '^403$' { Write-Warning "1c-data-mcp ответил HTTP 403 — у пользователя публикации нет права Использование на HTTP-сервис mcp." }
+        '^503$' { Write-Warning "1c-data-mcp ответил HTTP 503 без Authorization. Для ibsrv это нормальный анонимный ответ: повторите с Basic. Если с Basic тоже 503, а корень публикации 200 — в config.yml не перечислен HTTP-сервис APA_MCP (root mcp). Connection refused — ibsrv не запущен, start.ps1." }
         '^(200|201|204|400|405|406)$' { } # endpoint reachable anonymously
         '^404$' { Write-Warning "1c-data-mcp ответил HTTP 404 — HTTP-сервис `mcp` не опубликован на ИБ (либо не указано publishByDefault=`"true`" в default.vrd)." }
     }
@@ -150,9 +156,10 @@ if (-not $infobasePublishUrl) {
 
 For `1c-data-mcp`:
 
-- **`HTTP 401` / `HTTP 403`** = the publication requires authentication. The MCP client does not pass `Authorization`, so it cannot connect. Fix the publication (`default.vrd`) per the catalog note above and re-run `/checkmcp`. Docker steps below the snippet do **not** apply.
-- **`HTTP 404`** = the `mcp` HTTP service is not published on the infobase (Configurator → HTTP-сервисы → Опубликовать, or `publishByDefault="true"` in `default.vrd`).
-- **`HTTP_DOWN`** = the web publication itself is not running (IIS / Apache stopped, or the published path is wrong). Not a docker problem — start the web server / fix the published path.
+- **`HTTP 401` / `HTTP 403`** = the publication is not anonymous. On IIS / Apache the correct publish is anonymous `default.vrd`, so the native tools can appear. Until that is done, and on `ibsrv` always, retry the same URL with UTF-8 Basic from `.dev.env` (`Invoke-DataMcp.ps1`). Do not call `mcp_auth` and do not use COM. Docker steps below the snippet do **not** apply.
+- **`HTTP 503` without `Authorization`** = on `ibsrv`, retry with Basic. Basic `200` means the endpoint is healthy and native tools will still be absent — use `Invoke-DataMcp.ps1`. Basic `503` with the site root at `200` means `APA_MCP` is not listed under `http-services` in `config.yml`.
+- **`HTTP 404`** = the `mcp` HTTP service is not published on the infobase (Configurator → HTTP-сервисы → Опубликовать, or `publishByDefault="true"` in `default.vrd`, or the `http-services` list in the standalone `config.yml`).
+- **`HTTP_DOWN`** (connection refused) = the web publication is not running. For this project that is `ibsrv`: `tools/dev-standalone/start.ps1`. Stop only with `stop.ps1`.
 - **`HTTP 200` / `400` / `405` / `406`** = the endpoint is reachable anonymously; MCP transport-level handshake will continue from the agent on its own.
 
 ### Step 4. Check Docker state
