@@ -8,66 +8,79 @@
                 "ONEC_IPC_PORT": "40241",
                 "ONEC_IPC_TOKEN": ""
             },
-            "description": "1C: Platform Tools — загрузка/выгрузка конфигурации, запуск Конфигуратора/Предприятия, сборка EPF/ERF через IPC расширения"
+            "description": "1C: Platform Tools — загрузка/выгрузка конфигурации, запуск Конфигуратора/Предприятия, сборка EPF/ERF через IPC расширения",
+            "disabled": false
         },
         "rlm-tools-bsl": {
             "type": "http",
             "url": "http://127.0.0.1:9000/mcp",
-            "description": "RLM tools for BSL — локальный поиск по dump; запасной канал, если graph и code-metadata недоступны"
+            "description": "RLM tools for BSL — локальный поиск по dump; запасной канал, если graph и code-metadata недоступны",
+            "disabled": false
         },
         "1c-code-metadata-mcp": {
             "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}/mcp",
             "connection_id": "1c_metadata_{PROJECT_SLUG}_001",
-            "description": "Проектный codemeta (cf). Замените {PROJECT_SLUG} при инициализации проекта."
+            "description": "Проектный codemeta (cf). Замените {PROJECT_SLUG} при инициализации проекта.",
+            "disabled": true
         },
         "1c-graph-metadata-mcp": {
             "url": "https://mcp.1commerce.ru/graph-{PROJECT_SLUG}/mcp",
             "connection_id": "1c_graph_{PROJECT_SLUG}_001",
-            "description": "Проектный graph (cf). Замените {PROJECT_SLUG} при инициализации проекта."
+            "description": "Проектный graph (cf). Замените {PROJECT_SLUG} при инициализации проекта.",
+            "disabled": true
         },
         "1c-ext-codemeta-mcp": {
             "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}-ext/mcp",
             "connection_id": "1c_metadata_ext_{PROJECT_SLUG}_001",
-            "description": "Проектный codemeta расширения (cfe). Удалите блок, если проект без расширения."
+            "description": "Проектный codemeta расширения (cfe). Удалите блок, если проект без расширения.",
+            "disabled": true
         },
         "1c-ext-graph-mcp": {
             "url": "https://mcp.1commerce.ru/graph-{PROJECT_SLUG}-ext/mcp",
             "connection_id": "1c_graph_ext_{PROJECT_SLUG}_001",
-            "description": "Проектный graph расширения (cfe). Удалите блок, если проект без расширения."
+            "description": "Проектный graph расширения (cfe). Удалите блок, если проект без расширения.",
+            "disabled": true
         },
         "1c-syntax-checker-mcp": {
             "url": "https://mcp.1commerce.ru/syntax/mcp",
             "connection_id": "1c_lsp_service_001",
-            "description": "BSL syntax validation via BSL Language Server"
+            "description": "BSL syntax validation via BSL Language Server",
+            "disabled": false
         },
         "1C-docs-mcp": {
             "url": "https://mcp.1commerce.ru/help/mcp",
             "connection_id": "1c_docs_service_001",
-            "description": "1C platform documentation search (docsearch, docinfo)"
+            "description": "1C platform documentation search (docsearch, docinfo)",
+            "disabled": false
         },
         "v8std": {
             "url": "https://ai.v8std.ru/mcp",
-            "description": "Стандарты разработки 1С (v8std.ru) и расшифровка диагностик BSL LS / EDT / АПК"
+            "description": "Стандарты разработки 1С (v8std.ru) и расшифровка диагностик BSL LS / EDT / АПК",
+            "disabled": false
         },
         "1c-templates-mcp": {
             "url": "https://mcp.1commerce.ru/templates/mcp",
             "connection_id": "1c_templates_service_001",
-            "description": "Code templates library and implementation examples search"
+            "description": "Code templates library and implementation examples search",
+            "disabled": false
         },
         "1c-code-check-mcp": {
             "url": "https://mcp.1commerce.ru/codecheck/mcp",
             "connection_id": "1c_code_check_service_001",
-            "description": "1C code review and quality checking (1С:Напарник) — check_1c_code, review_1c_code, ITS docs"
+            "description": "1C code review and quality checking (1С:Напарник) — check_1c_code, review_1c_code, ITS docs",
+            "disabled": false
         },
         "1c-ssl-mcp": {
             "url": "https://mcp.1commerce.ru/ssl/mcp",
             "connection_id": "1c_ssl_service_001",
-            "description": "Standard Subsystems Library (БСП / SSL) function search"
+            "description": "Standard Subsystems Library (БСП / SSL) function search",
+            "disabled": false
         },
         "1c-data-mcp": {
             "url": "{INFOBASE_PUBLISH_URL}/hs/mcp",
             "connection_id": "1c_data_mcp_001",
-            "description": "1C data MCP on DEV publish. Replace {INFOBASE_PUBLISH_URL} from .dev.env (no trailing slash)."
+            "description": "1C data MCP on DEV publish. Replace {INFOBASE_PUBLISH_URL} from .dev.env (no trailing slash).",
+            "disabled": false
         }
     }
 }
