@@ -10,6 +10,8 @@ Local MCP for token-efficient BSL / metadata search against the configuration du
 
 ## Tools
 
+**Initial setup exception.** During project onboarding, follow [RLM setup](../../../../docs/rlm-setup.md): offer connection, registration and optional indexing even when graph/code-metadata are available. This permits registry/index diagnostics and explicitly approved setup operations, not ordinary source searches through RLM.
+
 | Tool | Purpose |
 |---|---|
 | **rlm_projects** | Registry of name → dump path. `action=list` is read-only. `add` / `remove` / `rename` / `update` need the project password — ask the user, never invent. |
