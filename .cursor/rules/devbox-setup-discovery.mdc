@@ -1,0 +1,49 @@
+---
+description: Discover existing development infrastructure through authenticated Devbox before shell scans
+alwaysApply: true
+---
+
+During initial project setup, use authenticated Devbox MCP for infrastructure
+discovery before searching the home directory, binary 1C profiles or probing RAS
+ports. Read current tool schemas; use `infobase_list` and `cluster_list` to resolve
+the user's dev database, cluster, platform build and connection ports. Use the
+actual cluster/server relationship; never derive ports or versions from a folder
+name or the configuration release number.
+
+Also resolve configuration repositories and web publications from Devbox before
+asking the user to re-enter known addresses: `storage_web_status` returns repository
+addresses by platform build, and `web_list` returns database publication addresses,
+modes and state. Match the actual database/project/cluster, not just a shared
+platform build. Use `resources_list` and `platform_list` when resource addresses
+or installed builds are needed. Inspect current schemas and only the relevant
+records; do not dump the entire registry into the conversation.
+
+Distinguish repository TCP/HTTP URLs, database web URLs and MCP service URLs.
+Do not append /hs/mcp to every publication without verifying that the service is
+published. A missing registry field is unknown, not evidence that storage or a
+publication is disabled. Ask only for missing information, conflicts, credentials
+and user choices. These read operations never authorize create/publish/sync,
+repository changes, user administration or other infrastructure mutations.
+
+Choose the developer's database only after checking the owner/name with the user;
+multiple matching databases must be presented as choices. If registry data is
+missing or stale, report that limitation and use the configured project settings,
+then the exact matching ibases.v8i entry, then a user question. A failed query or
+missing entry is not permission to create a database or change infrastructure.
+Only run targeted rac diagnostics when registry/local settings cannot answer the
+question; select the matching client version, inspect its help and use timeouts.
+Do not mistake rac help text for an infobase listing.
+
+Check the MCP connection before claiming that Devbox is unavailable. If OAuth or
+a personal token is needed, request the user's own sign-in; do not extract secrets
+from other applications or developers. Do not repeat authentication attempts when
+the user must intervene. Never print tokens or entire local secret config files.
+
+Preflight the project root before Git commands or template setup. A directory
+containing only src is an existing dump, not a configured template repository.
+Preserve that dump; propose applying the template around it without overwriting
+sources. Do not clone over the directory, run a destructive reset, or scan all of
+the home directory to find an alternative project.
+
+Devbox infrastructure discovery and RLM registry diagnostics are setup operations;
+they do not change the graph/code-metadata-first rule for BSL source search.
