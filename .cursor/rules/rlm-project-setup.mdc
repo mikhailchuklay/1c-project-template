@@ -19,3 +19,13 @@ For setup, inspect only the known export path from local config (otherwise src/c
 MCP connection and registry. Do not recursively search the home directory for dumps,
 install packages or research RLM architecture. If the dump is empty, report this
 immediately and offer export as a separate action; indexing must wait for sources.
+
+For index lifecycle decisions after onboarding, follow `docs/rlm-setup.md`:
+check index info at setup and before RLM source search. Offer build for a missing
+index only when sources exist. After a successful export or Git update that
+changed the registered dump, offer incremental update for an existing index.
+Do not update after unrelated changes, failed exports or while a job is running.
+Explicit per-project consent may authorize future updates after successful exports;
+record its scope in ignored local memory.md. It never authorizes build, drop,
+rebuild or updates after Git operations. Report background job completion or error
+using info; accepting a job is not proof that indexing has completed.

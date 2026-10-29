@@ -27,6 +27,13 @@ password challenge. User consent for mutations and index builds remains required
 
 ## Typical search (availability substitute)
 
+Check `rlm_index(action="info", project=...)` before analysis and account for
+known dump changes since the last successful index job. Follow the
+[index lifecycle and consent policy](../../../../docs/rlm-setup.md#жизненный-цикл-индекса):
+offer build for missing indexes with sources, update after relevant source changes,
+and distinguish running jobs from completed ones. A missing/stale index is not
+permission to build, drop or rebuild it automatically.
+
 1. `rlm_projects(action="list")` if the project name is unknown.
 2. `rlm_start(project="<name>", query="<what to find>")` — dump path is usually `src/cf`.
 3. `rlm_execute(session_id, code=...)` using helpers from the `rlm_start` response (`find_module`, `search_methods`, `search_objects`, `read_procedure`, `find_callers_context`, …).
