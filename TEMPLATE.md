@@ -19,6 +19,8 @@ Select-String -Path . -Pattern '\{PROJECT_SLUG\}|\{PROJECT_NAME\}|\{INFOBASE_PUB
 
 ## 2. Параметры окружения
 
+При начальной настройке агент обязан также пройти [настройку персонального RLM](docs/rlm-setup.md): спросить, подключать ли его, предложить зарегистрировать проект и отдельно согласовать построение индекса. Не пропускать эти вопросы из-за доступности graph/code-metadata.
+
 ```powershell
 Copy-Item .dev.env.example .dev.env
 # Заполните: PLATFORM_VERSION, PLATFORM_PATH, INFOBASE_PATH, PREFIX, COMPANY, DEVELOPER

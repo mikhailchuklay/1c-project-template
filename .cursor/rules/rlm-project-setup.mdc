@@ -1,0 +1,13 @@
+---
+description: RLM onboarding questions during initial project setup
+alwaysApply: true
+---
+
+When initializing this template, configuring a new project or moving it to another
+developer workstation, follow `docs/rlm-setup.md` together with `TEMPLATE.md`.
+Ask whether to enable personal RLM; offer project registration with a verified
+dump path and separately offer index creation. Ask for the user's RLM project
+password only when needed; never invent, log or commit it. Existing matching
+registrations must be reused. Missing server or dump must be reported explicitly.
+Graph/code-metadata availability does not suppress these onboarding questions.
+This setup exception does not change the source-search fallback rules.
