@@ -11,3 +11,11 @@ password only when needed; never invent, log or commit it. Existing matching
 registrations must be reused. Missing server or dump must be reported explicitly.
 Graph/code-metadata availability does not suppress these onboarding questions.
 This setup exception does not change the source-search fallback rules.
+
+On dev-workplaces, RLM is preinstalled and the managed local service enables
+passwordless operations. Do not ask for a password there unless the actual server
+response requires one. Never retry mutations blindly after a password challenge.
+For setup, inspect only the known export path from local config (otherwise src/cf),
+MCP connection and registry. Do not recursively search the home directory for dumps,
+install packages or research RLM architecture. If the dump is empty, report this
+immediately and offer export as a separate action; indexing must wait for sources.
