@@ -10,6 +10,11 @@ Local MCP for token-efficient BSL / metadata search against the configuration du
 
 ## Tools
 
+**Managed dev-workplaces service:** registry/index password checks are disabled by
+the explicit local-only deployment option `RLM_ALLOW_PASSWORDLESS_LOCAL=1`.
+Do not request a password preemptively there. On an unmodified server, follow its
+password challenge. User consent for mutations and index builds remains required.
+
 **Initial setup exception.** During project onboarding, follow [RLM setup](../../../../docs/rlm-setup.md): offer connection, registration and optional indexing even when graph/code-metadata are available. This permits registry/index diagnostics and explicitly approved setup operations, not ordinary source searches through RLM.
 
 | Tool | Purpose |
