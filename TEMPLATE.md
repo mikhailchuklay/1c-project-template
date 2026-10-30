@@ -75,6 +75,27 @@ Copy-Item tools\vrunner.init.json.example tools\vrunner.init.json
 
 Shared-сервисы (syntax, docs, templates, ssl, codecheck) уже указывают на `https://mcp.1commerce.ru/...`.
 
+### Jira: персональный OAuth через нативный HTTPS
+
+В `.cursor/mcp.json`, Linux-профиле `tools/dev-env/linux/cursor-mcp.json` и экспортёре
+`tools/export-project-template.ps1` сервер `jira` включён с адресом
+`https://mcp.1commerce.ru/jira/mcp`. `mcp-remote`, общий токен и заголовок `Authorization`
+не нужны. При первом подключении нажмите авторизацию Jira MCP в Cursor и завершите
+вход в браузере. Если `jira` уже настроен глобально, используйте то же имя сервера,
+чтобы не создавать второе подключение с другим именем.
+
+На Linux Cursor сохраняет OAuth-данные через системное хранилище ключей.
+На dev-workplaces пакет `libpam-gnome-keyring` и PAM-служба `xrdp-sesman` создают
+и разблокируют связку `login` паролем RDP при входе нового пользователя.
+Существующие связки с другим паролем могут потребовать отдельной разблокировки.
+При `safeStorage: Encryption is not available` проверьте доступность и разблокировку
+хранилища в текущем сеансе, затем полностью перезапустите Cursor. Не удаляйте
+существующие ключи и не переключайте хранилище на `basic`.
+
+При использовании прокси добавьте `.yandex.cloud` в `NO_PROXY`, `http.noProxy` Cursor
+и исключения браузера (`yandex.cloud;*.yandex.cloud`). На dev-workplaces это задано
+шаблоном рабочего места. Успешный вход проверьте чтением доступной задачи Jira.
+
 ### OneMCP в информационной базе (если ещё не установлено)
 
 Для `1c-data-mcp` / `Invoke-DataMcp.ps1` в ИБ нужны расширение **OneMCP** и инструменты в справочнике `APA_Инструменты`:

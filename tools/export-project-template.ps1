@@ -141,6 +141,11 @@ Write-Step "Writing template configs"
 Set-TextFile -RelativePath '.cursor\mcp.json' -Content @'
 {
     "mcpServers": {
+        "jira": {
+            "url": "https://mcp.1commerce.ru/jira/mcp",
+            "description": "Jira — нативный HTTPS, персональная OAuth-авторизация",
+            "disabled": false
+        },
         "mcp-1c-platform-tools": {
             "command": "node",
             "args": [
