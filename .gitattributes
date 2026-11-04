@@ -1,0 +1,14 @@
+# Переносы строк: в репозитории LF, исходники 1С — CRLF (как пишет платформа),
+# чтобы выгрузка/загрузка не давала шума в git diff.
+* text=auto eol=lf
+*.bsl text eol=crlf
+*.xml text eol=crlf
+
+# Служебный файл выгрузки: меняется при каждой выгрузке, в разницу не попадает.
+ConfigDumpInfo.xml -diff
+
+# Бинарные файлы
+*.bin binary
+*.cf binary
+*.cfe binary
+*.epf binary
