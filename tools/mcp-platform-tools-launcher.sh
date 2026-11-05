@@ -1,19 +1,54 @@
 #!/usr/bin/env bash
-# Launcher для mcp-1c-platform-tools на remote Linux (Cursor Server).
-# Системный node часто отсутствует — используем node из cursor-server.
+# Launcher для mcp-1c-platform-tools на Linux:
+# локальный Cursor (~/.cursor) и Cursor Remote (~/.cursor-server).
 set -euo pipefail
 
-NODE=$(ls "$HOME"/.cursor-server/bin/linux-x64/*/node 2>/dev/null | head -1)
-MCP="$HOME/.cursor-server/extensions/yellow-hammer.mcp-1c-platform-tools-0.1.8-universal/out/src/index.js"
+find_node() {
+	local candidate
+	shopt -s nullglob
+	local -a bundled=(
+		"$HOME"/.cursor-server/bin/linux-x64/*/node
+		"$HOME"/.cursor-server/bin/linux-arm64/*/node
+	)
+	for candidate in "${bundled[@]}" \
+		/usr/share/cursor/resources/app/resources/helpers/node \
+		/usr/bin/node
+	do
+		if [[ -x "$candidate" ]]; then
+			echo "$candidate"
+			shopt -u nullglob
+			return 0
+		fi
+	done
+	shopt -u nullglob
+	return 1
+}
 
-if [[ -z "$NODE" || ! -x "$NODE" ]]; then
-	echo "Не найден node в ~/.cursor-server/bin/linux-x64/" >&2
+find_server() {
+	local root dir
+	local -a roots=(
+		"$HOME/.cursor/extensions"
+		"$HOME/.cursor-server/extensions"
+	)
+	for root in "${roots[@]}"; do
+		[[ -d "$root" ]] || continue
+		dir=$(find "$root" -maxdepth 1 -type d -name 'yellow-hammer.mcp-1c-platform-tools-*' 2>/dev/null | sort -V | tail -n 1)
+		if [[ -n "$dir" && -f "$dir/out/src/index.js" ]]; then
+			echo "$dir/out/src/index.js"
+			return 0
+		fi
+	done
+	return 1
+}
+
+NODE=$(find_node) || {
+	echo "Не найден node: ни в ~/.cursor-server, ни в Cursor, ни /usr/bin/node." >&2
 	exit 1
-fi
-if [[ ! -f "$MCP" ]]; then
-	echo "Не найден MCP-сервер: $MCP" >&2
-	echo "Установите расширение yellow-hammer.mcp-1c-platform-tools в Cursor." >&2
+}
+MCP=$(find_server) || {
+	echo "Не найден MCP-сервер yellow-hammer.mcp-1c-platform-tools." >&2
+	echo "Установите расширение mcp-1c-platform-tools в Cursor." >&2
 	exit 1
-fi
+}
 
 exec "$NODE" "$MCP"

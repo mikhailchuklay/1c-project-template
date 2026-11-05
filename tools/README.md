@@ -12,7 +12,7 @@
 | `load-objlist-config.sh` | Частичная загрузка `src/cf` через ibcmd |
 | `load-objlist-extensions.sh` | Частичная загрузка `src/cfe/*` через ibcmd |
 | `deploy-extension.sh` | stop → import → apply → restart для CFE |
-| `mcp-platform-tools-launcher.sh` | MCP Platform Tools на Linux (Cursor Remote) |
+| `mcp-platform-tools-launcher.sh` | MCP Platform Tools на Linux (локальный Cursor и Cursor Remote) |
 | `fix-1c-platform-tools-vrunner-cmd.ps1` | Workaround quoting vrunner на Windows |
 | `init-project-structure.ps1` | Каталоги vanessa-bootstrap (`project-structure.json`) |
 | `update-from-template.ps1` | Синхронизация rules/skills/agents/commands из git-шаблона (`/updaterules`) |

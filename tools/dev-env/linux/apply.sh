@@ -6,8 +6,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 PROFILE="$(cd "$(dirname "$0")" && pwd)"
 
+# Cursor режет command MCP по пробелу (spawn … ENOENT). Симлинк без пробелов.
+LAUNCHER_LINK="${HOME}/.local/bin/mcp-platform-tools-$(basename "${ROOT}" | sed 's/[^A-Za-z0-9._-]/-/g').sh"
+mkdir -p "${HOME}/.local/bin"
+ln -sfn "${ROOT}/tools/mcp-platform-tools-launcher.sh" "${LAUNCHER_LINK}"
+
 subst() {
-	sed "s|@PROJECT_ROOT@|${ROOT}|g" "$1"
+	sed -e "s|@PROJECT_ROOT@|${ROOT}|g" -e "s|@LAUNCHER_BIN@|${LAUNCHER_LINK}|g" "$1"
 }
 
 echo "Профиль: Linux DEV"
