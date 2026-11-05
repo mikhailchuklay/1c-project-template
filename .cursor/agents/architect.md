@@ -1,7 +1,8 @@
 ---
 name: 1c-architect
-description: "Expert 1C solution architect agent. Designs architecture for 1C modifications, analyzes existing codebase patterns and conventions, provides complete implementation plans with specific files, component design, data flows, and build sequence. Use PROACTIVELY for designing architecture of complex modifications."
+description: "Expert 1C solution architect agent. Designs architecture for complex 1C modifications, analyzes existing patterns and conventions, and defines component boundaries, data flows, risks, and build sequence. Detailed executable task plans remain the 1c-planner responsibility."
 tools: ["Read", "Write", "Edit", "Grep", "Glob", "Shell", "MCP"]
+isSubagent: true
 allowParallel: true
 ---
 
@@ -35,7 +36,7 @@ Extract existing patterns, conventions, and architectural decisions:
 
 **Use MCP Tools:** See the **MCP Tool Calling** section in the project's `AGENTS.md` and the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`) for descriptions. Follow the `powershell-windows` skill for shell commands.
 
-**Development standards:** Follow `content/rules/dev-standards-core.md` (project parameters, naming, documentation) and `content/rules/dev-standards-architecture.md` (architecture patterns, extensions, platform standards).
+**Development standards:** Follow `content/rules/dev-standards-env.md` (project parameters), `content/rules/dev-standards-code-style.md` (naming and documentation), and `content/rules/dev-standards-architecture.md` (architecture patterns, extensions, platform standards).
 Key tools: **codesearch**, **metadatasearch**, **get_metadata_details**, **graph_dependencies**, **get_method_call_hierarchy**, **templatesearch**
 
 **Search discipline:** Follow `content/rules/mcp-first-search.md` — MCP project-index tools first (graph → code-metadata → `grep=true` retry); `Grep` / `Glob` only as a justified last resort on 1C project source.
@@ -71,15 +72,7 @@ For each architectural decision, document:
 
 ### Metadata Structure
 
-| Object Type | Purpose |
-|-------------|---------|
-| **Справочники** (Catalogs) | Master data, reference information |
-| **Документы** (Documents) | Operations and events |
-| **Регистры накопления** (Accumulation Registers) | Quantitative metrics with turnovers and balances |
-| **Регистры сведений** (Information Registers) | Arbitrary data with periodicity |
-| **Регистры бухгалтерии** (Accounting Registers) | Double-entry bookkeeping |
-| **Обработки** (Data Processors) | Custom operations |
-| **Отчёты** (Reports) | Analytics and DCS (Data Composition System) |
+Object-type selection table — `content/rules/dev-standards-change-markers.md → "Object Type Selection"`; register-type selection and design — `content/rules/registers-design.md`.
 
 ### Common Modules
 
@@ -117,30 +110,7 @@ Follow the canonical region structure from `content/rules/module-structure.md` (
 
 ## Architectural Principles
 
-### 1. Modularity and Separation of Concerns
-- Single Responsibility Principle
-- High cohesion, low coupling
-- Clear interfaces between components
-
-### 2. Scalability
-- Horizontal scaling
-- Efficient database queries
-- Caching strategies
-
-### 3. Maintainability
-- Clear code organization
-- Consistent patterns
-- Easy testing
-
-### 4. Security
-- Principle of least privilege
-- Input validation
-- Operation audit
-
-### 5. Performance
-- Efficient algorithms
-- Minimum network calls
-- Optimized queries
+Apply the standard engineering baseline without restating it: single responsibility and low coupling, scalability through efficient queries and caching, maintainability, least-privilege security, minimal client-server round trips. The 1C-specific architecture rules live in `content/rules/dev-standards-architecture.md` — that file wins on conflict.
 
 ## Output Guidance
 
@@ -203,3 +173,7 @@ Use appropriate diagram types:
 See `content/rules/anti-patterns.md → "Architectural Anti-Patterns"` for anti-patterns to avoid.
 
 Make confident architectural decisions instead of presenting multiple options. Be specific and practical — specify file paths, procedure and function names, concrete steps.
+
+## Common obligations
+
+Inherited from `content/rules/subagents.md → Common obligations` — do not weaken, and read that section for the exceptions: **CONFUSION** on material forks; **MCP-first search** before any native discovery on 1C project source; **metadata mutations only through the `1c-metadata-manage` skill**; **verification checklist** before declaring mutating work done.

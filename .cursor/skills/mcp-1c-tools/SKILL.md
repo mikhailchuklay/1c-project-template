@@ -11,8 +11,8 @@ This skill is the single source of truth for the project's MCP server catalog, t
 
 - **Mandatory for risk-bearing 1C work.** If a relevant server is exposed, call the fitting MCP tool for BSL / metadata edits or review, metadata XML, forms, integrations, refactoring, performance, runtime errors, platform API checks, impact analysis, syntax / quality validation, and project-memory operations.
 - **Conditional for external knowledge.** Use platform docs, БСП / SSL, and ITS MCP tools when the task depends on versioned platform behavior, reusable БСП APIs, or standards compliance. Do not call them for generic prose cleanup or rule-file editing unless such a fact is actually needed.
-- **Not required for Markdown / rules / documentation-only work.** For rule files, README, commands documentation, and similar prose-only edits, validate structure, links, paths, and internal consistency instead of calling 1C project MCP tools.
-- **Recommended: reading `docs/<server>.md` before parameter-rich calls.** Reading the schema is for parameter tuning, not a hard gate. Skipping it is acceptable only when the call is genuinely simple (a one-shot lookup with obvious arguments) and you are not invoking a parameter-rich tool listed below.
+- **Not required for Markdown / rules / documentation-only work.** For rule files, README, commands documentation, and similar prose-only edits, validate structure, links, paths, and internal consistency instead of calling 1C project MCP tools. **Exception:** OpenSpec artifacts that state concrete 1C facts (metadata / attribute names, API signatures, БСП subsystems, platform-version behaviour) are spec authoring, not documentation-only work — the mandatory scope above applies (`AGENTS.md → MCP Tool Calling → A.1`, `content/rules/sdd-integrations.md`).
+- **Mandatory before parameter-rich calls.** Read `docs/<server>.md` before the first call in the session to every parameter-rich tool listed below, and re-read it when switching tools on that server. A genuinely simple one-shot lookup with obvious arguments may skip the detail file only when it is not in the parameter-rich list.
 
 ### Parameter-rich tools — read the doc first
 
@@ -26,9 +26,10 @@ If `docs/<server>.md` conflicts with the descriptor exposed by the current envir
 ## When to use this skill
 
 - Before writing code / a query / metadata XML — pick the MCP tool that best fits the task (template search, metadata check, syntax validation, code review).
+- Before implementing a specialized capability (cryptography, СЛАУ / numerical methods, data analysis, collaboration system / bots, integration bus / queues, full-text search, regular expressions, …) — run the platform-capability check: `docsearch` → `docinfo` on `1C-docs-mcp` (+ `ssl_search` where a БСП solution is plausible). Do not trust model memory about what the platform does or does not have. Canon — `AGENTS.md → MCP Tool Calling → A.7`; procedure and trigger domains — [`docs/1C-docs-mcp.md`](docs/1C-docs-mcp.md) → *Platform capability discovery*.
 - For impact analysis and code navigation — decide which server to use first (`graph` → `code-metadata` → `Grep`, or `rlm-tools-bsl` if both graph and code-metadata are unavailable — see *Fallback chain* below).
 - For ITS standards (`its_help` → `fetch_its`), v8std diagnostic/standard navigation (`v8std_explain_diagnostics`, `v8std_explain_snippet`, `v8std_search` → `v8std_get_page`), and platform documentation (`docinfo` / `docsearch`).
-- For code templates and project memory (`templatesearch`, `remember`, `recall`).
+- For code templates and project memory (`templatesearch`, `remember`, `recall`). Before **`templatesearch`**: load `docs/1c-templates-mcp.md → Query formulation (templatesearch only)` — that rule applies **only** to `templatesearch`, not to other MCP searches.
 
 > Short obligation rules and verification budgets live in `AGENTS.md → MCP Tool Calling` (sections A, B, C). This skill owns the MCP catalog, routing, and fallback details.
 
@@ -51,23 +52,25 @@ If `docs/<server>.md` conflicts with the descriptor exposed by the current envir
 
 Use only the applicable branch; stop as soon as the collected evidence is sufficient. Before each call, check that it closes a concrete context gap and is not a duplicate of an earlier call.
 
-### Project-source search before `Grep` / `rg`
+### Project-source search before `Grep` / `Glob` / `rg`
 
-`Grep` / `rg` substitute only the project-indexing layer. Before falling back to them for 1C project-source search, exhaust:
+Native discovery tools (`Grep` / `rg`, `Glob` / file search by pattern, directory listing, sequential `Read`-scanning) substitute only the project-indexing layer — locating files by mask (`**/*.bsl`, `**/*.xml`) or bulk-reading modules "to get oriented" is the same fallback as `Grep`, not a separate free action. Before falling back to any of them for 1C project-source search, exhaust:
 
 1. `1c-graph-metadata-mcp` — `search_code`, `search_metadata`, `search_metadata_by_description`, `get_object_dossier`, `trace_impact`, `trace_call_chain` as appropriate. Skip this step if the server is not exposed.
 2. `1c-code-metadata-mcp` — default indexed search / navigation (`codesearch`, `metadatasearch`, `search_function`, `search_forms`, `get_module_structure`, etc.). Skip this step if the server is not exposed.
-3. `1c-code-metadata-mcp` with `grep=true` — substring retry inside the MCP index **only after** indexed / semantic / exact search did not find enough and only for tools that expose the parameter: `codesearch`, `metadatasearch`, `search_function`, `helpsearch`, `search_forms`. Typical scenarios: exact identifier, fragment of a query, metadata path, event handler name, error text, or literal string where semantic search is likely to miss. Skip if step 2 was skipped.
+3. `1c-code-metadata-mcp` with `grep=true` — substring retry inside the MCP index **only after** indexed / semantic / exact search did not find enough and only for tools that expose the parameter: `codesearch`, `metadatasearch`, `search_function`, `helpsearch`, `search_forms`. Typical scenarios: exact identifier, fragment of a query, metadata path, event handler name, error text, or literal string where semantic search is likely to miss.
 4. **Availability substitute — `rlm-tools-bsl`.** Run this step **only** when steps 1–3 could not run because **neither** graph **nor** code-metadata is exposed in the current session, **and** `rlm-tools-bsl` **is** exposed (`rlm_start` in the tool schema). Then `rlm_projects(action="list")` if the project name is unknown → `rlm_start(project=...)` → `rlm_execute` (helpers from the start response; never `grep` on dump root) → `rlm_end`. Empty results from an **available** graph or code-metadata server do **not** trigger RLM. Details — [`docs/rlm-tools-bsl.md`](docs/rlm-tools-bsl.md).
-5. Only then `Grep` / `rg` — with a mandatory short note in the response listing which project-index MCP attempts were tried (including RLM if step 4 applied, or why it was skipped) and why they did not return what was needed.
+5. Only then a native discovery tool (`Grep` / `rg` / `Glob` / `Read`-scanning) — with a mandatory short note in the response listing which project-index MCP attempts were tried (including RLM if step 4 applied, or why it was skipped) and why they did not return what was needed.
+
+The chain is a **bounded priority, not a prohibition**: when the project-index servers are not exposed, the chain collapses to step 4 (`rlm-tools-bsl`, if exposed) and then native tools apply immediately (one-line note). When a tuned call plus the documented retry missed — fall back without spending further MCP calls on this rule. After fresh local edits the index may be stale — reading the disk state directly is legitimate. For understanding a single routine prefer fragment-level retrieval (`get_module_structure`, `search_code` `detail_level="L0"`, `search_function`) over a full-module `Read`; reading a direct edit target or an MCP-located file is normal work. Boundary cases — `content/rules/mcp-first-search.md`.
 
 ### External knowledge
 
 These servers have no `Grep` / `rg` equivalent; call them only when their knowledge is needed:
 
-1. `1c-templates-mcp` — code templates and project memory (`templatesearch`, `remember`, `recall`).
+1. `1c-templates-mcp` — code templates and project memory (`templatesearch`, `remember`, `recall`). **`templatesearch` only:** query pre-flight (`A.8`) + **reuse found template** (`A.9`, `docs/1c-templates-mcp.md → Using a found template`).
 2. `1c-ssl-mcp` — БСП / SSL reusable APIs and patterns.
-3. `1C-docs-mcp` — versioned platform documentation.
+3. `1C-docs-mcp` — versioned platform documentation; also the mandatory platform-capability check before hand-rolling a specialized mechanism (see `docs/1C-docs-mcp.md → Platform capability discovery`).
 4. `1c-code-check-mcp` — 1С:Напарник checks, ITS standards (`its_help` → `fetch_its` for every document used), AI drafts.
 5. `v8std-mcp` — diagnostic-to-standard bridge and adapted standard navigation. Use after `syntaxcheck` BSLLS codes (`v8std_explain_diagnostics`), for BSL/SDBL snippets (`v8std_explain_snippet`), or topic search (`v8std_search` → `v8std_get_page`). **Does not replace** `its_help` → `fetch_its` for normative decisions. Details — [`docs/v8std-mcp.md`](docs/v8std-mcp.md).
 6. `1c-syntax-checker-mcp` — BSL syntax / style validation after edits (prefer `syntaxcheck_file` over `syntaxcheck` when it is exposed — file check by path is more economical than passing code text).
@@ -79,7 +82,7 @@ These servers have no `Grep` / `rg` equivalent; call them only when their knowle
 |---|---|---|
 | BSL code search | `search_code` (`fulltext` / `semantic` / `hybrid`, `detail_level` L0–L3) | `codesearch` |
 | Metadata object structure | `get_object_dossier` | `get_metadata_details` |
-| Impact analysis before refactoring | `trace_impact` (recursive, depth 1–10) | `graph_dependencies` (single-level) |
+| Impact analysis before refactoring | `trace_impact` (recursive, depth 1–5; up to 10 for `CALLS`) | `graph_dependencies` (single-level) |
 | Call graph | `trace_call_chain` | `get_method_call_hierarchy` |
 | Metadata search by name / structure | `search_metadata` (JSON templates) | `metadatasearch` |
 | Object usage search | `find_objects_using_object` / `find_usages_of_object` | `graph_dependencies` (`direction="reverse"`) |

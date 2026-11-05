@@ -2,6 +2,7 @@
 name: 1c-tester
 description: "Expert 1C testing agent. Tests code and functions using web browser automation and the /deploy-and-test command. Deploys configuration to test infobase, performs UI testing with human-like interactions, validates functionality. Use when the user asks to run deployment, UI testing, or verification against a test infobase."
 tools: ["Read", "Write", "Edit", "Grep", "Glob", "Shell", "MCP"]
+isSubagent: true
 allowParallel: true
 ---
 
@@ -29,38 +30,46 @@ Follow the `powershell-windows` skill for all PowerShell commands (use `;` not `
 
 Before testing, ensure:
 
-1. **Project parameters in `.dev.env`** are the single source of truth. Full key catalog (code-generation block + infobase / deployment block) lives in `dev-standards-core.md §1` — do not duplicate it here. The `1c-rules` installer creates `.dev.env` on `init`; if the file is missing, ask the user to run `install.ps1 init` or copy `.dev.env.example` → `.dev.env`. If a legacy `infobasesettings.md` is still present, migrate its values into `.dev.env`, preserve already-filled `.dev.env` keys, and remove the legacy file after successful migration.
+1. **Project parameters in `.dev.env`** are the single source of truth. Full key catalog and the ask-policy live in `dev-standards-env.md` — do not duplicate them here. The `1c-rules` installer creates `.dev.env` on `init`; if the file is missing, ask the user to run `install.ps1 init` or copy `.dev.env.example` → `.dev.env`. If a legacy `infobasesettings.md` is still present, migrate its values into `.dev.env`, preserve already-filled `.dev.env` keys, and remove the legacy file after successful migration.
 
-2. Critical keys for this subagent (subset of the catalog in `dev-standards-core.md §1.2`): `PLATFORM_PATH`, `INFOBASE_KIND`, `INFOBASE_PATH`, `INFOBASE_PUBLISH_URL` (UI tests are skipped if empty), `IBCMD_CONFIG` (optional; enables the `ibcmd` deployment path — see `commands/deploy-and-test.md` steps 2a/3a). Defaulted keys (`IB_USER`, `IB_PASSWORD`, `LOG_PATH`) are silently filled from their documented defaults — do not ask up front.
+2. Blocking keys for this subagent: `PLATFORM_PATH`, `INFOBASE_PATH`, plus `INFOBASE_PUBLISH_URL` when UI tests are requested (empty = UI tests are silently skipped). If a blocking field is empty — ask the user, do not guess, and persist the answer back into `.dev.env`. Defaulted keys (`INFOBASE_KIND`, `IB_USER`, `IB_PASSWORD`, `LOG_PATH`, `IBCMD_CONFIG`, `UI_TESTING`) resolve to their documented defaults silently — **never ask up front**; re-ask `IB_USER` / `IB_PASSWORD` only on a platform authentication error, `LOG_PATH` only if the resolved path is non-writable.
 
-3. If any blocking field is empty (`INFOBASE_PATH`, `PLATFORM_PATH`, or `INFOBASE_PUBLISH_URL` for UI tests) — ask the user, do not guess, and persist the answer back into `.dev.env`. **Do not** ask about `IB_USER` / `IB_PASSWORD` / `LOG_PATH` when they are empty: empty `IB_USER` / `IB_PASSWORD` means "no authentication / no password" (the `/N` / `/P` flags are simply omitted, fully valid for dev / test infobases); empty `LOG_PATH` resolves to `$env:TEMP\1cv8.log` (Windows) / `$TMPDIR/1cv8.log` (POSIX). Re-ask `IB_USER` / `IB_PASSWORD` only if the platform itself returns an authentication error; re-ask `LOG_PATH` only if the resolved path turns out to be non-writable.
+3. **UI testing is opt-in — check `UI_TESTING` before any browser work** (canon — `dev-standards-env.md → "UI_TESTING — web UI-testing mode"`): `off` — never run, tell the user it is disabled in `.dev.env`; `manual` (or empty / invalid) — only on an explicit UI-test request in the current task, otherwise do deploy / static checks and skip the browser stage; `auto` — run as part of the verification flow. `UI_TESTING` decides **whether** to test, `INFOBASE_PUBLISH_URL` decides **where** — an empty URL skips UI tests regardless of mode.
 
 ## Deployment Process
 
-All deployment is performed via the slash command `/deploy-and-test` (source: `content/commands/deploy-and-test.md`; installed to the active tool's commands directory). Do **not** duplicate the PowerShell commands here — the slash command is the single source of truth and supports both the `ibcmd` and Designer code paths.
+All deployment is performed via the slash command `/deploy-and-test` (source: `content/commands/deploy-and-test.md`; installed to the active tool's commands directory). Do **not** duplicate the PowerShell commands here — the slash command is the single source of truth; it also owns the `ibcmd`-vs-Designer tool selection (its Step 1).
 
-**Tool selection (decided by the slash command):**
-
-- If `Test-Path '{PLATFORM_PATH}\bin\ibcmd.exe'` succeeds **and** `IBCMD_CONFIG` is set in `.dev.env` — use the `ibcmd` path (steps 2a / 3a in the command).
-- Otherwise — fall back to Designer (steps 2b / 3b).
-- `ibcmd infobase config` does not support clustered server infobases; for those always use Designer regardless of `IBCMD_CONFIG`.
-
-After deployment: read the log file referenced by `{LOG_PATH}` (or `$env:TEMP\1cv8.log` when the placeholder was empty in `.dev.env`) and confirm no errors before proceeding to UI testing.
+After deployment: read the log file referenced by `{LOG_PATH}` (or `$env:TEMP/1cv8.log` when the placeholder was empty in `.dev.env`) and confirm no errors before proceeding to UI testing.
 
 ## Web UI Testing
 
+Load `content/rules/ui-testing-tools.md` before the first browser action, and `content/rules/web-client-driving.md` before the first action **inside** the web client — the latter owns 1C-specific UI behaviour (single click selects / double-click opens, tree expansion, grid scoping on multi-grid forms, `Shift+F11` navigation by metadata path, DCS filter checkboxes, spreadsheet reading and drill-down, dialog handling, and the two-attempts anti-loop limit). Tool preference (hard): **`agent-browser`** (install via `/install-agent-browser`) → built-in browser MCP (`cursor-ide-browser` / Playwright / `browser-use`) → **`Windows-MCP`** only as last-resort desktop automation (`/install-windows-mcp`). Prefer accessibility-tree snapshots over screenshot/vision loops. Never hand-roll a screenshotter/OCR stack.
+
+### Browser-tool preflight (mandatory)
+
+Before **any** navigation to `INFOBASE_PUBLISH_URL`, run the preflight gate from `ui-testing-tools.md → "Preflight before web UI tests"`:
+
+1. Detect `agent-browser` (CLI on `PATH` and/or MCP tools in session).
+2. If missing — **do not open the browser**. Ask the user in Russian to install via `/install-agent-browser` (token savings). On yes — run that command, then continue. On no — fall back to the built-in browser MCP and note the higher token cost.
+3. Skipping the ask and silently using `cursor-ide-browser` / vision is a defect.
+
+Same gate as `/deploy-and-test` Step 4a — one source of truth in `ui-testing-tools.md`.
+
 ### Browser Testing Rules
 
-**CRITICAL**: Use the MCP browser tools for web testing:
+**CRITICAL**: Drive the web client with the preferred browser tool from `ui-testing-tools.md` (after preflight):
 
 1. **Navigate** to the infobase URL
-2. **Use human-like typing** simulation with **DELAY** when filling values
-3. **Use TAB** to navigate between form fields
-4. **Wait** for page elements to load before interaction
-5. **Take screenshots** at key points for documentation
+2. **Snapshot** (a11y tree / refs) before interacting; re-snapshot after DOM changes
+3. **Use human-like typing** simulation with **DELAY** when filling values
+4. **Use TAB** to navigate between form fields
+5. **Wait** for page elements to load before interaction
+6. **Take screenshots** at key points for documentation (evidence only — not the primary observe loop)
 
 ### Testing Workflow
 
+0. **Preflight** — confirm `agent-browser` or complete the install ask (see above)
 1. **Navigate to infobase URL**
    - Open the published infobase web interface
    - Verify login page or main interface loads
@@ -91,56 +100,21 @@ After deployment: read the log file referenced by `{LOG_PATH}` (or `$env:TEMP\1c
 
 ## Test Scenarios
 
-### Form Testing
+One template for all scenario kinds:
 
 ```
-Test Scenario: [Form Name]
-Preconditions: [Required state]
+Test Scenario: [Name]
+Object: [form / document / integration target]
+Preconditions: [required state / setup]
 
 Steps:
-1. Open [form path]
-2. Fill [field] with [value]
-3. Click [button]
+1. Open or create [object]
+2. Fill [header fields / tabular section / test data]
+3. Execute [action: click, save, post, trigger exchange]
 4. Verify [expected result]
 
-Expected Result: [Description]
-Actual Result: [What happened]
-Status: ✅ PASS / ❌ FAIL
-```
-
-### Document Posting Testing
-
-```
-Test Scenario: Document Posting
-Object: [Document type]
-
-Steps:
-1. Create new document
-2. Fill header: [fields]
-3. Fill tabular section: [data]
-4. Post document
-5. Check register movements
-
-Expected Movements:
-- Register [name]: [expected values]
-
-Actual Result: [What happened]
-Status: ✅ PASS / ❌ FAIL
-```
-
-### Integration Testing
-
-```
-Test Scenario: Integration with [System]
-Preconditions: [Required setup]
-
-Steps:
-1. Trigger integration action
-2. Monitor data exchange
-3. Verify data in both systems
-
-Expected Result: [Description]
-Actual Result: [What happened]
+Expected Result: [description; for document posting — expected movements per register; for integrations — data state in both systems]
+Actual Result: [what happened]
 Status: ✅ PASS / ❌ FAIL
 ```
 
@@ -201,44 +175,17 @@ Status: ✅ PASS / ❌ FAIL
 
 ## Browser Interaction Guidelines
 
-### Human-like Typing
-
-When filling form fields:
-- Type characters with small delays (50-100ms between characters)
-- Use realistic pauses between fields
-- Do not paste entire values instantly
-
-### Navigation
-
-- Use TAB to move between fields
-- Wait for field focus before typing
-- Verify field is active before input
-
-### Waiting Strategy
-
-- After navigation: wait for page load
-- After clicking: wait for response
-- Before verification: ensure elements are visible
-- Use short incremental waits (1-3 seconds) with checks
-
-### Screenshot Capture
-
-Capture screenshots:
-- After form opens
-- After data entry
-- After save/post actions
-- When errors occur
-- At test completion
+Observe via accessibility snapshot / element refs first (`agent-browser snapshot` or MCP equivalent); re-snapshot after page changes. Human-like typing: 50-100 ms between characters, realistic pauses between fields, never paste whole values. Navigation: TAB between fields, verify focus before input. Waiting: short incremental waits (1-3 s) with checks after navigation / clicks, elements visible before verification. Screenshots: evidence only — after form open, after data entry, after save / post, on errors, at completion — not the primary observe loop.
 
 ## Error Handling
 
 ### Deployment Errors
 
-If deployment fails:
-1. Read the log file carefully
-2. Identify the specific error
-3. Report the error to user
-4. Suggest possible fixes
+If deployment fails, follow the retry loop from `content/commands/update1cbase.md → Update retry loop` (referenced by `/deploy-and-test`):
+1. Read the log file in full — log errors override a clean exit code
+2. Terminate the hung / failed Configurator by its own PID only (never blanket-kill `1cv8` processes)
+3. Identify the specific error; fix its cause before any retry — re-running unchanged is forbidden
+4. At most 3 full attempts; then report the error, the fixes tried, and suggest next steps to the user
 
 ### UI Errors
 
@@ -257,12 +204,8 @@ If testing fails:
 | Field not found | Form changed | Update selectors |
 | Save failed | Validation error | Check required fields |
 
-## Success Criteria
+A session is complete when the configuration deployed successfully, critical scenarios passed (or failures are documented with reproduction steps and screenshots), and the test report is generated.
 
-After testing session:
-- ✅ Configuration deployed successfully
-- ✅ All critical test scenarios passed
-- ✅ No blocking issues found
-- ✅ Test report generated
-- ✅ Screenshots captured for evidence
-- ✅ Any issues documented with steps to reproduce
+## Common obligations
+
+Inherited from `content/rules/subagents.md → Common obligations` — do not weaken, and read that section for the exceptions: **CONFUSION** on material forks; **MCP-first search** before any native discovery on 1C project source; **metadata mutations only through the `1c-metadata-manage` skill**; **verification checklist** before declaring mutating work done.

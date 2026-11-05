@@ -27,7 +27,7 @@ Stamp file written: `.rules-template-sync.json` (commit / URL / time).
 
 ## What is preserved
 
-- `.dev.env`, `memory.md`, `USER-RULES.md`
+- `.dev.env`, `memory.md`, `USER-RULES.md`, `LLM-RULES.md` (project-owned; a project without `LLM-RULES.md` can copy the empty starter from the template root)
 - `.cursor/mcp.json`
 - `src/`, `build/`, `openspec/specs/`, `openspec/changes/` (except READMEs if you copy docs manually)
 

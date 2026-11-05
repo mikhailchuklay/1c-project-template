@@ -1,5 +1,6 @@
 ﻿# web-unpublish v1.0 — Remove 1C web publication
 # Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
+# Local: -DryRun / -Force safety gate and consolidated-layout project root.
 <#
 .SYNOPSIS
     Удаление веб-публикации 1С из Apache
@@ -18,14 +19,23 @@
 .PARAMETER All
     Удалить все публикации
 
-.EXAMPLE
-    .\web-unpublish.ps1 -AppName "mydb"
+.PARAMETER DryRun
+    Показать план без изменения файлов и перезапуска Apache
+
+.PARAMETER Force
+    Подтвердить выполнение удаления после просмотра DryRun
 
 .EXAMPLE
-    .\web-unpublish.ps1 -All
+    .\web-unpublish.ps1 -AppName "mydb" -DryRun
 
 .EXAMPLE
-    .\web-unpublish.ps1 -AppName "bpdemo" -ApachePath "C:\tools\apache24"
+    .\web-unpublish.ps1 -AppName "mydb" -Force
+
+.EXAMPLE
+    .\web-unpublish.ps1 -All -DryRun
+
+.EXAMPLE
+    .\web-unpublish.ps1 -AppName "bpdemo" -ApachePath "C:\tools\apache24" -Force
 #>
 
 [CmdletBinding()]
@@ -37,7 +47,11 @@ param(
     [string]$ApachePath,
 
     [Parameter(Mandatory=$false)]
-    [switch]$All
+    [switch]$All,
+
+    [switch]$DryRun,
+
+    [switch]$Force
 )
 
 $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -86,6 +100,21 @@ if ($All) {
     Write-Host "Удаление всех публикаций: $($appNames -join ', ')" -ForegroundColor Cyan
 } else {
     $appNames = @($AppName)
+}
+
+# --- Safety gate ---
+Write-Host "Planned changes:"
+Write-Host "  modify: $confFile"
+foreach ($name in $appNames) {
+    Write-Host "  delete: $(Join-Path (Join-Path $ApachePath 'publish') $name)"
+}
+if ($DryRun) {
+    Write-Host "[DRY-RUN] No files changed and Apache was not restarted."
+    exit 0
+}
+if (-not $Force) {
+    Write-Host "Error: unpublish requires explicit -Force. Run with -DryRun first." -ForegroundColor Red
+    exit 2
 }
 
 # --- Remove marker blocks ---
