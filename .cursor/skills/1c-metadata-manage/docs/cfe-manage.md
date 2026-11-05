@@ -287,20 +287,13 @@ Before loading an extension into any infobase, run the platform's own ladder —
 /CheckConfig -ConfigLogIntegrity -IncorrectReferences ... -Extension <Name>
 ```
 
-<<<<<<< template
-- New checks for borrowed-form structure, their dependencies (shared pictures, style elements, enums), and the extension's own subobjects (attributes, tabular sections, enum values, forms).
-- False positives removed: `DataPath` / `TitleDataPath` inside `BaseForm` are correct (Configurator emits them); the extension's own subobjects (own attributes, own enum values) are no longer validated as borrowed.
-- **Check 14 — role rights on non-securable objects.** Errors on rights granted to `CommonModule`
-  and other non-securable types in `Roles/*/Ext/Rights.xml` — the platform hangs loading such a role
-  (see `role-manage.md`).
-- **Check 15 — exchange-plan content is data objects only.** `ExchangePlans/*/Ext/Content.xml` may
-  contain only data objects (Constant, Catalog, Document, registers, …). `DataProcessor`, `Subsystem`,
-  `Role`, `HTTPService` in the content cause a load failure (explicit on 8.5.1, silent on 8.3.27).
-- **Run `cfe-validate` before every load of an extension from XML** — these checks catch constructs
-  on which the platform hangs or fails without diagnostics (incident 2026-07-08).
-=======
 Read the verdict from three signals (process exit code, `/DumpResult`, `/Out` diagnostics) and classify the platform's success phrases before its error stems — `Ошибок не обнаружено` contains the word `ошибок`. `Не найден метод` in the log is a failure even at exit code 0.
->>>>>>> vendor-HEAD
+
+**Project overlay (1c-project-template) — checks 20–21**, appended after the vendored checks 1–19:
+
+- **Check 20 — role rights on non-securable objects.** Errors on rights granted to `CommonModule`, `Enum`, `DefinedType` and other types that have no rights in roles (`Roles/*/Ext/Rights.xml`): the platform hangs loading such a role (incident 2026-07-08; `role-manage.md → Refusal before writing`).
+- **Check 21 — exchange-plan content is data objects only.** `ExchangePlans/*/Ext/Content.xml` may contain only data objects (Constant, Catalog, Document, registers, …). `DataProcessor`, `Subsystem`, `Role`, `HTTPService` in the content cause a load failure (explicit on 8.5.1, silent on 8.3.27).
+- Run `cfe-validate` before every load of an extension from XML — these two checks catch constructs on which the platform hangs or fails without diagnostics.
 
 For a `&ИзменениеИКонтроль`-heavy extension, `-Check` (section 4) and the applicability check answer related questions from opposite ends: drift detection names the *method* whose original moved, the platform names the *error*. Run `-Check` first — it is cheaper and its output is more actionable.
 

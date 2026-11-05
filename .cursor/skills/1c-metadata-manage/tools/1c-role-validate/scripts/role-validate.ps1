@@ -488,15 +488,6 @@ foreach ($obj in $objects) {
 	$objectType = Get-ObjectType $objName
 	$isNested = Is-NestedObject $objName
 
-<<<<<<< template
-	# Check object type is known / securable
-	if (-not $isNested -and $script:forbiddenRightsTypes.ContainsKey($objectType)) {
-		$reason = $script:forbiddenRightsTypes[$objectType]
-		Report-Error "${objName}: type '$objectType' is not a securable object ($reason); Designer hangs in an infinite loop loading a role with such rights"
-	}
-	elseif (-not $isNested -and -not $script:knownRights.ContainsKey($objectType)) {
-		Report-Warn "${objName}: unknown object type '$objectType'"
-=======
 	# Тип проверяется ВСЕГДА, включая вложенные пути: раньше `Enum.Х.Attribute.Y` не проверялся
 	# вообще, потому что ветка «unknown» стояла под `-not $isNested`.
 	$nestedKind = if ($isNested) { Get-NestedKind $objName } else { $null }
@@ -513,7 +504,6 @@ foreach ($obj in $objects) {
 		# маршрутах, причина по симптому не читается. В Конфигураторе галки на корне сервиса
 		# нет вовсе, так что это недостижимое состояние, а не стилистика.
 		Report-Error "${objName}: a right on the whole service has no effect — grant rights on nested objects: $($script:serviceLeafHints[$objectType] -f $objName)"
->>>>>>> vendor-HEAD
 	}
 
 	# Check rights

@@ -104,19 +104,7 @@ Pass criterion: OpenSpec exists, and `openspec/project.md` is present and meanin
 
 Check MCP at two levels:
 
-<<<<<<< template
-1. **Current session tools** — verify that expected tools are visible in the current agent tool schema when the server is configured:
-   - `syntaxcheck` for `1c-syntax-checker-mcp`;
-   - `templatesearch`, `remember`, `recall` for `1c-templates-mcp`;
-   - `ssl_search` for `1c-ssl-mcp`;
-   - `docinfo`, `docsearch` for `1C-docs-mcp`;
-   - `metadatasearch`, `codesearch`, `search_function`, `get_module_structure` for `1c-code-metadata-mcp`;
-   - `search_metadata`, `get_object_dossier`, `trace_impact`, `trace_call_chain` for `1c-graph-metadata-mcp`;
-   - `check_1c_code`, `review_1c_code`, `its_help`, `fetch_its` for `1c-code-check-mcp`.
-   - `v8std_search`, `v8std_get_page`, `v8std_explain_diagnostics`, `v8std_explain_snippet` for `v8std-mcp` (optional — complements ITS, not a replacement).
-=======
 1. **Current session tools** — verify that the expected tools of every configured server are visible in the current agent tool schema. The tool-name → server map and the `1C-docs-mcp` partial-exposure rule (`docsearch` present, `standards` missing = a **WARN** of its own) are owned by `/checkmcp` → *Step 2* (`.cursor/commands/checkmcp.md`) — apply them as written there.
->>>>>>> vendor-HEAD
 2. **Transport fallback** — when tools are missing but MCP config lists the server, run the `/checkmcp` algorithm: HTTP endpoint check, Docker state, and exact next action.
 
 Pass criterion: required MCP tools for the expected 1C workflow are visible in the current session. HTTP-only availability is **WARN** because the agent still cannot call the tools until the client reconnects.

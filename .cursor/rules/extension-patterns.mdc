@@ -46,17 +46,6 @@ Background reference: `standards(name="dev-standards-architecture") §2` (Extens
 ### No prefix in extension method names
 
 ## Extension purpose tag
-<<<<<<< template
-
-Set the `Purpose` (Назначение) of the extension in its properties:
-
-| Type | Purpose | When to use |
-|------|---------|-------------|
-| Patch | `Patch` | Minimal changes, interceptors only |
-| Customization | `Customization` | Attributes, forms, modules |
-| AddOn | `AddOn` | Full new functionality |
-
-The `Purpose` value affects update behaviour and the way the platform reapplies the extension after a base-configuration update.
 
 ---
 
@@ -87,5 +76,3 @@ Prefer **one extension per functional area**. Do not duplicate interceptors on t
 - **Same extension** — when changes are tightly coupled and share the same release cadence.
 
 Modification priority across all layers: event subscriptions → extensions → typical code (`dev-standards-architecture.mdc §2`).
-=======
->>>>>>> vendor-HEAD

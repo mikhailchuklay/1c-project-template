@@ -23,16 +23,11 @@ The source of truth for images, ports, and environment variables is [docs.onerpa
 | `1c-ssl-mcp` | 8008 | `comol/mcp_ssl_server:latest` | BSP/SSL search | No (`SSL_VERSION`) |
 | `1C-docs-mcp` | 8003 | `comol/1c_help_mcp:latest` | 1C platform help (RAG) + the `1c-standards` and `1c-format-specs` collections, which ship inside the image | Yes — platform `bin` folder |
 | `1c-code-metadata-mcp` | 8000 | `comol/1c_code_metadata_mcp:latest` | Metadata/code/forms/XSD | Yes — configuration dump |
-<<<<<<< template
-| `1c-graph-metadata-mcp` | 8006 | `comol/1c_graph_metadata_mcp:latest` | Graph search (Neo4j) | Yes — dump + Neo4j |
-| `1c-code-check-mcp` | 8007 | `comol/1c_code_checker_mcp:latest` | 1C:Assistant, ITS | No (Assistant token) |
-| `1c-data-mcp` | 80 / project | — (HTTP service on the infobase, **not** docker) | 1C data management and analysis (HTTP service published on the infobase itself) | Yes — `INFOBASE_PUBLISH_URL` in `.dev.env` + `mcp` HTTP service published. Native tools need an anonymous publish (correct for IIS / Apache). A non-anonymous publish — `ibsrv`, or IIS that was not published that way — is called with Basic the same way. See the authentication note below |
-| `v8std` | — | — (hosted HTTP, **not** docker) | v8std.ru standards navigation, BSLLS/ACC/EDT diagnostic bridge | No — public `https://ai.v8std.ru/mcp` |
-=======
 | `1c-graph-metadata-mcp` | 8006 | `comol/1c_graph_metadata:latest` | Graph search (Neo4j) | Yes — dump + Neo4j |
 | `1c-code-check-mcp` | 8007 | `comol/1c-code-checker:latest` | 1C:Assistant, ITS | No (Assistant token) |
-| `1c-data-mcp` | 80 / project | — (HTTP service on the infobase, **not** docker) | 1C data management and analysis (HTTP service published on the infobase itself) | Yes — `INFOBASE_PUBLISH_URL` in `.dev.env` + `mcp` HTTP service published on the infobase **with anonymous access** |
->>>>>>> vendor-HEAD
+| `1c-data-mcp` | 80 / project | — (HTTP service on the infobase, **not** docker) | 1C data management and analysis (HTTP service published on the infobase itself) | Yes — `INFOBASE_PUBLISH_URL` in `.dev.env` + `mcp` HTTP service published. Native tools need an anonymous publish (correct for IIS / Apache). *Project overlay:* a non-anonymous publish — `ibsrv`, or IIS / Apache not published that way — is called with Basic through `tools/dev-standalone/Invoke-DataMcp.ps1`; see the authentication note below |
+| `v8std` (project overlay) | — | — (hosted HTTP, **not** docker) | v8std.ru standards navigation, BSLLS/ACC/EDT diagnostic bridge | No — public `https://ai.v8std.ru/mcp` |
+| `rlm-tools-bsl` (project overlay) | 9000 | — (local, `docs/rlm-setup.md`) | Local dump search; availability substitute when graph and code-metadata are both absent | Yes — RLM index of the dump |
 
 > Exact image names may differ by version. If `docker pull` fails with `manifest unknown`, check the current list at [docs.onerpa.ru/mcp-servery-1c/servery.md](https://docs.onerpa.ru/mcp-servery-1c/servery.md).
 
@@ -105,9 +100,6 @@ The source of truth for images, ports, and environment variables is [docs.onerpa
 
 For each `id`, determine **TOOLS_OK** / **TOOLS_MISSING**:
 
-<<<<<<< template
-- **TOOLS_OK** — this server's tools are visible in the current session tool schema (for example, `syntaxcheck` for `1c-syntax-checker-mcp`, `templatesearch`/`recall` for `1c-templates-mcp`, `ssl_search` for `1c-ssl-mcp`, `docinfo`/`docsearch` for `1C-docs-mcp`, `metadatasearch`/`codesearch` for `1c-code-metadata-mcp`, `search_metadata`/`get_object_dossier` for `1c-graph-metadata-mcp`, `check_1c_code`/`its_help` for `1c-code-check-mcp`, `v8std_search`/`v8std_get_page` for `v8std`).
-=======
 - **TOOLS_OK** — this server's tools are visible in the current session tool schema. Tool-name → server map (canon — `/doctor` Check 5 points here):
   - `syntaxcheck` (plus `syntaxcheck_file` when the sources mount is configured) — `1c-syntax-checker-mcp`;
   - `templatesearch`, `recall`, `remember` (memory write is ungated on current builds) — `1c-templates-mcp`;
@@ -116,7 +108,7 @@ For each `id`, determine **TOOLS_OK** / **TOOLS_MISSING**:
   - `metadatasearch`, `codesearch`, `search_function`, `get_module_structure` — `1c-code-metadata-mcp`;
   - `search_metadata`, `get_object_dossier`, `trace_impact`, `trace_call_chain` — `1c-graph-metadata-mcp`;
   - `check_1c_code`, `review_1c_code`, `its_help`, `fetch_its` — `1c-code-check-mcp`.
->>>>>>> vendor-HEAD
+  - *Project overlays:* `v8std_search`, `v8std_get_page` — `v8std`; `rlm_start`, `rlm_execute` — `rlm-tools-bsl`.
 - **TOOLS_MISSING** — no tools are visible in the schema.
 
 If status is **TOOLS_OK**, treat the server as working and do not check it further.

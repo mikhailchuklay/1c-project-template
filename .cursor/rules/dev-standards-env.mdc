@@ -50,11 +50,7 @@ Both these parameters and the practices they govern — adding a project prefix 
 
 ### Infobase / deployment parameters
 
-<<<<<<< template
-Used by `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test`, the `1c-tester` subagent, and configuration-storage ops when enabled. **Not consulted at all for pure code, review, analysis, or documentation tasks** — pure code work proceeds even when this entire block is empty.
-=======
 Used by `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test`, the full-cycle commands (`/initproject`, `/restore-testbase`, `/test-fix-loop`, `/build-release`) and the `1c-tester` subagent. **Not consulted at all for pure code, review, analysis, or documentation tasks** — pure code work proceeds even when this entire block is empty.
->>>>>>> vendor-HEAD
 
 | Parameter | Effect | Class | Behavior when empty |
 |---|---|---|---|

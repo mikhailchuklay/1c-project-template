@@ -31,11 +31,7 @@ impact-analysis evidence.
 
 ## Hard gates — run on every full-cycle change
 
-<<<<<<< template
-You MUST run all five gates in order (plus Gate 6 for managed-form runtime changes — project overlay, see below). Each gate has an explicit pass / fail criterion and an explicit retry budget. When a required validator is not exposed in the current session, follow the graceful-degradation subsections (after Gate 3 and inside Gate 4) instead of silently skipping. **Gate 3a is conditional** — it runs only when its own trigger fires and its server is exposed; it never replaces Gates 1–3.
-=======
 You MUST run all five gates in order. Each gate has an explicit pass / fail criterion and an explicit retry budget. When a required validator is not exposed in the current session, follow the graceful-degradation subsections (after Gate 3 and inside Gate 4) instead of silently skipping. **Gates 3a and 6 are conditional** — each runs only when its own trigger fires and its prerequisite (an exposed server, or a reachable platform + infobase) is present; neither ever replaces Gates 1–3.
->>>>>>> vendor-HEAD
 
 The gate descriptions below state the `full` behaviour — the strictest level. When `VERIFICATION_DEPTH` is `standard` or `lite`, Gates 1–3 are modulated per `verification-policy.md → "Verification depth levels"`, promotion-trigger paths included: they are full-cycle and keep the `full` retry budget, but their gates follow the active depth.
 
@@ -138,40 +134,6 @@ When XML was edited:
 
 - **`verify_xml`** on every modified XML file. Pass criterion: zero schema violations. If unavailable in `auto`/`off`, run the skill's applicable local validator and report its actual coverage; parsing alone is not schema validation. Uncovered checks stay unverified. In `required`, substitutes do not close the gate.
 - **Execution-path check.** Metadata mutations (new objects, attributes, tabular sections, forms, layouts) must have gone through the `1c-metadata-manage` skill / `1c-metadata-manager` subagent — hard gate per `AGENTS.md → Skills and Subagents`. If hand edits were used, this gate passes only when the exception is one of those documented in `SKILL.md → Hard rule` **and** is stated in the delivery summary (`Metadata tooling: hand-edit — <exception>`); additionally cross-check `metadata-xml-workarounds.md` for the recurring traps (LineNumber, PagesGroupExtInfo, Page.enabled, UID uniqueness). Hand-edited metadata without a stated documented exception is a gate failure — the same class as a skipped validator.
-<<<<<<< template
-- For `Form.xml` edits: also confirm the form opens in Configurator without warnings — schema validity is necessary but not sufficient.
-
-### Gate 6 — UI runtime (managed-form behaviour changes)
-
-**Load** `1commerce-functional-testing.mdc` for channel selection and project scripts.
-
-**Relation to `UI_TESTING` (project overlay — 1c-project-template).** Gate 6 is a hard gate of this template and is **not** switched off by `UI_TESTING` (`dev-standards-env.md §1`): `UI_TESTING` governs routine UI regression runs (Soft gate D in `verification-delivery.md`), Gate 6 governs delivery of managed-form runtime changes. With `UI_TESTING=off` or `manual` the gate still applies — run the smoke once for the affected form(s), or record *"Gate 6 blocked"* as below. Drive the run with the tool order from `ui-testing-tools.md`.
-
-**Triggers** — run when **any** of the following is true (if in doubt, run):
-
-- `Form/Module.bsl` was edited and the change affects what the user sees or how the form initializes at open time: `Элементы.Добавить`, `ИзменитьРеквизиты`, `Переместить`, `УстановитьДействие`, handlers wired to new elements, or procedures named like `*НастроитьФорму*`, `*УправлениеФормой*`.
-- Form event handlers were added or changed (`ПриСозданииНаСервере`, `ПриЧтенииНаСервере`, `ПриОткрытии`, element `ПриИзменении`, …).
-- OpenSpec / `tasks.md` / the user scenario explicitly describes form layout, visibility, or controls the user must see.
-
-**Does not trigger** for: comment-only edits; refactoring with no element graph change; pure server logic in form module that does not run on open (rare — when in doubt, trigger).
-
-**What static gates cannot catch (why this gate exists):** invalid or unavailable properties on programmatic form elements (`Поле объекта не обнаружено`), wrong `ВидПоляФормы` / `ВидГруппыФормы` values, element placement bugs — `syntaxcheck` / `check_1c_code` / `review_1c_code` do **not** execute `ПриСозданииНаСервере` against a live form.
-
-**Pass criterion** — **all** must hold:
-
-1. Extension/configuration is loaded into the target DEV infobase (same revision as the diff).
-2. **Automated UI smoke** for the affected form(s) passes — preferred order:
-   - project-specific script under `tools/dev-standalone/` if one exists for this form (e.g. `Invoke-*Form*Smoke.ps1`, `Verify-*` step);
-   - else `/deploy-and-test` UI step or `1c-tester` subagent against `INFOBASE_PUBLISH_URL`;
-   - else agent-run web-client navigation to open the form (create + existing object) with assertion on expected controls and **no** extension init errors in the event log.
-3. Delivery summary lists: form qualified name, scenarios exercised (new / existing), and smoke result.
-
-**`SKIP` is not `PASS`.** A functional test that returns `SKIP [form]` because `ПолучитьФорму*` is unavailable in `1c-data-mcp` server context does **not** satisfy Gate 6. API-only tests (HTTP integrations, posting pipelines, queries) do **not** satisfy Gate 6.
-
-**When `INFOBASE_PUBLISH_URL` is empty:** do not declare form/UI tasks done; do not tick OpenSpec form tasks; state *"Gate 6 blocked — configure INFOBASE_PUBLISH_URL or run manual UI smoke"* in **Follow-ups**. The user is not the default tester — absence of automation is a **blocker**, not an implicit handoff.
-
-**When UI automation fails:** fix and re-run Gate 6; do not deliver "please check in UI" as a substitute for a failed gate.
-=======
 - For `Form.xml` edits: schema validity is necessary but not sufficient — whether the form loads cleanly is platform evidence. When the change reaches an infobase, Gate 6 (`/CheckConfig` on the loaded configuration) supplies it; otherwise record under **Risks**: *"Form load not verified on the platform — open `<form>` in Configurator / run `/CheckConfig` before release."* Never claim the form opens without that evidence.
 
 **EDT-format sources (`USE_EDT=true`, MDO tree).** `verify_xml` does not apply to `*.mdo` / `*.form`. The equivalent evidence is EDT's own validation — `revalidate_objects` on the changed objects → `get_project_errors` / `get_problem_summary` — recorded in the delivery summary exactly as `verify_xml` evidence is. The execution-path check is unchanged in spirit: the mutation must have gone through EDT (EDT-MCP, the EDT UI, or a confirmed export/import round trip), and a hand-edited `*.mdo` is a gate failure with no documented exception. Canon — `.cursor/rules/edt-workflow.mdc → Validation`. Gates 1–3 on BSL are unaffected: modules are plain `.bsl` in both formats. The same substitution applies to Gate 6 below: EDT's validation and `update_database` are that project's applicability evidence, and the batch ladder must not run as a second deployment owner in the same run.
@@ -190,4 +152,3 @@ platform / modes, process exit code, log path and `/DumpResult` code. Reuse it o
 artifact and relevant target state still match; a later load or source edit invalidates it.
 
 **When the trigger fired but the gate could not run** (no `PLATFORM_PATH` / `INFOBASE_PATH`, or the base is production and no dev/test copy is available), record one line under **Risks**: *"Gate 6 not run — `<reason>`; extension applicability was not verified against an infobase."* Delivery is not blocked, but an extension change delivered without it must be flagged as unverified against a real base. This gate never substitutes for Gates 1–5.
->>>>>>> vendor-HEAD

@@ -2,11 +2,7 @@
 
 Execution of BSL code, queries and event-log inspection **inside the project's live infobase** via the HTTP service `hs/mcp` published on that infobase (tools from [comol/mcp_designer_tools](https://github.com/comol/mcp_designer_tools), loaded into the *Конструктор MCP серверов для 1С* on the IB side).
 
-<<<<<<< template
 > Two ways this server is reachable. (1) Native tools in the session schema — when `{INFOBASE_PUBLISH_URL}/hs/mcp` answers **without** authentication. That is the correct IIS / Apache publish (`default.vrd`). (2) Any publication that is not anonymous: the standalone server `ibsrv`, or IIS / Apache that was not published that way. The call is the same in both of those cases. Cursor does not send `Authorization`. An anonymous call returns **503** on `ibsrv` and typically **401** on IIS; the same call with HTTP Basic (`IB_USER` / `IB_PASSWORD` from `.dev.env`) returns **200**. The password is the infobase user's password; do not assume it is empty. A blank `IB_PASSWORD` still sends the header (`user:`). Native tools stay hidden. Call `tools/dev-standalone/Invoke-DataMcp.ps1` (start/stop `ibsrv` with `start.ps1` / `stop.ps1` in the same folder). Do **not** call `mcp_auth` and do **not** use the COM connector. Methodology — `.cursor/rules/1commerce-functional-testing.mdc`. Probe — `.cursor/commands/checkmcp.md`.
-=======
-> Load this file only if the `1c-data-mcp` server is actually available in the current session (its tools are visible in the agent tool schema). Mere presence in `mcp-servers.json` or in `.cursor/mcp.json` does not count as availability — the HTTP endpoint `{INFOBASE_PUBLISH_URL}/hs/mcp` must respond and must be reachable **without** authentication. Setup and troubleshooting — `.cursor/commands/checkmcp.md` (section about `1c-data-mcp`).
->>>>>>> vendor-HEAD
 
 ## Tool catalog
 
@@ -51,7 +47,6 @@ The implementation runs `Выполнить(bslcode)` inside a procedure where t
 
 ## Availability check
 
-<<<<<<< template
 If the native tools are absent, do **not** synthesize their behaviour and do **not** invent execution output.
 
 Distinguish the cause before falling back to static-only verification:
@@ -63,6 +58,3 @@ Distinguish the cause before falling back to static-only verification:
 - **404** — the `mcp` HTTP service is not published.
 
 Only when the publication cannot be brought up (no platform, no infobase, credentials the user must supply) fall back to static MCP analyzers, the configuration dump, and asking the user to run the snippet in the Configurator. Setup / fix steps — `.cursor/commands/checkmcp.md`.
-=======
-If the server is offline (web publication down, `mcp` HTTP service not published, or publication requires Basic auth and the MCP client gets `401`/`403`), the tools simply do not appear in the agent's tool schema. Do **not** synthesize their behaviour from memory and do **not** invent fake "execution" output — fall back to the verification path that does not need the live IB (static MCP analyzers + reading code in the dump + asking the user to run the snippet in the Configurator). Setup / fix steps — `.cursor/commands/checkmcp.md`.
->>>>>>> vendor-HEAD

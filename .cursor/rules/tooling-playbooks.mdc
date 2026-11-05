@@ -5,11 +5,9 @@ alwaysApply: false
 
 # Tool Usage by Task — Playbooks
 
-<<<<<<< template
-The MCP server catalog, fallback order (`graph → code-metadata → grep=true retry → Grep` for project-source search; if both graph and code-metadata are unavailable → `rlm-tools-bsl` when exposed), and per-server tool descriptors live in the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`, `docs/<server>.md`). `AGENTS.md` only defines the short obligation rules and points here.
-=======
 Server catalog and routing — `.cursor/skills/mcp-1c-tools/SKILL.md`; exact argument names and example calls — the operation skill it names (`1c-code-search`, `1c-meta-info`, `1c-impact`, `1c-form-inspect`, `1c-validate`, `1c-platform-help`, `1c-templates-memory`, `1c-live-ib`); search discipline — `.cursor/rules/mcp-first-search.mdc`. In EDT projects (`.dev.env` `USE_EDT=true`) the playbooks apply unchanged and `.cursor/rules/edt-workflow.mdc` adds the source-format check, EDT validation markers, EDT-side DB update and form snapshots.
->>>>>>> vendor-HEAD
+
+*Project overlays:* when neither graph nor code-metadata is exposed for the contour and `rlm_start` is, `rlm-tools-bsl` runs before native search (`.cursor/skills/mcp-1c-tools/docs/rlm-tools-bsl.md`); `v8std` (`.cursor/skills/mcp-1c-tools/docs/v8std-mcp.md`) decodes BSLLS / ACC / EDT codes and maps snippets to standards in the Code Review and Error Fixing playbooks below.
 
 ## Minimum Evidence Matrix
 
@@ -43,24 +41,12 @@ Load `.cursor/rules/coding-standards.mdc` first; forms — `forms.md`; non-trivi
 
 ## Code Review
 
-<<<<<<< template
-1. **search_code** → **codesearch** — verify pattern compliance.
-2. **trace_impact** → **graph_dependencies** — object-level impact analysis of the change.
-3. **trace_call_chain** → **get_method_call_hierarchy** — routine-level BSL call chains, callers/callees.
-4. **metadatasearch** / **get_metadata_details** — correct metadata usage.
-5. **docinfo** — verify method/property existence; **docsearch** — search by description.
-6. **syntaxcheck** — reject syntax-broken input before AI review.
-7. **check_1c_code** — bugs and performance issues.
-8. **review_1c_code** — style and ITS compliance.
-9. **v8std_explain_snippet** / **v8std_explain_diagnostics** (`v8std`, if available) — map suspect code or linter codes to standard ids; then **v8std_get_page** for adapted text.
-10. **its_help** → **fetch_its** — normative cross-check against ITS standards (authoritative over v8std); mandatory when compliance is disputed or project rules may differ.
-=======
 1. `search_code` → `codesearch` — pattern compliance.
 2. `trace_impact` → `graph_dependencies` — object-level impact; `trace_call_chain` → `get_method_call_hierarchy` — callers / callees.
 3. `metadatasearch` / `get_metadata_details` — metadata usage; `docinfo` / `docsearch` — method existence.
 4. Validator chain (`syntaxcheck` first — never feed syntax-broken code to the AI reviewers).
 5. `its_help` → `fetch_its` — ITS standards cross-check.
->>>>>>> vendor-HEAD
+6. *Project overlay:* `v8std_explain_snippet` / `v8std_explain_diagnostics` (`v8std`, if exposed) — map suspect code or linter codes to standard ids, then `v8std_get_page`; ITS (`its_help` → `fetch_its`) stays authoritative when compliance is disputed.
 
 ## Architecture Design
 
@@ -71,23 +57,6 @@ Load `.cursor/rules/coding-standards.mdc` first; forms — `forms.md`; non-trivi
 
 ## Error Fixing
 
-<<<<<<< template
-1. **recall** (`1c-templates-mcp`) — check project memory for the error text / object name first: recurring errors and their fixes are stored there per `AGENTS.md → Project memory`.
-2. **vcloggetlasterror** (`1c-data-mcp`, if available) — fetch the exact text, timestamp and affected metadata of the last error from the live IB before forming hypotheses. Avoids guessing what the user "probably saw". Skip when the failing scenario is not yet reproduced in the connected IB.
-3. **syntaxcheck** — syntax errors; collect BSLLS diagnostic codes from warnings when present.
-4. **v8std_explain_diagnostics** (`v8std`, if available) — when `syntaxcheck` or the user provides BSLLS/ACC/EDT codes; then **v8std_get_page** on returned ids for fix context.
-5. **check_1c_code** — logic and performance issues.
-6. **search_function** — locate the failing procedure/function.
-7. **search_code** → **codesearch** — related patterns (`detail_level="L0"` for the full body of a specific routine).
-8. **get_module_structure** — module context around the error.
-9. **trace_call_chain** → **get_method_call_hierarchy** — how the error propagates through the call chain.
-10. **docinfo** — verify function/method names; **docsearch** — fallback by description.
-11. **metadatasearch** / **get_metadata_details** — verify metadata names and attributes.
-12. **validatequery** (`1c-data-mcp`, if available) — when the suspect path is a query string, parse-check it before deeper investigation.
-13. **vcexecutequery** (`1c-data-mcp`, if available) — read-only query against the live IB to confirm a data-state hypothesis without changing production code.
-14. **vcexecutecode** (`1c-data-mcp`, if available) — run a small read-only BSL fragment in the live IB to verify a platform-version-specific behaviour. Default to read-only; **never** wrap a mutation without explicit user consent (see `docs/1c-data-mcp.md → Safety`).
-15. **modify_1c_code** — targeted AI fix (treat output as a draft, re-validate).
-=======
 Method — `standards(name="systematic-debugging")` (`DEBUG_FAST_PATH` for directly evidenced root causes).
 
 1. `recall` — recurring errors and their fixes are stored there.
@@ -97,7 +66,7 @@ Method — `standards(name="systematic-debugging")` (`DEBUG_FAST_PATH` for direc
 5. `docinfo` / `docsearch`, `metadatasearch` / `get_metadata_details` — verify names the code relies on.
 6. `vcvalidatequery` → `vcexecutequery` (read-only) → `vcexecutecode` (read-only fragment; never a mutation without explicit consent — `docs/1c-data-mcp.md → Safety`) — confirm a data-state or platform-behaviour hypothesis in the live IB.
 7. `modify_1c_code` — targeted AI fix (a draft: re-validate).
->>>>>>> vendor-HEAD
+8. *Project overlay:* when `syntaxcheck` or the user provides BSLLS / ACC / EDT codes and `v8std` is exposed — `v8std_explain_diagnostics`, then `v8std_get_page` on the returned ids for fix context (between steps 3 and 4).
 
 ## Performance Optimization
 
