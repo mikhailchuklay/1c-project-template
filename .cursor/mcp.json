@@ -3,7 +3,7 @@
         "mcp-1c-platform-tools": {
             "command": "node",
             "args": [
-                "${env:USERPROFILE}\\.cursor\\extensions\\yellow-hammer.mcp-1c-platform-tools-0.1.8-universal\\out\\src\\index.js"
+                "${env:USERPROFILE}\\.cursor\\extensions\\yellow-hammer.mcp-1c-platform-tools-0.3.2-universal\\out\\src\\index.js"
             ],
             "env": {
                 "ONEC_IPC_HOST": "127.0.0.1",
