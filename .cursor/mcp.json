@@ -86,7 +86,17 @@
                 "vrunner-mcp"
             ],
             "description": "vanessa-runner MCP (Linux, контейнер агента): загрузка/выгрузка cf/cfe/epf, обновление БД, хранилище, проверки и тесты. Подключение — переменные VRUNNER_* из .dev.env и секретов (выставляет agent-run). На Windows не нужен: там Platform Tools и скрипты 1c-metadata-manage.",
-            "disabled": true
+            "disabled": true,
+            "env": {
+                "VRUNNER_IBCONNECTION": "${env:VRUNNER_IBCONNECTION}",
+                "VRUNNER_V8VERSION": "${env:VRUNNER_V8VERSION}",
+                "VRUNNER_DBUSER": "${env:VRUNNER_DBUSER}",
+                "VRUNNER_DBPWD": "${env:VRUNNER_DBPWD}",
+                "VRUNNER_STORAGE_NAME": "${env:VRUNNER_STORAGE_NAME}",
+                "VRUNNER_STORAGE_USER": "${env:VRUNNER_STORAGE_USER}",
+                "VRUNNER_STORAGE_PWD": "${env:VRUNNER_STORAGE_PWD}",
+                "VRUNNER_EXTENSION_NAME": "${env:VRUNNER_EXTENSION_NAME}"
+            }
         }
     }
 }
