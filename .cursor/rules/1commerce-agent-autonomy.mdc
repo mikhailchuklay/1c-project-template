@@ -1,0 +1,34 @@
+---
+description: "Project overlay: keep moving through the task plan — pre-existing validator findings on untouched modules are a Risks line, not a CONFUSION; after a clean deploy continue with the acceptance items. Load with every full-cycle task."
+alwaysApply: false
+---
+
+# Agent autonomy — when to continue, when to ask (project overlay)
+
+**When to load this file:** at the start of every full-cycle or quick-fix task, and whenever a validator result or a finished command makes you consider ending the turn with a question. This overlay narrows two vendor behaviours that stop work for no good reason; every other stop rule (`AGENTS.md → CONFUSION`, `verification-policy.md`, `dev-standards-env.md → INFOBASE_ROLE`) stays as is.
+
+## 1. Pre-existing findings on modules you did not change
+
+`syntaxcheck` validates an extension module **in isolation**: attributes of a borrowed object that stay in the main configuration (`ВидДокумента`, `РегистрационныйНомер`, …) are unknown to it, so bare-name access in an object module of a borrowed catalog or document yields `error: переменная не определена` while `Объект.<Реквизит>` passes. The same holds for `ЭтотОбъект`, `ДополнительныеСвойства` and borrowed common-module calls in a partial dump.
+
+Decision rule, applied before any CONFUSION:
+
+1. **Is the module in the diff of this task?** No → the finding is pre-existing. Record one line under **Risks** (*"`<Module>`: `<n>` pre-existing `syntaxcheck` errors, module not touched by this change — borrowed attributes read by bare name; works in the running base"*), do **not** edit the module, do **not** re-run the validator on it, and **continue the task**. The vendor Surgical-Changes rule for pre-existing warnings (`verification-gates.md → Gate 1`) applies to these errors too, because the validator cannot see the main configuration.
+2. **Yes, the module is in the diff** → apply the vendor budget: fix, one confirming run. If the error is in a line you did not change and the pattern above explains it, treat that line as pre-existing; your own lines must pass.
+3. **The infobase proves it:** when the same module was loaded and `/CheckCanApplyConfigurationExtensions` / Gate 6 passed, or the behaviour was exercised on the test base, that evidence outranks the isolated validator. Say so in the report instead of asking.
+
+A CONFUSION is justified only when fixing **your** change requires editing an untouched object, or when the finding points at a real defect (an attribute that does not exist in the main configuration either — check with `1c-meta-info` / `get_object_dossier` before deciding).
+
+## 2. After a command finishes, continue the plan
+
+The vendor commands (`/deploy-and-test`, `/update1cbase`, the validator chain) each end with their own report. In this project that report is **not** the end of the task: when the change has a plan (`openspec/changes/<id>/tasks.md`, a numbered acceptance list in the request, or the Definition of Done from `AGENTS.md`), go on to the next unfinished item in the same turn:
+
+- deploy passed → run the acceptance checks for the deployed behaviour (`1commerce-functional-testing.mdc`: readiness gate, test-data discovery, `1c-data-mcp` for server logic, the UI route under `UI_TESTING` for forms);
+- acceptance passed → tick `tasks.md`, write the delivery summary (`verification-delivery.md`), and only then end the turn;
+- an item cannot run (no route, no data, production target) → one line under **Risks** and the next item, not a question.
+
+Stop and hand back the turn only on: a real CONFUSION trigger from `AGENTS.md`, an action that needs the user's consent by rule (mutation on a live base, `-Force` repository operation, production target, `/install-*`), the user's explicit "stop here", or the end of the plan. "What next?" from the user means a stop of this kind happened for no reason — note the cause in the report so it can be fixed in the rules.
+
+## 3. Report wording
+
+Never present a stop as the user's decision when the rules already decide it. State what is established, what is pre-existing, what remains unverified, and the next step you are taking. The report at the end of the task follows `verification-delivery.md`; intermediate command reports are one paragraph at most.
