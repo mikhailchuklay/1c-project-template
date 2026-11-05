@@ -1,146 +1,68 @@
 ---
 name: v8unpack-cf
-description: "Unpack and repack 1C binary files (CF / CFE / EPF) with the Python `v8unpack` utility — no 1C platform required. Use when you need to extract a configuration, extension or data processor into human-readable sources (JSON + BSL), or build a binary back from sources, and the 1C:Enterprise platform is not available."
+description: "Read and write 1C binaries without the platform: an ordinary form `Ext/Form.bin` via the `unpack_ordinary_form` / `build_ordinary_form` MCP tools, a whole CF / CFE / EPF via the `v8unpack` CLI. Use for `Form.bin`, обычные формы, or a binary with no infobase / Designer / `ibcmd`."
 ---
 
-# v8unpack-cf — unpack and repack 1C binary files
+# v8unpack-cf — read and write 1C binary artifacts
 
-`v8unpack` is a Python utility that unpacks 1C binary files (CF / CFE / EPF) into a
-human-readable source tree (JSON + BSL) **without the 1C:Enterprise platform**, and
-builds the binary back from those sources.
+Two workflows live here, and they are not variants of one thing:
 
-Use this skill when you only have a binary artifact (a `.cf` configuration dump, a
-`.cfe` extension, or an `.epf` external data processor) and no running infobase or
-Designer / `ibcmd` at hand. When the configuration lives in an infobase, extract it
-through the platform instead — see the `getconfigfiles` rule.
+| You have | Route | Section |
+|---|---|---|
+| One **ordinary form** — `.../Forms/<Форма>/Ext/Form.bin` | MCP tools `unpack_ordinary_form` / `build_ordinary_form` | *Ordinary forms — `Form.bin`* |
+| A whole **CF / CFE / EPF** binary | `v8unpack` CLI (`-E` / `-B`) | *Whole binaries — CF / CFE / EPF* |
+
+Use either when the 1C:Enterprise platform is not at hand. When the configuration
+lives in an infobase, extract it through the platform instead — see the
+`getconfigfiles` rule.
 
 ## Dependency
 
-- `v8unpack` Python package — install with `pip install v8unpack` (or a dev install
-  from its repository). Verify with `python -m v8unpack --help`.
+- `v8unpack` Python package — `pip install "v8unpack>=1.2.6,<2"`. Verify with
+  `python -m v8unpack --help`.
+- Both MCP servers declare it in their own requirements, so the tools work in a
+  built image. When it is missing they answer `status="error"`,
+  `error_code="dependency_missing"` with the install line in `hint` — that is the
+  answer, not a crash.
 
-## Commands
+## Ordinary forms — `Form.bin`
 
-### Extract (`-E`)
+Before any ordinary-form tool call or payload edit, read [ordinary-forms.md](docs/ordinary-forms.md): exact MCP contract, workspace, workflow and warnings. Never edit `Form.bin` directly or deflate its entries. Edit `payload/`, preserve the manifest, and require logical payload verification before delivery.
 
-```bash
-python -m v8unpack -E "<file.cf>" "<sources_dir>" --temp "<temp_dir>"
-```
+## Whole binaries — CF / CFE / EPF
 
-| Parameter | Description |
-|-----------|-------------|
-| `<file.cf>` | Path to a CF, CFE or EPF file |
-| `<sources_dir>` | Destination for the unpacked sources (created automatically) |
-| `--temp <path>` | Folder for intermediate data (kept, not deleted — useful for debugging) |
-| `--processes N` | Number of worker processes (default: `cpu_count - 2`) |
-| `--descent XYYZZZ` | Extension versioning mode (configuration version suffix) |
-| `--auto_include` | Build the table of contents dynamically from the folder, not from the header |
-| `--prefix STR` | Prefix for first-level metadata names |
-
-### Build (`-B`)
-
-```bash
-python -m v8unpack -B "<sources_dir>" "<file.cf>"
-```
-
-| Parameter | Description |
-|-----------|-------------|
-| `<sources_dir>` | Folder with the unpacked sources |
-| `<file.cf>` | Path to the output CF / CFE / EPF file |
-| `--index <path>` | JSON table-of-contents file (maps files across folders) |
-| `--version XYYZZ` | Compatibility-mode version (for extensions), e.g. `80306` = 8.3.6 |
-| `--descent XYYZZZ` | Configuration version suffix |
-
-### Index (`-I`)
-
-```bash
-python -m v8unpack -I "<sources_dir>" --index index.json --core core
-```
-
-Generates / updates `index.json` — the table-of-contents file that controls how sources
-are laid out across subfolders.
-
-### Batch operations (`-EA`, `-BA`, `-IA`)
-
-```bash
-python -m v8unpack -EA products.json              # extract all products
-python -m v8unpack -BA products.json              # build all products
-python -m v8unpack -BA products.json --index KEY  # build a specific product
-```
-
-`products.json` describes several products with their individual build parameters.
-
-## Python API
-
-```python
-import v8unpack
-
-v8unpack.extract('d:/sample.cf', 'd:/src')
-v8unpack.extract('d:/sample.cf', 'd:/src', temp_dir='d:/temp',
-                 options={'descent': 4100200, 'auto_include': True})
-
-v8unpack.build('d:/src', 'd:/repacked.cf')
-v8unpack.build('d:/src', 'd:/repacked.cf', index='index.json',
-               options={'descent': 4100200, 'version': '80306'})
-```
-
-## Examples
-
-### Extract a configuration
-
-```bash
-python -m v8unpack -E "<project>/1Cv8.cf" "<project>/src" --temp "<project>/temp"
-```
-
-### Build it back
-
-```bash
-python -m v8unpack -B "<project>/src" "<project>/1Cv8_new.cf"
-```
-
-### Extract an external data processor
-
-```bash
-python -m v8unpack -E "MyDataProcessor.epf" "src_epf"
-```
-
-### Extract an extension
-
-```bash
-python -m v8unpack -E "MyExtension.cfe" "src_cfe" --descent 3000112
-```
-
-### Build an extension
-
-```bash
-python -m v8unpack -B "src_cfe" "bin/ext.cfe" --index cmd/index.json --descent 3000112 --version 80316
-```
-
-## Version compatibility
-
-The utility version is recorded in `Configuration.json` (`"v8unpack": "1.2.6"`). On
-build, `major.minor` must match. If the versions differ:
-
-1. Build with the old version.
-2. Upgrade the utility.
-3. Re-extract with the new version.
-4. Commit.
-
-## Intermediate stages (`--temp`)
-
-| Stage | Description |
-|-------|-------------|
-| `decode_stage_0/` | Extraction from the 1C container |
-| `decode_stage_1/` | Decompression (zlib), bracket-files |
-| `decode_stage_3/` | Metadata parsing → tree |
-| Destination folder | Code organization (include, form elements) |
+Before whole-binary extraction, build, indexing or Python API use, read [whole-binaries.md](docs/whole-binaries.md). On Windows use `--processes 1` unless parallel processing is validated for the artifact. A rebuilt current-configuration `.cf` is not a loadable substitute for a platform-written file; the limitations below apply.
 
 ## Limitations
+
+Of the CLI route:
 
 - Object properties and form layout are stored in `header` / `raw` as raw arrays.
 - Files larger than 1 MB (layouts, HTML) are stored as `.bin` without decoding.
 - Encrypted modules are kept in binary form.
 - With `--auto_include`, nested objects are sorted alphabetically.
+
+Of ordinary forms specifically — measured on a real extraction (`1C-Gitter`
+1.1.0.8, 170 form artifacts, v8unpack 1.2.6), not assumed:
+
+- **`*.elem.json` is populated for managed forms and empty for ordinary ones.**
+  23 of 23 managed forms (`Тип формы` = `1`) came back with a named `tree`;
+  147 of 147 ordinary forms (`Тип формы` = `0`, element version `''` or `0-5-1`)
+  came back empty, because neither version is in v8unpack's
+  `FormCore.supported_form_versions` (`0-26`, `0-27`, `1`). So for the ordinary
+  forms of a modern configuration the CLI route yields no named elements, and the
+  layout has to be read from `Form.bin` — positionally.
+- **`v8unpack` 1.2.6 cannot write a container with compressed entries through
+  `Container.build(nested=False)`** — it raises `struct.error`, because
+  `Document.compress` returns no table-of-contents offset. Irrelevant for a
+  `Form.bin`: its entries must be plain anyway (see [ordinary-form warnings](docs/ordinary-forms.md#warnings--read-before-the-first-call)), and the MCP codec
+  writes them plain with verbatim (`nested=True`) container records. Relevant only
+  if you drive the library directly for a whole CF / CFE / EPF.
+- **A `.cf` rebuilt with `-B` from a current configuration is not the
+  configuration** — see [whole-binary build](docs/whole-binaries.md#build--b). Observed metadata degradation on
+  8.3.27; the platform is the only writer of a loadable configuration file.
+- A rebuilt binary's SHA-256 always differs from its source (write timestamps).
+  Compare logical payload, not the container hash (see [ordinary-form warnings](docs/ordinary-forms.md#warnings--read-before-the-first-call)).
 
 ## Relationship to other rules
 
@@ -148,4 +70,9 @@ build, `major.minor` must match. If the versions differ:
   platform. Prefer it when an infobase is available; use `v8unpack-cf` when you only have
   a binary artifact and no platform.
 - `1c-metadata-manage` — MCP-based skill for operating on the metadata structure once the
-  sources are unpacked.
+  sources are unpacked. It owns **managed** forms (`Ext/Form.xml`); ordinary forms
+  are this skill's, because there is no XML for it to edit.
+- `forms.md` — the router for managed-form work. It sends ordinary forms here.
+- `mcp-1c-tools` — the MCP catalog. `unpack_ordinary_form` / `build_ordinary_form`
+  are listed there under both `1c-code-metadata-mcp` and `1c-graph-metadata-mcp`;
+  [ordinary-forms.md](docs/ordinary-forms.md) is the contract they share.

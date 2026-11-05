@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Экспорт шаблона проекта 1С из текущего репозитория (без исходников и секретов).
@@ -161,22 +161,12 @@ Set-TextFile -RelativePath '.cursor\mcp.json' -Content @'
         "1c-code-metadata-mcp": {
             "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}/mcp",
             "connection_id": "1c_metadata_{PROJECT_SLUG}_001",
-            "description": "Проектный codemeta (cf). Замените {PROJECT_SLUG} при инициализации проекта."
+            "description": "Проектный codemeta основной конфигурации. Замените {PROJECT_SLUG}; отдельный индекс расширения — свой блок codemeta-{PROJECT_SLUG}-<ext> и запись в project-contours.json."
         },
         "1c-graph-metadata-mcp": {
             "url": "https://mcp.1commerce.ru/graph-{PROJECT_SLUG}/mcp",
             "connection_id": "1c_graph_{PROJECT_SLUG}_001",
-            "description": "Проектный graph (cf). Замените {PROJECT_SLUG} при инициализации проекта."
-        },
-        "1c-ext-codemeta-mcp": {
-            "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}-ext/mcp",
-            "connection_id": "1c_metadata_ext_{PROJECT_SLUG}_001",
-            "description": "Проектный codemeta расширения (cfe). Удалите блок, если проект без расширения."
-        },
-        "1c-ext-graph-mcp": {
-            "url": "https://mcp.1commerce.ru/graph-{PROJECT_SLUG}-ext/mcp",
-            "connection_id": "1c_graph_ext_{PROJECT_SLUG}_001",
-            "description": "Проектный graph расширения (cfe). Удалите блок, если проект без расширения."
+            "description": "Проектный graph (contract 2.0, слои расширений внутри проекта). Замените {PROJECT_SLUG}."
         },
         "1c-syntax-checker-mcp": {
             "url": "https://mcp.1commerce.ru/syntax/mcp",
@@ -186,7 +176,7 @@ Set-TextFile -RelativePath '.cursor\mcp.json' -Content @'
         "1C-docs-mcp": {
             "url": "https://mcp.1commerce.ru/help/mcp",
             "connection_id": "1c_docs_service_001",
-            "description": "1C platform documentation search (docsearch, docinfo)"
+            "description": "1C platform documentation (docsearch, docinfo), routed standards (standards), format specs (formatspec)"
         },
         "1c-templates-mcp": {
             "url": "https://mcp.1commerce.ru/templates/mcp",
@@ -206,12 +196,18 @@ Set-TextFile -RelativePath '.cursor\mcp.json' -Content @'
         "v8std-mcp": {
             "url": "https://mcp.1commerce.ru/v8std/mcp",
             "connection_id": "v8std_service_001",
-            "description": "ITS v8std standards and diagnostics (soft gate in verification-checklist)"
+            "description": "v8std.ru development standards and BSL LS / EDT / ACC diagnostics (not a verification gate)"
         },
         "1c-data-mcp": {
             "url": "{INFOBASE_PUBLISH_URL}/hs/mcp",
             "connection_id": "1c_data_mcp_001",
             "description": "1C data MCP on DEV publish. Замените {INFOBASE_PUBLISH_URL} после настройки .dev.env"
+        },
+        "1c-qa": {
+            "url": "https://mcp.1commerce.ru/qa/mcp",
+            "connection_id": "1c_qa_service_001",
+            "description": "QA MCP (comol/qa_mcp): UI-проверки в тонком клиенте под UI_TESTING. Выключен, пока стенд не поднят; включить вместе с TOOL_QA=auto в .dev.env",
+            "disabled": true
         }
     }
 }
@@ -312,16 +308,13 @@ installer never overwrites it after the first install.
 
 Details: [docs/dev-environment.md](docs/dev-environment.md).
 
-## MCP: configuration vs extension (optional)
+## Source contours (optional)
 
-If your project uses separate MCP indexes for the main configuration (cf) and an extension (cfe), document routing here:
+If the project has more than one source contour (main configuration plus extensions, separate code indexes), declare the catalog in `project-contours.json` at the project root — format, roles and acceptance checks: `.cursor/rules/multi-contour-search.mdc`. State here that the catalog exists and which contour is primary, for example:
 
-| Layer | Servers | Index |
-|-------|---------|-------|
-| Main configuration (cf) | `1c-code-metadata-mcp`, `1c-graph-metadata-mcp` | primary codebase |
-| Extension (cfe) | `1c-ext-codemeta-mcp`, `1c-ext-graph-mcp` | extension layer only |
+- Contour catalog: `project-contours.json` (base `src/cf` → `1c-code-metadata-mcp` + `1c-graph-metadata-mcp`; extension `src/cfe/<Name>` → `codemeta-{PROJECT_SLUG}-<ext>` or `null` when the extension has no index).
 
-Choose the index by metadata layer (path under `src/cfe/…` vs `src/cf/…`), not by object name prefix alone.
+Attribute a hit by its actual source path and the server that returned it, not by object name prefix alone. A single-contour project needs no catalog.
 
 ## Migrated content from a previous setup
 

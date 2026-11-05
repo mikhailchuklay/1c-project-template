@@ -59,21 +59,21 @@ Copy-Item tools\vrunner.init.json.example tools\vrunner.init.json
 
 | Ответ | Действие в `.dev.env` |
 |-------|------------------------|
-| **Да** | `CONFIG_STORAGE_ENABLED=true`, заполнить `CONFIG_STORAGE_URL`, `CONFIG_STORAGE_USER`, `CONFIG_STORAGE_PASSWORD` (пароль может быть пустым) |
-| **Нет** | `CONFIG_STORAGE_ENABLED=false` (или оставить пустым = выкл.) |
+| **Да** | заполнить `REPOSITORY_PATH` (путь или `tcp://сервер/алиас`), `REPOSITORY_USER`, `REPOSITORY_PASSWORD` (пароль может быть пустым); `REPOSITORY_ALLOW_FORCE` не трогать |
+| **Нет** | оставить `REPOSITORY_PATH` пустым (= конфигурация не привязана к хранилищу) |
 
-Регламент при `true`: `.cursor/rules/configuration-storage.mdc`, skill `1c-configuration-storage`. Не хранить URL/логин/пароль хранилища в `memory.md`.
+Регламент при непустом `REPOSITORY_PATH`: skill `1c-repository-manage` (`.cursor/skills/1c-repository-manage/SKILL.md`, канон процесса — его `docs/repo-sdlc.md`). Вопрос задаётся **только при init** — это оверлей шаблона; сам набор правил вендора значение не спрашивает. Не хранить адрес/логин/пароль хранилища в `memory.md`. Проекты, созданные до перехода на `REPOSITORY_*`: `CONFIG_STORAGE_URL` → `REPOSITORY_PATH`, `CONFIG_STORAGE_USER/PASSWORD` → `REPOSITORY_USER/PASSWORD`, старые ключи удалить.
 
 `memory.md` и `USER-RULES.md` уже пустые шаблоны — дополняйте по мере работы.
 
 ## 3. MCP на mcp.1commerce.ru
 
-1. Создайте проектные индексы для `{PROJECT_SLUG}` (codemeta + graph; при расширении — `-ext`).
-2. Замените `{PROJECT_SLUG}` в `.cursor/mcp.json`.
-3. Если проект **без расширения** — удалите блоки `1c-ext-codemeta-mcp` и `1c-ext-graph-mcp`.
+1. Создайте проектные индексы для `{PROJECT_SLUG}` (codemeta + graph). Расширение, которое индексируется отдельно, получает свой codemeta-сервер (`codemeta-{PROJECT_SLUG}-<ext>`); граф contract 2.0 держит слои расширений в одном проекте (`refresh_extension_layers`).
+2. Замените `{PROJECT_SLUG}` в `.cursor/mcp.json`; отдельный индекс расширения добавьте своим блоком с понятным id сервера.
+3. Если контуров больше одного (основная конфигурация + расширения, отдельные индексы) — опишите их в `project-contours.json` в корне проекта (формат и пример — `.cursor/rules/multi-contour-search.mdc`) и сошлитесь на файл из `USER-RULES.md`. Один контур — файл не нужен.
 4. Перезагрузите окно Cursor после правки MCP.
 
-Shared-сервисы (syntax, docs, templates, ssl, codecheck) уже указывают на `https://mcp.1commerce.ru/...`.
+Shared-сервисы (syntax, docs, templates, ssl, codecheck) уже указывают на `https://mcp.1commerce.ru/...`. Блок `1c-qa` (QA MCP) в шаблоне выключен, а в `.dev.env.example` стоит `TOOL_QA=off`: UI-проверки идут веб-маршрутом (`ui-testing-tools.mdc`), пока стенд QA MCP не поднят.
 
 ### OneMCP в информационной базе (если ещё не установлено)
 
@@ -145,7 +145,7 @@ git commit -m "Initial project from 1c-project-template"
 ## Проверка готовности
 
 - [ ] Нет секретов в git (`grep` по паролям, IP prod-сервера)
-- [ ] Задан ответ по хранилищу: `CONFIG_STORAGE_ENABLED` = `true` (с URL/USER) или `false`/пусто
+- [ ] Задан ответ по хранилищу: `REPOSITORY_PATH` заполнен (с USER/PASSWORD) или пуст
 - [ ] `src/cf` содержит выгрузку или пуст с README
 - [ ] MCP tools видны в Cursor после Reload Window
 - [ ] `openspec/changes/` — только `README.md`

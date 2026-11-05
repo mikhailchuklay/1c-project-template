@@ -21,6 +21,8 @@ powershell.exe -NoProfile -File skills/1c-metadata-manage/tools/1c-interface-man
 | CreateIfMissing | Create file if it doesn't exist |
 | NoValidate | Skip auto-validation |
 
+Operation names are case-insensitive. Command names accept Russian and plural kinds (`Справочник.X`, `Catalogs.X`) and are normalised to `Catalog.X`. The edit is refused on a locked vendor configuration (support guard, [support-manage.md](support-manage.md)). A new file created with `CreateIfMissing` gets the format version of `Configuration.xml`. Auto-validation runs `interface-validate` from the same `scripts` directory; its non-zero exit (or a missing validator) is the exit code of `interface-edit`.
+
 ### Operations
 
 | Operation | Value | Description |
@@ -60,11 +62,12 @@ powershell.exe -NoProfile -File skills/1c-metadata-manage/tools/1c-interface-man
 
 | Parameter | Required | Default | Description |
 |-----------|:--------:|---------|-------------|
-| CIPath | yes | — | Path to CommandInterface.xml |
+| CIPath | yes | — | Path to CommandInterface.xml (first positional argument) |
+| Detailed | no | off | Show passing checks too |
 | MaxErrors | no | 30 | Stop after N errors |
 | OutFile | no | — | Write result to file (UTF-8 BOM) |
 
-### Checks (13)
+### Checks (14)
 
 | # | Check | Severity |
 |---|-------|----------|
@@ -81,21 +84,8 @@ powershell.exe -NoProfile -File skills/1c-metadata-manage/tools/1c-interface-man
 | 11 | GroupsOrder — Group non-empty | ERROR |
 | 12 | GroupsOrder — no duplicates | WARN |
 | 13 | Command reference format | WARN |
+| 14 | Format version equals the owner's (subsystem descriptor or `Configuration.xml`) — ERROR, the platform refuses mixed formats in one object; differs only from the rest of the dump — WARN | ERROR/WARN |
 
 Exit code: 0 = all checks passed, 1 = errors found.
 
-## Upstream sync `2026-07-30`
-
-Scripts refreshed from [Nikolay-Shirokov/cc-1c-skills](https://github.com/Nikolay-Shirokov/cc-1c-skills): `interface-edit` v1.3 → **v1.8**, `interface-validate` → **v1.1**. `interface-edit` now enforces the vendor support gate — it refuses to edit the command interface of a locked typical configuration ([support-manage.md](support-manage.md)).
-
-## Earlier Additions (upstream `w-2026-05-17`)
-
-The PowerShell scripts under `tools/1c-interface-manage/scripts/` were refreshed from [Nikolay-Shirokov/cc-1c-skills](https://github.com/Nikolay-Shirokov/cc-1c-skills). Highlights:
-
-- **`interface-edit`** — operations `place` / `order` accept the value as an object (not only as a string). Command names in `hide` / `show` / `place` / `order` are normalised: `Catalogs.X` and `Справочник.X` map to canonical `Catalog.X`.
-- **`interface-validate`** — universal validator improvements (one-liner output by default, `-Detailed`, folder path auto-resolution) — see `role-manage.md` → "Recent Additions".
-
-## MCP Integration
-
-- **metadatasearch** — Verify command and subsystem names referenced in the interface configuration.
-- **get_metadata_details** — Get object structure for verifying command targets.
+Scripts vendored from Nikolay-Shirokov/cc-1c-skills; sync history — `docs/CHANGELOG.md`.

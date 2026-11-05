@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Создаёт каталоги проекта по шаблону vanessa-bootstrap (как команда Platform Tools).

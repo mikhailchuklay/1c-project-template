@@ -1,6 +1,6 @@
 ---
 name: prompt-enhancer
-description: "Improve and structure short, unstructured prompts and task statements, turning them into detailed imperative specifications with numbered analysis steps, explicit edge cases, and a clearly described expected output format. Preserves all terms and conditions from the source, does not add new requirements. Use when the user asks to: improve a prompt, refine a task statement, expand a task description, structure a spec, turn a note into a detailed instruction, make a prompt more precise or detailed, prepare a spec from a draft, polish a task, convert a short note into a clear specification. Accepts text as a command argument or a path to a .md file."
+description: "Turn a short, unstructured prompt or task statement into a detailed imperative spec — numbered analysis steps, edge cases, expected output format — keeping every source term and adding no requirements. Use to improve, refine or structure a prompt or spec; takes text or a .md path."
 ---
 
 # prompt-enhancer — improving prompts and task statements
@@ -123,4 +123,4 @@ The skill should recognize these user phrasings as triggers, even when the `/pro
 
 - The skill rewrites form, not content. If the source prompt is logically contradictory or incomplete, the result will also be incomplete (see principle 5 — no new requirements).
 - For very long source texts (2000+ words), processing may miss details. In that case, split the text into logical blocks and process them in parts.
-- The skill assumes no domain knowledge beyond the source. If 1C-specifics need clarification, consult the relevant on-demand rules in this repo (e.g. `content/rules/coding-standards.md`, `content/rules/dev-standards-architecture.md`) and the `1c-metadata-manage` skill (`docs/query-writing.md`, `docs/query-optimization.md`) for query and metadata details.
+- The skill assumes no domain knowledge beyond the source. If 1C-specifics need clarification, consult the relevant on-demand rules in this repo (e.g. `.cursor/rules/coding-standards.mdc`, `standards(name="dev-standards-architecture")`) and the `1c-metadata-manage` skill (`docs/query-writing.md`, `docs/query-optimization.md`) for query and metadata details.

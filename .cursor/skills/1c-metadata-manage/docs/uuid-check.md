@@ -14,7 +14,7 @@ Two carriers are checked:
 - After **merging branches** that both added metadata objects.
 - Before loading a dump into an infobase, when the previous load failed with an identity / type-collision diagnostic.
 
-Slash command: `/check-uuid` (source: `content/commands/check-uuid.md`).
+Slash command: `/check-uuid` (source: `.cursor/commands/check-uuid.md`).
 
 ## Usage
 

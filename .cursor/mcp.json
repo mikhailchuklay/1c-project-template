@@ -22,25 +22,13 @@
         "1c-code-metadata-mcp": {
             "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}/mcp",
             "connection_id": "1c_metadata_{PROJECT_SLUG}_001",
-            "description": "Проектный codemeta (cf). Замените {PROJECT_SLUG} при инициализации проекта.",
+            "description": "Проектный codemeta основной конфигурации. Замените {PROJECT_SLUG}; отдельный индекс расширения — свой блок codemeta-{PROJECT_SLUG}-<ext> и запись в project-contours.json.",
             "disabled": true
         },
         "1c-graph-metadata-mcp": {
             "url": "https://mcp.1commerce.ru/graph-{PROJECT_SLUG}/mcp",
             "connection_id": "1c_graph_{PROJECT_SLUG}_001",
-            "description": "Проектный graph (cf). Замените {PROJECT_SLUG} при инициализации проекта.",
-            "disabled": true
-        },
-        "1c-ext-codemeta-mcp": {
-            "url": "https://mcp.1commerce.ru/codemeta-{PROJECT_SLUG}-ext/mcp",
-            "connection_id": "1c_metadata_ext_{PROJECT_SLUG}_001",
-            "description": "Проектный codemeta расширения (cfe). Удалите блок, если проект без расширения.",
-            "disabled": true
-        },
-        "1c-ext-graph-mcp": {
-            "url": "https://mcp.1commerce.ru/graph-{PROJECT_SLUG}-ext/mcp",
-            "connection_id": "1c_graph_ext_{PROJECT_SLUG}_001",
-            "description": "Проектный graph расширения (cfe). Удалите блок, если проект без расширения.",
+            "description": "Проектный graph (contract 2.0, слои расширений внутри проекта). Замените {PROJECT_SLUG}.",
             "disabled": true
         },
         "1c-syntax-checker-mcp": {
@@ -52,7 +40,7 @@
         "1C-docs-mcp": {
             "url": "https://mcp.1commerce.ru/help/mcp",
             "connection_id": "1c_docs_service_001",
-            "description": "1C platform documentation search (docsearch, docinfo)",
+            "description": "1C platform documentation (docsearch, docinfo), routed standards (standards), format specs (formatspec)",
             "disabled": false
         },
         "1c-templates-mcp": {
@@ -78,6 +66,12 @@
             "connection_id": "1c_data_mcp_001",
             "description": "1C data MCP on DEV publish. Замените {INFOBASE_PUBLISH_URL} после настройки .dev.env",
             "disabled": false
+        },
+        "1c-qa": {
+            "url": "https://mcp.1commerce.ru/qa/mcp",
+            "connection_id": "1c_qa_service_001",
+            "description": "QA MCP (comol/qa_mcp): UI-проверки в тонком клиенте под UI_TESTING. Выключен, пока стенд не поднят; включить вместе с TOOL_QA=auto в .dev.env",
+            "disabled": true
         },
         "v8std": {
             "type": "http",

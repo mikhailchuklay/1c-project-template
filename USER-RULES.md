@@ -11,16 +11,13 @@ installer never overwrites it after the first install.
 
 Details: [docs/dev-environment.md](docs/dev-environment.md).
 
-## MCP: configuration vs extension (optional)
+## Source contours (optional)
 
-If your project uses separate MCP indexes for the main configuration (cf) and an extension (cfe), document routing here:
+If the project has more than one source contour (main configuration plus extensions, separate code indexes), declare the catalog in `project-contours.json` at the project root — format, roles and acceptance checks: `.cursor/rules/multi-contour-search.mdc`. State here that the catalog exists and which contour is primary, for example:
 
-| Layer | Servers | Index |
-|-------|---------|-------|
-| Main configuration (cf) | `1c-code-metadata-mcp`, `1c-graph-metadata-mcp` | primary codebase |
-| Extension (cfe) | `1c-ext-codemeta-mcp`, `1c-ext-graph-mcp` | extension layer only |
+- Contour catalog: `project-contours.json` (base `src/cf` → `1c-code-metadata-mcp` + `1c-graph-metadata-mcp`; extension `src/cfe/<Name>` → `codemeta-{PROJECT_SLUG}-<ext>` or `null` when the extension has no index).
 
-Choose the index by metadata layer (path under `src/cfe/…` vs `src/cf/…`), not by object name prefix alone.
+Attribute a hit by its actual source path and the server that returned it, not by object name prefix alone. A single-contour project needs no catalog.
 
 ## Migrated content from a previous setup
 

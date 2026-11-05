@@ -1,6 +1,6 @@
 ---
 name: 1c-metadata-manage
-description: "1C metadata management — create, edit, validate, and remove configuration objects (catalogs, documents, registers, enums), managed forms, data composition schemas (SKD), spreadsheet layouts (MXL), roles, external processors (EPF/ERF), extensions (CFE), configurations (CF), databases, subsystems, command interfaces, templates. Use when working with 1C metadata structure."
+description: "Create, edit, validate and remove 1C metadata — catalogs, documents, registers, enums, managed forms, SKD, MXL, roles, EPF/ERF, CFE, CF, databases, subsystems, command interfaces, templates. Use for any change to 1C metadata structure."
 ---
 
 # 1C Metadata Manage — Skill Dispatch
@@ -9,32 +9,37 @@ Use this skill when the task involves **1C metadata structure** (creating, editi
 
 ## Hard rule
 
-Any **mutation** of metadata XML — `Configuration.xml`, object XML, `Form.xml`, MXL / SKD layouts, `Role.xml`, subsystems, command interfaces — is executed **through this skill** (dispatch below → domain doc → PowerShell tools) or through the `1c-metadata-manager` subagent. The tools under `tools/` handle BOM, encodings, UUID regeneration, `ChildObjects` ordering and cross-references that are easy to break manually. Hand-editing these files while the skill is available is a **defect** (`AGENTS.md → Skills and Subagents`), not a slower-but-acceptable alternative.
-
-The same gate covers **infobase operations** (create / run, load / dump configuration, `/UpdateDBCfg`, web publication): use the `db-ops` / `web-ops` tools of this skill ([db-manage.md](docs/db-manage.md), [web-manage.md](docs/web-manage.md)) or the matching slash command (`/update1cbase`, `/loadfrom1cbase`, `/getconfigfiles`, `/deploy-and-test`) — never an ad-hoc `1cv8.exe` / `ibcmd` command line composed from memory. DB updates follow the iterative retry discipline (`db-manage.md → Update retry discipline`).
-
-The only exceptions:
+The gate itself — every metadata-XML mutation and every infobase operation goes through this skill (dispatch below → domain doc → PowerShell tools) or the `1c-metadata-manager` subagent, hand-editing is a defect, repository-bound projects add the `1c-repository-manage` lock / commit discipline, EDT-format trees (`.mdo` / `.form`, never fed to these tools) route per `.cursor/rules/edt-workflow.mdc` — is owned by `AGENTS.md → Skills and Subagents`; this skill's own canon is only the exceptions:
 
 - **Unambiguous one-line fix** of an existing value that cannot break structure — a synonym / comment typo, a boolean flag flip on an existing element. Anything that adds / removes / reorders elements, touches UUIDs, or spans more than one line of XML is not "one-line".
+- **Existing role** — not a hand-edit case: `role-edit` changes its rights, RLS, templates and flags in place and keeps the UUID ([role-manage.md](docs/role-manage.md)); `role-compile` is only for a new role. A locked role of a configuration on vendor support is not hand-edited either — [support-manage.md](docs/support-manage.md).
 - **Skill not available in the session** (files not installed / not exposed) — state it once in one line, then hand-edit with `metadata-xml-workarounds.md` loaded and validate per `verification-gates.md → Gate 5`.
 - **Read-only analysis** of metadata XML is not a mutation — reading files directly is fine (subject to `mcp-first-search.md` for locating them).
 
 ## Vendor support gate
 
-Every mutating tool of this skill refuses to edit an object of a **typical configuration on vendor support** that is locked ("на замке"), and refuses to delete one that has not been taken off support. This is not advisory: the run exits `1` with a diagnostic. Editing such an object directly breaks future vendor updates silently, so the refusal is the correct outcome, not an obstacle to route around by hand-editing the XML.
-
-The default answer when a typical object needs a change is an **extension** (`cfe-borrow` / `cfe-patch-method`) — support state stays untouched and updates keep working. Deliberately changing support state is the `support-edit` tool. Both paths, plus the `SUPPORT_GUARD` modes in `.dev.env` (`deny` — default / `warn` / `off`), are in [support-manage.md](docs/support-manage.md).
-
-In every case the post-edit validation (`verify_xml` / skill validation scripts) still applies. When reporting a task that mutated metadata / forms / layouts, name the path used in one line (`Metadata tooling: <tool / subagent>` or `hand-edit — <exception>`) per `AGENTS.md → Skills and Subagents`.
+Every mutating tool refuses to edit a locked ("на замке") object of a typical configuration on vendor support and refuses to delete one still on support — the run exits `1`, the refusal is the correct outcome (extension first, `support-edit` only as a stated decision): [support-manage.md](docs/support-manage.md).
 
 ## Path conventions
 
 PowerShell examples in this skill (`SKILL.md` and every `docs/*.md`) use the prefix `skills/1c-metadata-manage/tools/...`. That prefix is **relative to the active tool's skills directory**, not to the repository root:
 
 - After installation: the script lives under `<tool>/skills/1c-metadata-manage/tools/...` (e.g. `.cursor/skills/1c-metadata-manage/tools/...`, `.claude/skills/1c-metadata-manage/tools/...`, `.kilo/skills/1c-metadata-manage/tools/...`, `.ai-agent/skills/1c-metadata-manage/tools/...`). Active tools that load this skill resolve the prefix automatically.
-- In the `1c-rules` source repository (when editing the skill itself): the same script lives under `content/skills/1c-metadata-manage/tools/...`. Prepend `content/` when running the example outside of an installed project.
+- In the `1c-rules` source repository (when editing the skill itself): the same script lives under `.cursor/skills/1c-metadata-manage/tools/...`. Prepend `content/` when running the example outside of an installed project.
 
 The same convention applies to `docs/*.md` references like `skills/1c-metadata-manage/tools/1c-skd-info/modes-reference.md`.
+
+## Runtime selection — Windows / Linux / macOS
+
+XML saving in `form-edit`, `form-add`, `remove-form`, `form-compile` registration, `meta-edit`, `cf-edit`, `cfe-borrow` registration/merge, `skd-edit`, `subsystem-edit`, `subsystem-compile` registration, `interface-edit`, `role-edit`, `add-template` and `add-help` retains the input CRLF/LF style and uses Configurator's compact empty tags (`<Tag/>`). Formatting-only changes should not be repaired by a global replacement that can alter literal XML in comments or CDATA.
+
+On Windows use the shipped `.ps1` entry points. Before selecting a Linux/macOS runtime, using a Python port, or resolving a missing runtime, read [runtime-selection.md](docs/runtime-selection.md) for the exact supported commands and limitations. A missing runtime never permits hand-editing metadata XML.
+
+## Logical addressing and optional preview
+
+`tools/_common/Invoke-1CEdit.ps1` accepts logical addresses, emits a unified diff and can preview its own script writes. Before using the wrapper, read [edit-preview.md](docs/edit-preview.md) for arguments, rollback boundaries and `METADATA_PREVIEW` modes.
+
+Default `auto`: preview DSL generation or a tool/operation new to this project; ordinary edits apply immediately. Native deletion gates (`-DryRun`, then `-Force`) and validation always remain. Direct tool invocation is valid; name a preview on `Metadata tooling:` only when it ran. Do not stash or commit another person's changes to force a preview.
 
 ## Dispatch Strategy
 
@@ -46,7 +51,7 @@ Use when the task is a **single lightweight query**: checking metadata info, a q
 
 ### Subagent delegation — complex / mutation tasks
 
-Delegate to the **`1c-metadata-manager`** subagent (defined in `content/agents/metadata-manager.md`, or in the installed agents directory for the active tool) when **any** of the following is true:
+Delegate to the **`1c-metadata-manager`** subagent (defined in `.cursor/agents/metadata-manager.md`, or in the installed agents directory for the active tool) when **any** of the following is true:
 
 - The task **creates, scaffolds, or compiles** metadata (objects, forms, SKD, MXL, roles, EPF, CF, CFE, databases)
 - The task **edits multiple files** or **spans multiple domains**
@@ -57,31 +62,31 @@ The subagent already knows how to read the skill docs, execute PowerShell script
 
 ## Task Domain Table
 
-| Task Domain | Keywords | File |
-|---|---|---|
-| Metadata objects — create, edit, analyze, remove, validate | catalog, document, register, enum, constant, module, attribute, tabular section | [meta-manage.md](docs/meta-manage.md) |
-| UUID integrity — duplicate identities in an XML dump | UUID, duplicate uuid, TypeId, ValueId, identity collision, load failure after generation | [uuid-check.md](docs/uuid-check.md) |
-| Managed forms — design, create, edit, analyze, validate | form, Form.xml, UI, elements, commands, events | [form-manage.md](docs/form-manage.md) |
-| Managed-form layout patterns — archetypes, naming conventions, advanced patterns | form patterns, archetype, layout, naming, ERP form, list form, document form, wizard | [form-patterns.md](docs/form-patterns.md) → canonical `content/rules/form-patterns.md` |
-| Form-compile DSL reference — full JSON DSL spec for `1c-form-compile`, `--from-object` mode, presets | form DSL, form-compile, autoCmdBar, columnGroup, RadioButtonField, --from-object, form preset | [form-compile-dsl.md](docs/form-compile-dsl.md) |
-| Data Composition Schema (DCS/SKD) — create, edit, analyze, decompile, validate | report, DCS, SKD, data composition, data set, query, decompile | [skd-manage.md](docs/skd-manage.md) |
-| Spreadsheet documents (MXL) — create, decompile, analyze, validate | MXL, spreadsheet, template, print form, layout | [mxl-manage.md](docs/mxl-manage.md) |
-| Roles and access rights — create, analyze, validate | role, rights, RLS, access, permissions | [role-manage.md](docs/role-manage.md) |
-| External processors/reports (EPF/ERF) — scaffold, build, dump, validate | EPF, ERF, data processor, external report, build, dump | [epf-manage.md](docs/epf-manage.md) |
-| BSP/SSL registration and commands | BSP, SSL, ExternalDataProcessorInfo, registration, command | [bsp-manage.md](docs/bsp-manage.md) |
-| Configuration (CF) — create, edit, analyze, validate | configuration, Configuration.xml, CF | [cf-manage.md](docs/cf-manage.md) |
-| Extensions (CFE) — create, borrow, diff, patch, validate | extension, CFE, borrow, interceptor, patch | [cfe-manage.md](docs/cfe-manage.md) |
-| Vendor support state — "на замке", editability, off-support | support, поддержка, на замке, замок, vendor updates, support-guard, SUPPORT_GUARD | [support-manage.md](docs/support-manage.md) |
-| XDTO packages — analyze, create from XSD, export, edit, validate | XDTO, package, XSD, XML schema, ФабрикаXDTO, namespace, exchange format, EnterpriseData | [xdto-manage.md](docs/xdto-manage.md) |
-| Databases — create, run, load, dump, DT backup | database, infobase, create DB, run 1C, dt, backup, .v8-project.json | [db-manage.md](docs/db-manage.md) |
-| Subsystems — create, edit, analyze, validate | subsystem, command interface, ChildObjects | [subsystem-manage.md](docs/subsystem-manage.md) |
-| Command interface — edit, validate | CommandInterface.xml, commands visibility, groups | [interface-manage.md](docs/interface-manage.md) |
-| Templates/layouts management — add, remove | template, layout, SpreadsheetDocument, HTML template | [template-manage.md](docs/template-manage.md) |
-| Help pages — add, manage | help, built-in help, documentation | [help-manage.md](docs/help-manage.md) |
-| SSL/BSP subsystems patterns | SSL patterns, standard subsystems, BSP events | [ssl-patterns.md](docs/ssl-patterns.md) |
-| Query writing — compose new queries from scratch | write query, build query, query template, ВЫБРАТЬ, ИЗ, СОЕДИНЕНИЕ, virtual tables, batch queries | [query-writing.md](docs/query-writing.md) |
-| Query optimization | query, temporary table, join, DCS optimization | [query-optimization.md](docs/query-optimization.md) |
-| Web publishing — publish, unpublish, status, smoke test | web, publish, Apache, IIS, web client, webdav, default.vrd | [web-manage.md](docs/web-manage.md) |
-| Unpack / rebuild CF, CFE, EPF binaries without 1C platform | v8unpack, binary unpack, headless extract, no platform | [v8unpack-cf.md](docs/v8unpack-cf.md) → standalone skill `v8unpack-cf` |
+| Task domain | Read before the operation |
+|---|---|
+| Metadata objects — create, edit, analyze, remove, validate | [meta-manage.md](docs/meta-manage.md) |
+| UUID integrity — duplicate identities in an XML dump | [uuid-check.md](docs/uuid-check.md) |
+| Managed forms — design, create, edit, analyze, validate | [form-manage.md](docs/form-manage.md) |
+| Managed-form layout patterns — archetypes, naming conventions, advanced patterns | fetch `standards(name="form-patterns")` on `1C-docs-mcp` (server not exposed → `.cursor/rules/help-corpus-retrieval.mdc`) |
+| Form-compile DSL reference — full JSON DSL spec for `1c-form-compile`, `--from-object` mode, presets | [form-compile-dsl.md](docs/form-compile-dsl.md) |
+| Data Composition Schema (DCS/SKD) — create, edit, analyze, decompile, validate | [skd-manage.md](docs/skd-manage.md) |
+| Spreadsheet documents (MXL) — create, decompile, analyze, validate | [mxl-manage.md](docs/mxl-manage.md) |
+| Roles and access rights — create, edit, analyze, validate | [role-manage.md](docs/role-manage.md) |
+| External processors/reports (EPF/ERF) — scaffold, build, dump, validate | [epf-manage.md](docs/epf-manage.md) |
+| BSP/SSL registration and commands | [bsp-manage.md](docs/bsp-manage.md) |
+| Configuration (CF) and complete dump integrity (CF/CFE) — create, edit, analyze, validate | [cf-manage.md](docs/cf-manage.md) |
+| Extensions (CFE) — create, borrow, diff, patch, validate | [cfe-manage.md](docs/cfe-manage.md) |
+| Vendor support state — "на замке", editability, off-support | [support-manage.md](docs/support-manage.md) |
+| XDTO packages — analyze, create from XSD, export, edit, validate | [xdto-manage.md](docs/xdto-manage.md) |
+| Databases — create, run, load, dump, DT backup, extensions in the infobase (list, check, properties, delete) | [db-manage.md](docs/db-manage.md) |
+| Subsystems — create, edit, analyze, validate | [subsystem-manage.md](docs/subsystem-manage.md) |
+| Command interface — edit, validate | [interface-manage.md](docs/interface-manage.md) |
+| Templates/layouts management — add, remove | [template-manage.md](docs/template-manage.md) |
+| Help pages — add, manage | [help-manage.md](docs/help-manage.md) |
+| SSL/BSP subsystems patterns | `standards(name="dev-standards-architecture") §4` + `.cursor/skills/mcp-1c-tools/docs/1c-ssl-mcp.md` |
+| Query writing — compose new queries from scratch | [query-writing.md](docs/query-writing.md) |
+| Query optimization | [query-optimization.md](docs/query-optimization.md) |
+| Web publishing — publish, unpublish, status, smoke test | [web-manage.md](docs/web-manage.md) |
+| Unpack / rebuild CF, CFE, EPF binaries without 1C platform | [v8unpack-cf.md](docs/v8unpack-cf.md) → standalone skill `v8unpack-cf` |
 
 **If the task spans multiple domains**, the subagent will read all relevant docs automatically (or read each one directly for simple tasks).

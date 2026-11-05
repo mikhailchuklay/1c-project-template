@@ -20,7 +20,7 @@ Parse the argument: empty — full pass (collect → cluster → propose → app
 Gather friction signals from, in order:
 
 1. **Current session** — corrections and steers the user gave in this chat that contradict or refine behavior mandated by the active ruleset.
-2. **`recall`** (`1c-templates-mcp`, only when exposed) — query for `rule-friction` notes; refine with behavior keywords if the first query is too broad. Respect the no-blind-chaining discipline of `AGENTS.md → MCP Tool Calling → C`.
+2. **Memory search** (all connected providers per `.cursor/rules/project-memory.mdc`) — query for `rule-friction` notes and deduplicate across providers; refine with behavior keywords if the first query is too broad. Respect the no-blind-chaining discipline of `AGENTS.md → MCP Tool Calling → C`. All memory writes in this command use the same rule's Cognee → OpenViking → templates priority.
 3. **`memory.md` fallback entries** — behavior-steering entries recorded there while `remember` was unavailable.
 4. **User input** passed with the command invocation.
 
@@ -34,7 +34,7 @@ Skip episodes already consumed by an earlier pass: consumed episodes are cited i
 
 ### 3. Protected areas — higher bar
 
-Proposals that **weaken** any of the following are safety-relevant: the verification chain (`syntaxcheck` / `check_1c_code` / `review_1c_code`, validator budgets, the verification-checklist gates), transactions / locks discipline, security / RLS / secrets / PII handling, `CONFUSION` gates on material forks, MCP evidence gates for BSL / metadata / spec authoring.
+Proposals that **weaken** any of the following are safety-relevant: the verification chain (`syntaxcheck` / `check_1c_code` / `review_1c_code`, validator budgets, the `.cursor/rules/verification-gates.mdc` gates), transactions / locks discipline, security / RLS / secrets / PII handling, `CONFUSION` gates on material forks, MCP evidence gates for BSL / metadata / spec authoring.
 
 For such proposals:
 
@@ -75,11 +75,11 @@ Entry format (English, imperative, original 1C identifiers as-is, no secrets / P
 
 - Delete the `memory.md` fallback entries now represented by written entries (migration, per `AGENTS.md → Project memory`).
 - Closing summary in Russian: entries written, merged, superseded; proposals rejected; pending signals below the threshold.
-- **Upstream hint:** if an approved rule is not project-specific (it would improve the base ruleset for every project), say so — the fix belongs in the `1c-rules` source repo (`AGENTS.md` / `content/rules/**`) through its normal change process; `LLM-RULES.md` stays the project-local layer either way.
+- **Upstream hint:** if an approved rule is not project-specific (it would improve the base ruleset for every project), say so — the fix belongs in the `1c-rules` source repo (`AGENTS.md` / `.cursor/rules/**`) through its normal change process; `LLM-RULES.md` stays the project-local layer either way.
 
 ## note <text>
 
-Record one friction signal without running the pass: a single self-contained `remember` note prefixed `rule-friction:` — target behavior / rule, what happened, date (fallback when `remember` is not exposed: a dated entry in `memory.md`). Confirm in one line; no other writes.
+Record one friction signal without running the pass: a single self-contained memory note prefixed `rule-friction:` — target behavior / rule, what happened, date. Follow `.cursor/rules/project-memory.mdc` for the write provider and dated local fallback when no provider can save. Confirm in one line; no other writes.
 
 ## show
 
@@ -87,6 +87,6 @@ Read-only report: active `LLM-RULES.md` entries (ids + titles), `Last /evolve ru
 
 ## Constraints (always)
 
-- The command writes **only** `LLM-RULES.md` (plus the `memory.md` migration and `remember` notes described above) — never `AGENTS.md`, `USER-RULES.md`, `content/rules/**`, installed rule copies, or `.dev.env`.
+- The command writes **only** `LLM-RULES.md` (plus the `memory.md` migration and `remember` notes described above) — never `AGENTS.md`, `USER-RULES.md`, `.cursor/rules/**`, installed rule copies, or `.dev.env`.
 - Every written entry has explicit per-entry user approval from this run; editing or removing an existing entry also goes through the approval round.
 - The command never runs unasked. Recommending it during regular work is one line at the end of an answer, at most once per session (canon — `AGENTS.md → Rules self-improvement`).

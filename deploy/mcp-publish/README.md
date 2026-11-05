@@ -40,7 +40,7 @@ HTTP/1.1 401 Unauthorized
 WWW-Authenticate: Basic realm="1C:Enterprise 8.5"
 ```
 
-Инструменты `1c-data-mcp` (`vcexecutecode`, `vcexecutequery`, `validatequery`, `vcloggetlasterror`) в сессии агента **не появятся**, пока endpoint требует HTTP Basic.
+Инструменты `1c-data-mcp` (`vcexecutecode`, `vcexecutequery`, `vcvalidatequery`, `vcloggetlasterror`) в сессии агента **не появятся**, пока endpoint требует HTTP Basic.
 
 **Решение:** вторая публикация с **встроенной авторизацией 1С** — учётные данные технического пользователя прописаны в `default.vrd`, HTTP-запросы проходят без Basic, 1С подключается к ИБ от имени этого пользователя.
 

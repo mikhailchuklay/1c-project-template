@@ -5,7 +5,7 @@
 | Файл | Назначение |
 |------|------------|
 | `OneMCP.cfe` | Расширение конфигурации OneMCP |
-| `ИнструментыДляРазработки.xml` | Начальное наполнение справочника `APA_Инструменты` (vcexecutecode, vcexecutequery, validatequery, vcloggetlasterror) |
+| `ИнструментыДляРазработки.xml` | Начальное наполнение справочника `APA_Инструменты` (vcexecutecode, vcexecutequery, vcvalidatequery, vcloggetlasterror) |
 
 ## 1. Установить расширение
 

@@ -6,7 +6,7 @@ description: "Install agent-browser (token-efficient headless browser CLI + MCP)
 
 Installs [agent-browser](https://github.com/vercel-labs/agent-browser) (Vercel Labs): a headless Chromium CLI with accessibility-tree snapshots. Preferred tool for 1C **web** UI testing — snapshots cost far fewer tokens than screenshot / vision loops (`cursor-ide-browser`, Playwright MCP, custom screenshot+OCR).
 
-Policy and fallback order — `content/rules/ui-testing-tools.md`. Shell on Windows — `powershell-windows` skill.
+Policy and fallback order — `.cursor/rules/ui-testing-tools.mdc`. Shell on Windows — `powershell-windows` skill.
 
 This command does **not** install 1C MCP servers (use `/installmcp`) and does **not** enable UI testing by itself (`UI_TESTING` / `INFOBASE_PUBLISH_URL` stay as in `.dev.env`).
 

@@ -5,7 +5,7 @@ argumentHint: "[path] [--fix] [--include-intra]"
 
 # /check-uuid — duplicate UUID check in a configuration dump
 
-Detects objects that claim the same identity. The full description of the tool — carriers, cross-file vs intra-file duplicates, and the `-Fix` safety rules — is owned by **`content/skills/1c-metadata-manage/docs/uuid-check.md`**. Read it before running a repair.
+Detects objects that claim the same identity. The full description of the tool — carriers, cross-file vs intra-file duplicates, and the `-Fix` safety rules — is owned by **`.cursor/skills/1c-metadata-manage/docs/uuid-check.md`**. Read it before running a repair.
 
 ## Arguments
 
@@ -39,6 +39,6 @@ Detects objects that claim the same identity. The full description of the tool �
    powershell.exe -NoProfile -File skills/1c-metadata-manage/tools/1c-uuid-check/scripts/uuid-check.ps1 -ConfigPath "<path>" [-IncludeIntra] -Fix
    ```
 
-5. **Confirm.** After a repair, re-run without `-Fix` and report the clean result. Then validate the affected objects (`meta-validate` / `cf-validate` — `content/skills/1c-metadata-manage/docs/meta-manage.md`, `content/skills/1c-metadata-manage/docs/cf-manage.md`) before the dump is loaded.
+5. **Confirm.** After a repair, re-run without `-Fix` and report the clean result. Then validate the affected objects (`meta-validate` / `cf-validate` — `.cursor/skills/1c-metadata-manage/docs/meta-manage.md`, `.cursor/skills/1c-metadata-manage/docs/cf-manage.md`) before the dump is loaded.
 
 Do not hand-edit UUIDs in the XML to resolve duplicates — that is a metadata mutation and belongs to the `1c-metadata-manage` skill (`AGENTS.md → Skills and Subagents`).
