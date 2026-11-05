@@ -11,7 +11,7 @@ Installs [Windows-MCP](https://github.com/CursorTouch/Windows-MCP) (`uvx windows
 - Prefer **web** UI testing via `agent-browser` (`/install-agent-browser`) against `INFOBASE_PUBLISH_URL`.
 - Do **not** recommend vision / screenshot / CV loops for routine 1C form checks.
 - If desktop / thick-client / non-web automation is unavoidable — use Windows-MCP instead of making the model write a custom screenshotter + OCR.
-- Full policy — `content/rules/ui-testing-tools.md`.
+- Full policy — `.cursor/rules/ui-testing-tools.mdc`.
 
 Shell on Windows — `powershell-windows` skill. This command does **not** change `UI_TESTING` / `INFOBASE_PUBLISH_URL`.
 

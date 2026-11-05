@@ -1,12 +1,26 @@
 ---
 description: "Load current repository files into the infobase defined in .dev.env and update the DB structure"
+argumentHint: "[full|partial|git|all]"
 ---
 
 # /update1cbase — load repository into an infobase
 
-Load the configuration (`/LoadConfigFromFiles`) from the current repository directory into the infobase defined in `.dev.env`, then update the database structure (`/UpdateDBCfg`).
+Load the configuration (`/LoadConfigFromFiles`) from the current repository directory into the infobase defined in `.dev.env`, then update the database structure (`/UpdateDBCfg`). With the `all` argument (or an explicit "with extensions" request) the command loads the **full snapshot** — main configuration plus every extension from `EXTENSION_NAMES` — see "Full-snapshot mode" at the end.
 
-This command does not run tests and does not publish the infobase. Use `/deploy-and-test` to run tests after loading.
+Read `.cursor/rules/getconfigfiles.mdc → Configuration file synchronization contract`. A partial load is a first-class branch of this update procedure: **load → checks → database apply → requested directory refresh**. Do not stop after importing files or merely offer the database update when the user has already requested it.
+
+**Target before mode:** follow `.cursor/rules/extension-workspace.mdc`. Select the current project, exact main/extension target and its source root before selecting `full` / `partial` / `git`. Substitute the resolved pass values in the templates below and carry them through load, checks, apply and any return dump. Do not change `EXTENSION_NAME` or redirect `EXPORT_PATH` in settings to select another extension. A Git diff spanning several roots must be split and validated per target; never feed its combined list into one extension load.
+
+## Select load scope
+
+- `full` / `all`: load a verified complete snapshot. A selected-object dump or a delta directory is not a full-load source.
+- `partial`: load the task's exact file selection and required dependencies using `-files` or `-listFile`. Never pass the metadata-name list `repoobjects.txt` as the load list.
+- `git`: use `db-load-git -DryRun` from `.cursor/skills/1c-metadata-manage/docs/db-manage.md` to inspect the selected diff (`All`, `Staged`, `Unstaged` or `Commit`). Resolve deletions / renames and confirm the plan covers the requested change before loading. An empty plan ends as a no-op; it does not become a full load.
+- No explicit mode: use the already established task scope. A known bounded set of changed files can use `partial`; a requested complete deployment uses `full`. If completeness or removal semantics are uncertain, resolve the scope before modifying the infobase.
+
+Partial loads target the main configuration or **one named extension per pass**. Do not combine partial selection with `all` / platform `-AllExtensions`. Keep repository locks, support rules, validation and retry handling at the same strength as a full load.
+
+This command does not run tests and does not publish the infobase. Use `/deploy-and-test` to run tests after loading. When the update serves a development task, the task's behavioural confirmation follows on the updated base as the effective `UI_TESTING` allows (`essential` by default); a test client started before the update is stale (`.cursor/rules/qa-testclient.mdc`).
 
 ## Step 0. Check `.dev.env` parameters
 
@@ -14,27 +28,20 @@ This command does not run tests and does not publish the infobase. Use `/deploy-
 
 If the project still has legacy `infobasesettings.md`, migrate values to `.dev.env` (same key names, `KEY=value` format instead of a markdown list), preserving already-filled `.dev.env` keys, and delete the legacy file after successful migration. The ruleset has no other connection-settings location.
 
-Used `.dev.env` keys (behavior of an empty value in parentheses):
+Parameters, classes and defaults — `.cursor/rules/dev-standards-env.mdc §1`; Defaulted keys are never asked for. Keys read: `PLATFORM_PATH`, `INFOBASE_PATH` (**blocking** — if either is empty, ask once and write the value to `.dev.env`), `INFOBASE_KIND`, `IB_USER` / `IB_PASSWORD`, `EXTENSION_NAME`, `EXTENSION_NAMES` (`all` mode), `EXPORT_PATH`, `EXTENSIONS_PATH`, `LOG_PATH`, `RESULT_PATH`, `IBCMD_CONFIG`, `REPOSITORY_PATH` (repository gate below).
 
-| Key | Purpose |
-|---|---|
-| `PLATFORM_PATH` | Platform installation directory containing `bin\1cv8.exe` — **blocking** |
-| `INFOBASE_PATH` | File infobase path or server connection string — **blocking** |
-| `INFOBASE_KIND` | `file` or `server` (empty = `file`) |
-| `IB_USER` / `IB_PASSWORD` | Credentials (empty = no authentication / no password; `/N` / `/P` / `--user` / `--password` are omitted) |
-| `EXTENSION_NAME` | Extension name (empty = main configuration) |
-| `EXPORT_PATH` | Source directory (empty = repository root) |
-| `LOG_PATH` | Designer log file (empty = `$env:TEMP\1cv8.log` on Windows / `$TMPDIR/1cv8.log` on POSIX) |
-| `IBCMD_CONFIG` | Standalone server `config.yml` for `ibcmd` (empty = Designer fallback) |
+**Dev/test gate:** this command forcibly terminates sessions while applying the DB configuration (`--session-terminate=force` / `-SessionTerminate force`). The target must be an explicitly identified dev/test infobase. The gate reads `.dev.env` `INFOBASE_ROLE` (canon `.cursor/rules/dev-standards-env.mdc → INFOBASE_ROLE`):
+- `dev` / `test` — the target is identified; proceed.
+- `prod` — do not run Steps 2–3 against it. Hand the user the exact commands with the production overrides (no forced termination: `--session-terminate=prompt`, or omit `-SessionTerminate`; an agreed update window; a verified backup first) and stop.
+- empty — if the current context does not establish the role, stop before Step 3 and ask the user to confirm the target. Never infer that an arbitrary `.dev.env` points to a test base.
 
-Ask-policy (canon — `dev-standards-env.md`): only `INFOBASE_PATH` and `PLATFORM_PATH` are blocking — if either is empty, ask the user once and write the value to `.dev.env`. **Never ask up front** about the defaulted keys — apply the defaults from the table silently; re-ask `IB_USER` / `IB_PASSWORD` only if the platform itself returns an authentication error, `LOG_PATH` only if the resolved path turns out to be non-writable. An empty password is a fully valid configuration for dev / test infobases.
+**EDT gate:** when `.dev.env` `USE_EDT=true`, establish the source format before running. This command loads a **Designer XML dump**; it cannot load an EDT (`src/**/*.mdo`) tree. In an EDT-format project either produce a dump first (`export_configuration_to_xml`) or let EDT apply the change (`update_database`) — and keep **one deployment owner per run**, named in the `IB tooling:` line. Canon — `.cursor/rules/edt-workflow.mdc → DB update, launches, external objects`.
 
-When substituting `.dev.env` values into the templates below:
+**Repository gate:** when `REPOSITORY_PATH` is non-empty, the target infobase is bound to a configuration repository — the objects being loaded must be **locked in the repository first** (`1c-repository-manage` skill, process — its `docs/repo-sdlc.md`); otherwise the load fails or silently skips read-only objects. A "configuration is read-only / object locked" line in the load/update log routes to that skill, not into the retry loop below. **Never unbind** the configuration from the repository to make the load proceed. Before Step 2, run the freshness check (`repo-sdlc.md → Source files follow the infobase`). If an object of the load list changed in the infobase after its files were exported, the load is blocked: loading it would silently overwrite a teammate's committed change.
 
-- if `LOG_PATH` is empty, replace `{LOG_PATH}` with `"$env:TEMP\1cv8.log"` (PowerShell expands the env var when the string is double-quoted);
-- resolve `{INFOBASE_FLAG}` once: `/F` for empty / `file`, `/S` for `server`; reject any other `INFOBASE_KIND`.
+When substituting `.dev.env` values into the templates below, resolve `{INFOBASE_FLAG}` once from the effective `INFOBASE_KIND` (`/F` for `file`, `/S` for `server`; reject any other value), and substitute resolved `{LOG_PATH}` / `{RESULT_PATH}` values that contain `$env:` double-quoted — single quotes do not expand it. Delete a stale `{RESULT_PATH}` file before every Designer launch.
 
-Before running, make sure `{EXPORT_PATH}` contains dumped configuration sources (for example, `Configuration.xml` at the root or in the extension subdirectory). If no sources exist, stop and tell the user.
+Before running, resolve the source directory for the selected main configuration / extension. Full mode requires a complete dump with `Configuration.xml`; partial mode requires a non-empty validated file list in the matching format and a suitable existing target configuration. Check source completeness and dependencies; never infer a full snapshot from the presence of `Configuration.xml` alone. Preserve the existing `ConfigDumpInfo.xml` before the load changes it; after a failed load / apply it is not evidence of a synchronized database.
 
 ## Step 1. Choose tool: `ibcmd` or Designer
 
@@ -44,6 +51,8 @@ Before running, make sure `{EXPORT_PATH}` contains dumped configuration sources 
 4. Otherwise use **Steps 2b and 3b (Designer)**.
 
 `ibcmd infobase config` does not apply to 1C cluster infobases; for server cluster infobases always use Designer.
+
+For partial / Git loads, use the bundled `db-load-xml -Mode Partial -Files ...` / `-ListFile ...` or `db-load-git` after its plan, or the Designer template below. The `ibcmd` full-import template is not a partial-import substitute: use its verified `config import files` path in the skill only when suitable. Keep one load owner; do not execute the wrapper and raw template for the same load. In this procedure omit wrapper `-UpdateDB`: apply is a separate stage so extension checks can run first.
 
 ## Step 2a. Load configuration through `ibcmd` (preferred)
 
@@ -71,7 +80,7 @@ Remove empty optional keys (`--user`, `--password`, `--extension`). On errors, s
     --extension={EXTENSION_NAME} *>&1 | Tee-Object -FilePath '{LOG_PATH}'
 ```
 
-`--session-terminate=force` forcibly terminates active sessions. Use it only on a dev/test infobase. On production, replace it with `--session-terminate=prompt` (or remove the key; default is `auto`) and agree on an update window with the user.
+`--session-terminate=force` is allowed only after the dev/test gate of Step 0. When an extension is loaded through `ibcmd`, run **Step 2c** (Designer batch check against the same infobase) before this step — `ibcmd` has no applicability check of its own.
 
 Continue to **Step 4**.
 
@@ -86,6 +95,7 @@ Map `.dev.env` keys to Designer flags:
 | `IB_USER` when not empty | `/N '{IB_USER}'` |
 | `IB_PASSWORD` when not empty | `/P '{IB_PASSWORD}'` |
 | `EXTENSION_NAME` when not empty | `-Extension {EXTENSION_NAME}` |
+| `REPOSITORY_PATH` when not empty (main configuration passes) | `/ConfigurationRepositoryF '{REPOSITORY_PATH}' /ConfigurationRepositoryN '{REPOSITORY_USER}' /ConfigurationRepositoryP '{REPOSITORY_PASSWORD}'` — an infobase bound to a repository refuses every Designer operation without them («Соединение с хранилищем конфигурации не установлено»); never print the password |
 
 ```powershell
 & '{PLATFORM_PATH}\bin\1cv8.exe' DESIGNER `
@@ -94,15 +104,45 @@ Map `.dev.env` keys to Designer flags:
     /P '{IB_PASSWORD}' `
     /DisableStartupMessages `
     /LoadConfigFromFiles '{EXPORT_PATH}' `
+    -updateConfigDumpInfo `
     -Extension {EXTENSION_NAME} `
-    /Out '{LOG_PATH}'
+    /Out '{LOG_PATH}' `
+    /DumpResult '{RESULT_PATH}'
 ```
 
 Remove empty optional keys (`/N`, `/P`, `-Extension`). For the main configuration, remove `-Extension {EXTENSION_NAME}` entirely.
 
-Read `{LOG_PATH}`. On errors, show the relevant log fragment to the user and **do not continue** to Step 3b.
+For **partial** mode, insert one of the following selector fragments after `/LoadConfigFromFiles '{EXPORT_PATH}'` in that same launch:
+
+```text
+-listFile '<validated UTF-8 file list>' -Format Hierarchical
+-files "CommonModules/РаботаСДанными/Ext/Module.bsl" -Format Hierarchical
+```
+
+Use only one fragment, resolve its real paths and use `Plain` for a flat dump. For loading only supplied pieces of an object's description, add `-partial` only after confirming support in the target platform help (the bundled partial-load tools already add it). Keep `-updateConfigDumpInfo` in full and partial Designer loads. It updates the version baseline, not the database configuration. After a clean partial load, continue to Step 2c when applicable and then Step 3b; never report the update complete at this point.
+
+Read the verdict (`{RESULT_PATH}`, exit code, `{LOG_PATH}` — see the retry loop below). On errors, show the relevant log fragment to the user and **do not continue** to Step 3b.
 
 Wait 5-10 seconds so the platform releases the configuration lock.
+
+## Step 2c. Applicability check — mandatory when an extension is loaded
+
+Whenever this run loads an extension (`EXTENSION_NAME` filled, or an extension pass of the full-snapshot mode), run the batch check ladder **between the load (Step 2) and the DB update (Step 3)** — canon `.cursor/rules/designer-batch-checks.mdc → The check ladder`, verification contract `.cursor/rules/verification-gates.mdc → Gate 6`:
+
+```powershell
+& '{PLATFORM_PATH}\bin\1cv8.exe' DESIGNER `
+    {INFOBASE_FLAG} '{INFOBASE_PATH}' `
+    /N '{IB_USER}' `
+    /P '{IB_PASSWORD}' `
+    /DisableStartupMessages `
+    /CheckModules -ThinClient -Server -ExternalConnection -Extension {EXTENSION_NAME} `
+    /Out '{LOG_PATH}' `
+    /DumpResult '{RESULT_PATH}'
+```
+
+then the same launch with `/CheckCanApplyConfigurationExtensions -Extension {EXTENSION_NAME}` in place of `/CheckModules …`. Read the verdict from all three signals after each launch; stop at the first failure and do not run Step 3. An interceptor pointing at a method the vendor renamed loads without complaint and only fails at apply time — or silently stops intercepting; this check is the only step in the pipeline that names it. The check is the same in single-extension and full-snapshot runs, and it is what `/deploy-and-test`, `/restore-testbase` and `/build-release` inherit by calling this procedure.
+
+For the main configuration alone the ladder is optional — run `/CheckConfig` when the change is large (whole-snapshot deploy, release build) or when the Gate 1–3 MCP validators were not exposed in this session.
 
 ## Step 3b. Update DB structure through Designer
 
@@ -114,18 +154,21 @@ Wait 5-10 seconds so the platform releases the configuration lock.
     /DisableStartupMessages `
     /UpdateDBCfg -Dynamic+ -SessionTerminate force `
     -Extension {EXTENSION_NAME} `
-    /Out '{LOG_PATH}'
+    /Out '{LOG_PATH}' `
+    /DumpResult '{RESULT_PATH}'
 ```
 
-`-SessionTerminate force` forcibly terminates active sessions. Use it only on a dev/test infobase. On production, remove this key and agree on an update window with the user.
+`-SessionTerminate force` is allowed only after the dev/test gate of Step 0.
 
-Read `{LOG_PATH}`. Success means `Обновление информационной базы выполнено` / `Database configuration update completed`.
+Read the verdict: `{RESULT_PATH}` = `0`, exit code `0`, and `{LOG_PATH}` containing `Обновление информационной базы выполнено` / `Database configuration update completed` with no diagnostic lines.
 
 ## Update retry loop — mandatory failure handling for Steps 2–3
 
 Loading and updating rarely succeed on a dirty state at the first attempt. Handle failures **iteratively**, never by re-running the same command blindly and never by declaring success from the exit code alone.
 
-**1. Log first — after every attempt, success or not.** Read `{LOG_PATH}` in full after each Step 2 / Step 3 run. The platform can write errors to the log while formally exiting 0 (typical: `Неверное свойство объекта метаданных`, `Неизвестное имя типа`, `Ошибка при обновлении конфигурации базы данных`, `Конфигурация не соответствует`). Any `Ошибка` / `Error` line in the log = failed attempt, regardless of exit code.
+**1. Log first — after every attempt, success or not.** Read `{LOG_PATH}` in full after each Step 2 / Step 3 run. The platform can write errors to the log while formally exiting 0 (typical: `Неверное свойство объекта метаданных`, `Неизвестное имя типа`, `Ошибка при обновлении конфигурации базы данных`, `Конфигурация не соответствует`). A diagnostic line in the log = failed attempt, regardless of exit code.
+
+**Classify success phrases before error stems** — the platform reports success with the same words (`Ошибок не обнаружено`, `Предупреждений: 0`), so a bare "contains `Ошибка` / `Error`" test flags a clean run as broken and starts a fix loop against working code. Order and full pattern list — `.cursor/rules/designer-batch-checks.mdc → The success-phrase trap`. The Designer templates above carry **`/DumpResult '{RESULT_PATH}'`**: the file holds the batch result as a number (`0` = success) and is the cheapest of the three signals to read (same rule, *The verdict is three signals*); a missing file after a launch is a failed launch. `ibcmd` returns a reliable exit code and needs no equivalent.
 
 **2. Terminate the Configurator before the next attempt.** A failed or hung Designer launch can stay alive and hold the configuration lock — every following attempt then dies with `База данных заблокирована` / exclusive-access errors that look like new problems but are not. For retry-aware runs launch Designer with a known process handle and a timeout:
 
@@ -140,6 +183,21 @@ Kill **only the PID started by this command**. Never blanket-kill `Get-Process 1
 
 **4. Bounded budget — 3 full attempts.** If the third attempt still fails, stop: report the last log fragment, what was fixed between attempts, and the remaining error. Do not loop further and do not present a failed update as done.
 
+## Full-snapshot mode (`/update1cbase all`) — optional
+
+Loads the **effective snapshot**: main configuration + every extension from `EXTENSION_NAMES` (`.dev.env`, comma-separated, order = load order). Used by `/restore-testbase`, `/build-release` and whenever the user asks to deploy "with extensions".
+
+- If `EXTENSION_NAMES` is empty, resolve the requested inventory via `.cursor/rules/extension-workspace.mdc`. Confirmed no extensions means a full main pass with no extension option; unresolved inventory must be resolved before any full-snapshot mutation. Never fall back to `EXTENSION_NAME` for `all`.
+- Before modifying the infobase, preflight **every** selected source root for identity, format, completeness and required dependencies. A missing/partial extension source blocks the requested full snapshot before the main pass; resolve it from the existing context or ask only when the owner must change scope. Do not discover an already-visible missing root after applying main.
+- **Pass 1 — main configuration:** Steps 2–3 as written, from `{EXPORT_PATH}`, without `-Extension` / `--extension`.
+- **Pass per extension**, in `EXTENSION_NAMES` order: the same Steps 2–3 with `-Extension <Name>` / `--extension=<Name>`, sources from `{EXTENSIONS_PATH}\<Name>\`.
+- **Every extension pass runs Step 2c between load and update**; a failure stops that pass before `/UpdateDBCfg`.
+- A listed extension whose sources directory is missing or empty breaks the snapshot contract — resolve its source or an explicitly authorized scope change before starting; never skip silently.
+- `EXTENSION_NAMES` is a load sequence, not runtime-order evidence or authorization to delete unlisted installed extensions. Preserve/identify relevant extras and report any runtime mismatch. Save each pass's log/result evidence before the next pass reuses those paths.
+- The **Update retry loop** applies to every pass with its own 3-attempt budget. A pass that exhausts its budget stops the mode; report which passes completed and which failed.
+
 ## Step 4. Final report
 
-Briefly report which infobase was updated, which directory was loaded, which tool was used (`ibcmd` or Designer), how many attempts the retry loop took and what was fixed between them, and whether dynamic update was applied or restructuring was required (visible in the log). List errors separately.
+If the task also requests refreshing the source directory after the update, first complete all required apply stages, then follow `/loadfrom1cbase` with the same targets and appropriate scopes. Do not overwrite local changes or perform an unconditional full return dump. Without a requested refresh, no extra dump is required; report any baseline not maintained by the selected load tool before the next incremental export.
+
+Briefly report the infobase, main configuration / extension, source directory, load scope (full / selected files / Git diff), tool, checks, apply result and any directory refresh separately. Include retry attempts, fixes and dynamic update / restructuring from the log. In full-snapshot mode, list every pass. A successful load with failed apply, or successful apply with failed return export, remains a partially completed workflow; list errors explicitly.

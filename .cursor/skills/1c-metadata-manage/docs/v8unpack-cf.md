@@ -1,6 +1,6 @@
 # v8unpack — pointer to standalone skill
 
-**Canonical source:** `content/skills/v8unpack-cf/SKILL.md` (or its installed copy under the active tool's skills directory).
+**Canonical source:** `.cursor/skills/v8unpack-cf/SKILL.md` (or its installed copy under the active tool's skills directory).
 
 This file is intentionally a thin pointer. Unpack / rebuild of CF, CFE, and EPF binaries without the 1C platform is owned by the standalone **`v8unpack-cf`** skill — commands, source layout, version checks, and limitations live there.
 

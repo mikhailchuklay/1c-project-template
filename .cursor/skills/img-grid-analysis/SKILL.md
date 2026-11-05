@@ -20,7 +20,7 @@ img-grid-analysis <ImagePath> [-c COLS] [-o OUTPUT]
 
 ## Command
 
-`<skill-dir>` below is the directory of this skill: `content/skills/img-grid-analysis/` in the `1c-rules` source repo, or `<tool>/skills/img-grid-analysis/` after installation (e.g. `.cursor/skills/img-grid-analysis/`).
+`<skill-dir>` below is the directory of this skill: `.cursor/skills/img-grid-analysis/` in the `1c-rules` source repo, or `<tool>/skills/img-grid-analysis/` after installation (e.g. `.cursor/skills/img-grid-analysis/`).
 
 ```bash
 python <skill-dir>/scripts/overlay-grid.py "<ImagePath>" [-c 50] [-o "<OutputPath>"]

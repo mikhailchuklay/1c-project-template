@@ -1,21 +1,23 @@
 ---
 name: mcp-1c-tools
+<<<<<<< template
 description: "Catalog of MCP servers for 1C development — search, code navigation, metadata, code review, docs, ITS, templates, local RLM. Use whenever a 1C task requires calling tools from any 1c-*-mcp / 1C-*-mcp / rlm-tools-bsl server. Each server has its own detail file under `docs/` — load it when you are about to call tools from that server, and only if the server is actually available in the current session."
+=======
+description: "Router for non-memory 1C MCP operations: select the server, operation skill with exact arguments, and fallback. Load before choosing a 1C tool; memory-only work enters through project-memory.md."
+>>>>>>> vendor-HEAD
 ---
 
-# MCP tools for 1C — dispatcher
+# MCP tools for 1C — router
 
-This skill is the single source of truth for the project's MCP server catalog, task→tool mapping, fallback order, and project-index search retries. Detailed per-tool descriptions for each server live in separate files under `docs/`. **Load a specific `docs/<server>.md` when you are about to call tools from that server and want to tune parameters; the server must be actually available in the current session** (its tools are exposed in the tool schema; the mere presence of an entry in `mcp-servers.json` does not count as availability).
+Apply `.cursor/rules/mcp-policy.mdc → Tool availability` before routing: `.dev.env` `TOOL_*` policy plus callable tools and verified scope. Config entries alone prove nothing. The same policy owns obligations, budgets and typed-error recovery. Search: `.cursor/rules/mcp-first-search.mdc`; task sequences: `.cursor/rules/tooling-playbooks.mdc`.
 
-## What is mandatory vs. conditional
+**Project scope is part of the call.** For extensions or a multi-project graph, first match the current source roots to a returned base `project_id` through `list_graph_projects` (`.cursor/rules/multi-contour-search.mdc`). Supply it explicitly on every graph project-data call that exposes it, including paging and evidence. Resolve extension-layer coverage separately. Use each other server's actual selector (`configurationId` or another field only if exposed); its identifiers are not interchangeable with graph IDs. If a tool has no explicit selector, require a verified fixed/session/entity scope or use a suitable scoped tool/fallback. Never invent unsupported parameters or accept a default/foreign project as the current one. Reuse a valid mapping until the workspace/server context changes.
 
-- **Mandatory for risk-bearing 1C work.** If a relevant server is exposed, call the fitting MCP tool for BSL / metadata edits or review, metadata XML, forms, integrations, refactoring, performance, runtime errors, platform API checks, impact analysis, syntax / quality validation, and project-memory operations.
-- **Conditional for external knowledge.** Use platform docs, БСП / SSL, and ITS MCP tools when the task depends on versioned platform behavior, reusable БСП APIs, or standards compliance. Do not call them for generic prose cleanup or rule-file editing unless such a fact is actually needed.
-- **Not required for Markdown / rules / documentation-only work.** For rule files, README, commands documentation, and similar prose-only edits, validate structure, links, paths, and internal consistency instead of calling 1C project MCP tools. **Exception:** OpenSpec artifacts that state concrete 1C facts (metadata / attribute names, API signatures, БСП subsystems, platform-version behaviour) are spec authoring, not documentation-only work — the mandatory scope above applies (`AGENTS.md → MCP Tool Calling → A.1`, `content/rules/sdd-integrations.md`).
-- **Mandatory before parameter-rich calls.** Read `docs/<server>.md` before the first call in the session to every parameter-rich tool listed below, and re-read it when switching tools on that server. A genuinely simple one-shot lookup with obvious arguments may skip the detail file only when it is not in the parameter-rich list.
+## Need → operation skill
 
-### Parameter-rich tools — read the doc first
+Load the skill for the operation, not this whole catalogue. Each skill lists the exact argument names of its tools and example calls; no schema fetch is needed for a tool it names.
 
+<<<<<<< template
 For these tools default parameters are usually suboptimal; consult the server's `docs/<server>.md` before the first call in the session and adjust the parameters to the task:
 
 - `1c-graph-metadata-mcp`: `search_code` (`search_type`, `detail_level`), `search_metadata` (JSON templates), `search_metadata_by_description` (`alpha`, `use_fuzzy`), `trace_impact` (`direction`, `depth`, `relationship_types`), `trace_call_chain` (`direction`, `depth`), `get_object_dossier` (`sections`), `business_search` (`include_structure`, `filter_type`).
@@ -65,9 +67,28 @@ Native discovery tools (`Grep` / `rg`, `Glob` / file search by pattern, director
 The chain is a **bounded priority, not a prohibition**: when the project-index servers are not exposed, the chain collapses to step 4 (`rlm-tools-bsl`, if exposed) and then native tools apply immediately (one-line note). When a tuned call plus the documented retry missed — fall back without spending further MCP calls on this rule. After fresh local edits the index may be stale — reading the disk state directly is legitimate. For understanding a single routine prefer fragment-level retrieval (`get_module_structure`, `search_code` `detail_level="L0"`, `search_function`) over a full-module `Read`; reading a direct edit target or an MCP-located file is normal work. Boundary cases — `content/rules/mcp-first-search.md`.
 
 ### External knowledge
+=======
+| Need | Skill | Servers |
+|---|---|---|
+| Locate or read BSL code, module layout, members of a context | `.cursor/skills/1c-code-search/SKILL.md` | graph, code |
+| Facts about a metadata object: passport, attributes, tabular-part columns, objects by category or description | `.cursor/skills/1c-meta-info/SKILL.md` | graph, code |
+| Usages, call chains, downstream impact, register writers, extension layers | `.cursor/skills/1c-impact/SKILL.md` | graph, code |
+| Read forms, form artifacts, XSD / format specs before a form change | `.cursor/skills/1c-form-inspect/SKILL.md` | code, graph, docs |
+| Validate changed BSL and metadata XML (Gates 1–3, 5) | `.cursor/skills/1c-validate/SKILL.md` | syntax, checker, code |
+| Platform reference, capability check, БСП API, routed standards, ITS, configuration docs | `.cursor/skills/1c-platform-help/SKILL.md` | docs, ssl, checker, code |
+| Templates as the base | `.cursor/skills/1c-templates-memory/SKILL.md` | templates |
+| Memory recall / save (independent entry point) | `.cursor/rules/project-memory.mdc` | cognee, openviking, templates |
+| Run a query or fragment in the live infobase, last event-log error | `.cursor/skills/1c-live-ib/SKILL.md` | data |
+| Check behaviour in the 1C interface (thin client): forms, fields, tables, commands, messages | `.cursor/skills/1c-qa-testing/SKILL.md` + `.cursor/rules/qa-testclient.mdc` | qa |
+| Create / edit / remove metadata, forms, roles, DCS, MXL, infobases | `.cursor/skills/1c-metadata-manage/SKILL.md` | scripts, not MCP |
+| Live 1C:EDT workspace (`USE_EDT=true` only) | `docs/edt-mcp.md`, `.cursor/rules/edt-workflow.mdc` | edt |
 
-These servers have no `Grep` / `rg` equivalent; call them only when their knowledge is needed:
+## Server catalog
+>>>>>>> vendor-HEAD
 
+The operation table above is sufficient for ordinary routing. Read [server-catalog.md](docs/server-catalog.md) only to identify an unfamiliar server/alias, find a server-specific reference, or select an optional pre-alpha integration. Do not load the whole catalog before a known operation.
+
+<<<<<<< template
 1. `1c-templates-mcp` — code templates and project memory (`templatesearch`, `remember`, `recall`). **`templatesearch` only:** query pre-flight (`A.8`) + **reuse found template** (`A.9`, `docs/1c-templates-mcp.md → Using a found template`).
 2. `1c-ssl-mcp` — БСП / SSL reusable APIs and patterns.
 3. `1C-docs-mcp` — versioned platform documentation; also the mandatory platform-capability check before hand-rolling a specialized mechanism (see `docs/1C-docs-mcp.md → Platform capability discovery`).
@@ -75,9 +96,13 @@ These servers have no `Grep` / `rg` equivalent; call them only when their knowle
 5. `v8std-mcp` — diagnostic-to-standard bridge and adapted standard navigation. Use after `syntaxcheck` BSLLS codes (`v8std_explain_diagnostics`), for BSL/SDBL snippets (`v8std_explain_snippet`), or topic search (`v8std_search` → `v8std_get_page`). **Does not replace** `its_help` → `fetch_its` for normative decisions. Details — [`docs/v8std-mcp.md`](docs/v8std-mcp.md).
 6. `1c-syntax-checker-mcp` — BSL syntax / style validation after edits (prefer `syntaxcheck_file` over `syntaxcheck` when it is exposed — file check by path is more economical than passing code text).
 7. `1c-data-mcp` — execution against the **live** infobase (run a BSL fragment, run a query, parse-check a query, fetch the last event-log error). No `Grep` / `rg` equivalent — there is no offline substitute for "what does this running IB do right now". Call only when the question genuinely requires the live IB; default to read-only fragments and ask before any mutation. Native tools appear only when `/hs/mcp` is anonymous — that is the correct IIS / Apache publish. On `ibsrv`, and on any publication that was not made anonymous, the call is the same: an anonymous request fails (503 on `ibsrv`, typically 401 on IIS) and Basic auth of `IB_USER`/`IB_PASSWORD` returns 200. Cursor does not send `Authorization`. Use `tools/dev-standalone/Invoke-DataMcp.ps1`. Do not call `mcp_auth` and do not use the COM connector. Details — [`docs/1c-data-mcp.md`](docs/1c-data-mcp.md).
+=======
+## Fallback chain
+>>>>>>> vendor-HEAD
 
-## Quick map: "task → MCP tool"
+**Project source** (code, metadata, usages, forms, file locations): within verified contour coverage, graph → mapped code-metadata → scoped native `Grep` / `Glob` / `Read` after a bounded miss, with a one-line fallback note. Code chooses its file-scan fallback internally; current tools have no `grep` input. Skip uncovered lanes; no eligible exposed index means native search in that contour immediately. Owner: `.cursor/rules/mcp-first-search.mdc`; multiple roots, catalog/scope selectors and acceptance: `.cursor/rules/multi-contour-search.mdc`.
 
+<<<<<<< template
 | Task | First choice (graph) | Fallback (code-metadata) |
 |---|---|---|
 | BSL code search | `search_code` (`fulltext` / `semantic` / `hybrid`, `detail_level` L0–L3) | `codesearch` |
@@ -89,5 +114,8 @@ These servers have no `Grep` / `rg` equivalent; call them only when their knowle
 | Description / synonym / comment search | `search_metadata_by_description` | `metadatasearch` (`names_only=true`) |
 | BSLLS/ACC/EDT code → standard | `v8std_explain_diagnostics` (`v8std-mcp`) | `v8std_search` → `v8std_get_page`; `its_help` → `fetch_its` for normative text |
 | BSL/SDBL snippet → standards | `v8std_explain_snippet` (`v8std-mcp`) | `v8std_get_page`; `review_1c_code` for compliance |
+=======
+**External knowledge** has no interchangeable fallback chain. Select only the relevant eligible provider. Missing templates: disclose no template check; memory: `project-memory.md`; routed standards: `help-corpus-retrieval.md`; validators/live IB: `verification-gates.md`. An unavailable source never proves API absence or a passed check; block dependent design when authoritative facts are missing.
+>>>>>>> vendor-HEAD
 
-Step-by-step playbooks per task type (writing code, review, architecture, error fixing, performance, refactoring, metadata XML, forms, integrations, documentation, comparing platform versions) — `content/rules/tooling-playbooks.md`.
+Open `docs/<server>.md` once per server per session and only for a mode or response shape the operation skill does not cover; the environment descriptor wins over any document here.
