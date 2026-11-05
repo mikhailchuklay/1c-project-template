@@ -1,7 +1,7 @@
 {
     "mcpServers": {
         "mcp-1c-platform-tools": {
-            "command": "@PROJECT_ROOT@/tools/mcp-platform-tools-launcher.sh",
+            "command": "@LAUNCHER_BIN@",
             "args": [],
             "env": {
                 "ONEC_IPC_HOST": "127.0.0.1",
