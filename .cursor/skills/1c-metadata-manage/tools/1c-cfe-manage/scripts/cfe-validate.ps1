@@ -1009,6 +1009,17 @@ if ($check15Ok) {
 	Report-OK "15. ExchangePlan content: $xplanItemsChecked item(s), data objects only"
 }
 
+# --- Breadcrumb: controlled methods (&ИзменениеИКонтроль) drift is not checked here ---
+$extRootDir = Split-Path $resolvedPath -Parent
+$ctrlCount = 0
+foreach ($bslFile in (Get-ChildItem -Path $extRootDir -Recurse -Filter *.bsl -File -ErrorAction SilentlyContinue)) {
+	$txt = [System.IO.File]::ReadAllText($bslFile.FullName, [System.Text.Encoding]::UTF8)
+	$ctrlCount += ([regex]::Matches($txt, '(?m)^\s*&ИзменениеИКонтроль\(')).Count
+}
+if ($ctrlCount -gt 0) {
+	Out-Line "[INFO]  Контролируемых методов (&ИзменениеИКонтроль): $ctrlCount — их актуальность здесь не проверяется. Сверьте: /cfe-patch-method -Check -ExtensionPath <ext> -ConfigPath <cf>"
+}
+
 # --- Final output ---
 & $finalize
 

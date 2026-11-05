@@ -14,7 +14,7 @@ alwaysApply: false
 - `its_help` → `fetch_its` — authoritative platform standards (v8std). This file does **not** replace them.
 - `ssl_search` — authoritative БСП / SSL API discovery. This file provides **when** and **what to search for**, not the full API text.
 - `review_1c_code` / `check_1c_code` — post-edit validation. This file is **pre-edit discipline**.
-- `dev-standards-architecture.mdc` / `dev-standards-forms.mdc` — project-delta details (queries, form UX). This file points there; do not duplicate.
+- `dev-standards-architecture.mdc` / `forms-add.mdc → Form UX (project-delta)` — project-delta details (queries, form UX). This file points there; do not duplicate.
 
 **Explicit ban:** Do not treat this file as a substitute for `fetch_its` or `ssl_search`. Do not paste ITS or BSP article text here. Do not embed configuration-specific module names (TradeCRM, UT, ERP, CRM prefixes).
 
@@ -130,7 +130,7 @@ Do not duplicate full rules — load companions when editing queries or forms:
 | Topic | Load |
 |---|---|
 | `РАЗРЕШЕННЫЕ`, `В()` → join, `Выразить`, query fragments | `dev-standards-architecture.mdc §3 → Queries` |
-| Form tabs, `{PREFIX}СтраницаСпециальная`, visibility procedure | `dev-standards-forms.mdc` |
+| Form tabs, `{PREFIX}СтраницаСпециальная`, visibility procedure | `forms-add.mdc → Form UX (project-delta)` |
 | Multi-CFE strategy, `&Вместо` last resort | `extension-patterns.mdc → Multi-extension layout` |
 
 ---

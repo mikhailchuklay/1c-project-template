@@ -11,7 +11,7 @@ alwaysApply: false
 
 **Where this sits in the toolchain (no overlap):**
 
-- `verification-checklist.md` — **static** gates (`syntaxcheck` → `check_1c_code` → `review_1c_code` → impact → XML). Run *first*. This file starts where those stop.
+- `verification-checklist.md` (router → `verification-gates.md`) — **static** gates (`syntaxcheck` → `check_1c_code` → `review_1c_code` → impact → XML). Run *first*. This file starts where those stop.
 - `/deploy-and-test` (`.cursor/commands/deploy-and-test.md`) — the **deploy command**: concrete `ibcmd` / Designer steps + UI tests. This file does **not** repeat deploy mechanics; for them, use that command.
 - `docs/1c-data-mcp.md` (`.cursor/skills/mcp-1c-tools/docs/`) — the **tool reference** for `1c-data-mcp` parameter names and value formats.
 - `.dev.env` — per-project parameters used below: `INFOBASE_PUBLISH_URL`, `STANDALONE_PORT`, `STANDALONE_HTTP_BASE`, `IBCMD_CONFIG`, `IB_USER` / `IB_PASSWORD`.
@@ -40,7 +40,7 @@ Pick the cheapest channel that actually proves the behaviour:
 
 Default to **`1c-data-mcp`** for logic; escalate to **UI** for what the table marks as out of reach (form/command/client). Many "form opens pre-filled" requirements split cleanly: the *fill* is data-mcp-testable, the *opens / command appears / layout* is UI-only.
 
-**Agent-owned delivery rule:** when **you** implement form/UI behaviour (not analysis-only), you **must** run the UI channel yourself before declaring done — see § Programmatic form runtime gate and `verification-checklist.mdc → Gate 6`. The user is not the default tester.
+**Agent-owned delivery rule:** when **you** implement form/UI behaviour (not analysis-only), you **must** run the UI channel yourself before declaring done — see § Programmatic form runtime gate and `verification-gates.mdc → Gate 6`. The user is not the default tester.
 
 ## Programmatic form runtime gate (Gate 6 companion)
 

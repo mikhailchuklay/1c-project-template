@@ -1,926 +1,1559 @@
-﻿{
-    "protocol":  "1.0",
-    "source":  "C:\\Users\\mikha\\AppData\\Local\\Temp\\1c-rules",
-    "version":  "a421cf4",
-    "installedAt":  "2026-07-07T10:02:58Z",
-    "updatedAt":  "2026-07-07T10:02:58Z",
-    "lastChannel":  "powershell",
-    "tools":  [
-                  "cursor"
-              ],
-    "language":  "en",
-    "mcpServers":  [
-                       "1c-code-metadata-mcp",
-                       "1c-syntax-checker-mcp",
-                       "1C-docs-mcp",
-                       "1c-templates-mcp",
-                       "1c-graph-metadata-mcp",
-                       "1c-code-check-mcp",
-                       "1c-ssl-mcp",
-                       "1c-data-mcp"
-                   ],
-    "files":  {
-                  ".cursor/rules/anti-patterns.mdc":  {
-                                                          "source":  "content/rules/anti-patterns.md",
-                                                          "installedHash":  "933b797be4cda59b8accb99c69768626f64a3f42cc293b7cbdfaacd222ceaa70"
-                                                      },
-                  ".cursor/rules/async-methods.mdc":  {
-                                                          "source":  "content/rules/async-methods.md",
-                                                          "installedHash":  "4004cb15e569b8f5b6dcb39fa7dc2a742fcc5b1312490f9a28809dbd581266ff"
-                                                      },
-                  ".cursor/rules/coding-standards.mdc":  {
-                                                             "source":  "content/rules/coding-standards.md",
-                                                             "installedHash":  "d01eba85cf561da2ce9ea86060db6a069403ef0e6240ebc9176938977b050382"
-                                                         },
-                  ".cursor/rules/dcs-design.mdc":  {
-                                                       "source":  "content/rules/dcs-design.md",
-                                                       "installedHash":  "8a30352083a6a05b10dbcb01b825287312048c47b3669051752b046efa81fb30"
-                                                   },
-                  ".cursor/rules/dev-standards-architecture.mdc":  {
-                                                                       "source":  "content/rules/dev-standards-architecture.md",
-                                                                       "userModified":  true,
-                                                                       "installedHash":  "0f0be31e02ca3ee0c2d2ddb649488023c0e97116d8b956844ac4a9b193946f08"
-                                                                   },
-                  ".cursor/rules/dev-standards-core.mdc":  {
-                                                               "source":  "content/rules/dev-standards-core.md",
-                                                               "installedHash":  "5cedb54c7fc458e43d2db58c33603226400e9ec960316b9e2850dc50d22c7091"
-                                                           },
-                  ".cursor/rules/dev-standards-forms.mdc":  {
-                                                                "source":  "content/rules/dev-standards-forms.md",
-                                                                "userModified":  true,
-                                                                "installedHash":  "32732d34b25fe5b46f1b99cd8b10b8620aa23d8c280495517c7312c312859d47"
-                                                            },
-                  ".cursor/rules/extension-patterns.mdc":  {
-                                                               "source":  "content/rules/extension-patterns.md",
-                                                               "userModified":  true,
-                                                               "installedHash":  "a4a249cc3ff0c07a171e724611e27ef3a2ae513170b49ddf5a3a3cb6725f3eb5"
-                                                           },
-                  ".cursor/rules/form-module.mdc":  {
-                                                        "source":  "content/rules/form-module.md",
-                                                        "installedHash":  "bf92b7f492dbe9158d5b418897e1dd59f37605d0cf6f12372608c7a24c9d1875"
-                                                    },
-                  ".cursor/rules/form-reserved-names.mdc":  {
-                                                                "source":  "content/rules/form-reserved-names.md",
-                                                                "installedHash":  "0312cec6a6dc4f712a8701d7547c7188b6a9af7f8e432db8160e8685325767c4"
-                                                            },
-                  ".cursor/rules/forms-add.mdc":  {
-                                                      "source":  "content/rules/forms-add.md",
-                                                      "installedHash":  "c7a1b2ff69d33128812dce402006d353ef0e5da0b18b22035e6b4e97933aa589"
-                                                  },
-                  ".cursor/rules/forms-events-add.mdc":  {
-                                                             "source":  "content/rules/forms-events-add.md",
-                                                             "installedHash":  "1df92c288c9ba9ff00f0fe4156bdbcf6692c444aa2f5ecfd8d752c4a63b6a919"
-                                                         },
-                  ".cursor/rules/forms.mdc":  {
-                                                  "source":  "content/rules/forms.md",
-                                                  "userModified":  true,
-                                                  "installedHash":  "88d01b751e3234440d579b059590e60d4c0a7fe597929c9f1275c70b4896715f"
-                                              },
-                  ".cursor/rules/getconfigfiles.mdc":  {
-                                                           "source":  "content/rules/getconfigfiles.md",
-                                                           "installedHash":  "35ae8008c14f714c74cf6cfcab9f652c3b5963e3c842c21bc8d8482a7886aec9"
-                                                       },
-                  ".cursor/rules/integrations-add.mdc":  {
-                                                             "source":  "content/rules/integrations-add.md",
-                                                             "installedHash":  "cf2407db43762c94f49ebf91dba5f1dbad9644f8ddf7a2d376f8e912031d297e"
-                                                         },
-                  ".cursor/rules/locks-and-transactions.mdc":  {
-                                                                   "source":  "content/rules/locks-and-transactions.md",
-                                                                   "installedHash":  "9b39247229b33fee3166cdf1fad31c97eab263f3a5c1e5e636717861d77063d5"
-                                                               },
-                  ".cursor/rules/logging-strategy.mdc":  {
-                                                             "source":  "content/rules/logging-strategy.md",
-                                                             "installedHash":  "d455d20524244ac0ebdd4438485150d23189aef4332dc21abaf30507c703ac45"
-                                                         },
-                  ".cursor/rules/mcp-first-search.mdc":  {
-                                                             "source":  "content/rules/mcp-first-search.md",
-                                                             "installedHash":  "bb5d2ffddda187866311a492d4d8c306feaf6ff5fbd7c18f84895276a5536a14"
-                                                         },
-                  ".cursor/rules/metadata-xml-workarounds.mdc":  {
-                                                                     "source":  "content/rules/metadata-xml-workarounds.md",
-                                                                     "installedHash":  "7121db9aa1885282f9e13f1d8673ea6475bac3204233b867d0bdeffbca29cb21"
-                                                                 },
-                  ".cursor/rules/module-structure.mdc":  {
-                                                             "source":  "content/rules/module-structure.md",
-                                                             "installedHash":  "809bb893044791d92cf14fd4b043200ed883f2b849bbac37c3c4cbd9defa5a76"
-                                                         },
-                  ".cursor/rules/platform-solutions.mdc":  {
-                                                               "source":  "content/rules/platform-solutions.md",
-                                                               "installedHash":  "43bfd6cfdff31acc09f826ce523d7d93312e30a07a2ee567d4ba9285f150a031"
-                                                           },
-                  ".cursor/rules/refactor-add.mdc":  {
-                                                         "source":  "content/rules/refactor-add.md",
-                                                         "installedHash":  "5a2dc07c55a22bd9ea08cdee865e12ea3da3959439dd5b68ea5c77fef39f63e6"
-                                                     },
-                  ".cursor/rules/registers-design.mdc":  {
-                                                             "source":  "content/rules/registers-design.md",
-                                                             "installedHash":  "faf98fc3c19b94ebc9c43f8be650d9a1d79b67ed572814209f03a44067598022"
-                                                         },
-                  ".cursor/rules/sdd-integrations.mdc":  {
-                                                             "source":  "content/rules/sdd-integrations.md",
-                                                             "installedHash":  "eee8e67840733c51c95bd56eba23ab8d79e8ddfba04a91d385bfcffbf5dbd4cb"
-                                                         },
-                  ".cursor/rules/subagent-pipeline.mdc":  {
-                                                              "source":  "content/rules/subagent-pipeline.md",
-                                                              "installedHash":  "c4275fc929c248981d18dff377f9ba79d4c371982af30ea10df143e8b1e18585"
-                                                          },
-                  ".cursor/rules/subagents.mdc":  {
-                                                      "source":  "content/rules/subagents.md",
-                                                      "installedHash":  "f3bef7dde99ab74e5b29b0f8230024c8b6dcad84ef0a8340935dc31c7565d7c8"
-                                                  },
-                  ".cursor/rules/systematic-debugging.mdc":  {
-                                                                 "source":  "content/rules/systematic-debugging.md",
-                                                                 "installedHash":  "f78eadcc314e2e030f6b7c554d68f71997970afc9e0269695fb7b493caf2050d"
-                                                             },
-                  ".cursor/rules/tooling-playbooks.mdc":  {
-                                                              "source":  "content/rules/tooling-playbooks.md",
-                                                              "userModified":  true,
-                                                              "installedHash":  "93b5d5371e90b506a6bf005846c80d1f8d7da686428a5b5c7cd19b5216edc314"
-                                                          },
-                  ".cursor/rules/verification-checklist.mdc":  {
-                                                                   "source":  "content/rules/verification-checklist.md",
-                                                                   "userModified":  true,
-                                                                   "installedHash":  "c2c3aba9cb5f02a0df17a66bfb6c09f2e17381441949db51c1118038697fd02a"
-                                                               },
-                  ".cursor/agents/analytic.md":  {
-                                                     "source":  "content/agents/analytic.md",
-                                                     "installedHash":  "503e00ade833d0508152356658d0ebc9e69f62c6eafc69b0141e022339356f57"
-                                                 },
-                  ".cursor/agents/arch-reviewer.md":  {
-                                                          "source":  "content/agents/arch-reviewer.md",
-                                                          "installedHash":  "2be17c64ac8e958c275947ce8e0299cf8ec890a36d418615b8d7d324f516d90d"
-                                                      },
-                  ".cursor/agents/architect.md":  {
-                                                      "source":  "content/agents/architect.md",
-                                                      "installedHash":  "e8128759dcdbce5519db5e19180cade2766322f5d9b2de5d0aaf914cf13a41b7"
-                                                  },
-                  ".cursor/agents/code-reviewer.md":  {
-                                                          "source":  "content/agents/code-reviewer.md",
-                                                          "installedHash":  "a28aebbbed9b919b54cd092a2810cec6a95db4f8caf8d7b24595e320af7ef204"
-                                                      },
-                  ".cursor/agents/developer.md":  {
-                                                      "source":  "content/agents/developer.md",
-                                                      "installedHash":  "9e0789354d99a45ea4a6b778ac13485205bfd260e28b79e60e26c8180e937c7b"
-                                                  },
-                  ".cursor/agents/doc-writer.md":  {
-                                                       "source":  "content/agents/doc-writer.md",
-                                                       "installedHash":  "5409d721395ac0f65038a0ea5283a0348ff38de6961df029b5c8ee693f2c2335"
-                                                   },
-                  ".cursor/agents/error-fixer.md":  {
-                                                        "source":  "content/agents/error-fixer.md",
-                                                        "installedHash":  "4e90a0e1c90e383fc394bfe737267e89806486b70078c24753e622ea2cec77ca"
-                                                    },
-                  ".cursor/agents/explorer.md":  {
-                                                     "source":  "content/agents/explorer.md",
-                                                     "installedHash":  "0eab6041970c0576618461a4d642ed5e254e5a303ee9378bf2d495fede60a057"
-                                                 },
-                  ".cursor/agents/metadata-manager.md":  {
-                                                             "source":  "content/agents/metadata-manager.md",
-                                                             "installedHash":  "63bbc00666c24b83a0b2143ddd388fa127605be48d1eaab592d3cb1e5472bfce"
-                                                         },
-                  ".cursor/agents/performance-optimizer.md":  {
-                                                                  "source":  "content/agents/performance-optimizer.md",
-                                                                  "installedHash":  "fe9767dba6c044e7b459583c8deebbfa2b9087c3432609ae03f1f85c6ee05b86"
-                                                              },
-                  ".cursor/agents/planner.md":  {
-                                                    "source":  "content/agents/planner.md",
-                                                    "installedHash":  "ef5dc75de1e1d1c474769e51998fc36c260c2159d142e537e31cdee6db97d3b7"
-                                                },
-                  ".cursor/agents/refactoring.md":  {
-                                                        "source":  "content/agents/refactoring.md",
-                                                        "installedHash":  "c07283936865da990014757b44c3b395ece849fe890ec82d1dc8b288e0b6a9ce"
-                                                    },
-                  ".cursor/agents/tester.md":  {
-                                                   "source":  "content/agents/tester.md",
-                                                   "installedHash":  "faaef7e9a8c7f2288b9edf5512fa8296722196bcd2bd09f5f13c32beefb6999c"
-                                               },
-                  ".cursor/commands/checkmcp.md":  {
-                                                       "source":  "content/commands/checkmcp.md",
-                                                       "installedHash":  "c59e54a3f6358d7c546fb320788b7f94635d0a0dbe7a1ff2e30896682bc0b607"
-                                                   },
-                  ".cursor/commands/deploy-and-test.md":  {
-                                                              "source":  "content/commands/deploy-and-test.md",
-                                                              "installedHash":  "432a2c6b130e87c774ce814775cf09f8bf128eb049b4beccab0117d272a00063"
-                                                          },
-                  ".cursor/commands/doctor.md":  {
-                                                     "source":  "content/commands/doctor.md",
-                                                     "installedHash":  "ce0ab8dd00c42de15af6371c15881162b213d9f1f4b11fee5b4792d13e857017"
-                                                 },
-                  ".cursor/commands/getconfigfiles.md":  {
-                                                             "source":  "content/commands/getconfigfiles.md",
-                                                             "installedHash":  "eeabb7abc5170f345d802d034dd8b97cb0f9ef1d32c79408eb0725e3587ef500"
-                                                         },
-                  ".cursor/commands/installmcp.md":  {
-                                                         "source":  "content/commands/installmcp.md",
-                                                         "installedHash":  "fe87d37e71f6951526c487d7fd920c69ba5979497210e297766e3c14e7bec167"
-                                                     },
-                  ".cursor/commands/loadfrom1cbase.md":  {
-                                                             "source":  "content/commands/loadfrom1cbase.md",
-                                                             "installedHash":  "df931a7c97d8a8d7e3e9aee7be8922e96af8234867f21be48a33ceb6d78c1edc"
-                                                         },
-                  ".cursor/commands/update1cbase.md":  {
-                                                           "source":  "content/commands/update1cbase.md",
-                                                           "installedHash":  "90020fd3c51b0ba185d08426c51fb21adbd313b3f47914b1602c0a1b3e13c773"
-                                                       },
-                  ".cursor/commands/updatemcp.md":  {
-                                                        "source":  "content/commands/updatemcp.md",
-                                                        "installedHash":  "2b90e1ca7d7aef529f21e0da74854c9d9106d964b2a642c22dcaa85bc17155c1"
-                                                    },
-                  ".cursor/commands/updaterules.md":  {
-                                                          "source":  "content/commands/updaterules.md",
-                                                          "installedHash":  "7e65ae0626e94c69bbd15c0b83003cc59fa770b2938740cbd69bcbc3e215b403"
-                                                      },
-                  ".cursor/skills/1c-metadata-manage/SKILL.md":  {
-                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                     "installedHash":  "a7bb6f4b26f13818a5e238099f5ded18b19dc643684fafddcf43f2d2f7d48391"
-                                                                 },
-                  ".cursor/skills/1c-metadata-manage/docs/bsp-manage.md":  {
-                                                                               "source":  "content/skills/1c-metadata-manage",
-                                                                               "installedHash":  "0b9f162823a776e66600d0a63d9397461835ef61ae0bbc0151880275060c935e"
-                                                                           },
-                  ".cursor/skills/1c-metadata-manage/docs/cf-manage.md":  {
-                                                                              "source":  "content/skills/1c-metadata-manage",
-                                                                              "installedHash":  "1b6f69f81289b5c509f147a56130dcd2acd335261f1462ea2e5591d3140d8e11"
-                                                                          },
-                  ".cursor/skills/1c-metadata-manage/docs/cfe-manage.md":  {
-                                                                               "source":  "content/skills/1c-metadata-manage",
-                                                                               "installedHash":  "125ac286430abacd3731f232467ce4a3cbe729c2dfeb0ef5d97d2fbefb8f7a74"
-                                                                           },
-                  ".cursor/skills/1c-metadata-manage/docs/db-manage.md":  {
-                                                                              "source":  "content/skills/1c-metadata-manage",
-                                                                              "installedHash":  "696432fa0248ee7090f12c3e996f6868cd0fdb106e13aa35411fbd7423c3ba1e"
-                                                                          },
-                  ".cursor/skills/1c-metadata-manage/docs/epf-manage.md":  {
-                                                                               "source":  "content/skills/1c-metadata-manage",
-                                                                               "installedHash":  "eb9eb84a32ecc6af03ebc2580793aa24b7943094e27b0a8920fa30b202afdb03"
-                                                                           },
-                  ".cursor/skills/1c-metadata-manage/docs/form-compile-dsl.md":  {
-                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                     "installedHash":  "fe5503bac8b9f53b6d444d478a2c18e55f94acac0703c27366b94859e2f4bfcd"
-                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/docs/form-manage.md":  {
-                                                                                "source":  "content/skills/1c-metadata-manage",
-                                                                                "installedHash":  "fbe376d9505881055432e87e5956b83db91d7889e4ec9497fe9fe8857ac5f27c"
-                                                                            },
-                  ".cursor/skills/1c-metadata-manage/docs/form-patterns.md":  {
-                                                                                  "source":  "content/skills/1c-metadata-manage",
-                                                                                  "installedHash":  "c15003ae3865ac6fc78739bf31a1d0c01a54f390ee6ad2394ea5c8296576142e"
-                                                                              },
-                  ".cursor/skills/1c-metadata-manage/docs/help-manage.md":  {
-                                                                                "source":  "content/skills/1c-metadata-manage",
-                                                                                "installedHash":  "a71d63b4ec2c2e406f817f9222ebe5c443768ddd90b899499b6f95abbea3aa31"
-                                                                            },
-                  ".cursor/skills/1c-metadata-manage/docs/interface-manage.md":  {
-                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                     "installedHash":  "3fc8c93a8863920116acd269f3bcb1dedb61a320caf53afce98a6bc505d6d4e1"
-                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/docs/meta-manage.md":  {
-                                                                                "source":  "content/skills/1c-metadata-manage",
-                                                                                "installedHash":  "61707a780c252b4e3ed1976e0178117502960ab04dd5d81c8ad374df195834d0"
-                                                                            },
-                  ".cursor/skills/1c-metadata-manage/docs/mxl-manage.md":  {
-                                                                               "source":  "content/skills/1c-metadata-manage",
-                                                                               "installedHash":  "af356e92e197a708c66786f2d67908373700cc60fcbca4a42f7e9e22bd982f97"
-                                                                           },
-                  ".cursor/skills/1c-metadata-manage/docs/query-optimization.md":  {
-                                                                                       "source":  "content/skills/1c-metadata-manage",
-                                                                                       "installedHash":  "4674cefc26a79e6939c74a6fe8035b6fc6965f0c225d83f9f0bdf138d6d8f150"
-                                                                                   },
-                  ".cursor/skills/1c-metadata-manage/docs/query-writing.md":  {
-                                                                                  "source":  "content/skills/1c-metadata-manage",
-                                                                                  "installedHash":  "f287a5a43ef2bd03a06a89271bb7b81923d3bb3b5fb46b97125f7528dc86ec4b"
-                                                                              },
-                  ".cursor/skills/1c-metadata-manage/docs/role-manage.md":  {
-                                                                                "source":  "content/skills/1c-metadata-manage",
-                                                                                "installedHash":  "7134b7fbfa73ef4da948423825b9ff847cc2b4e07b769462be0cca75a8eec941"
-                                                                            },
-                  ".cursor/skills/1c-metadata-manage/docs/skd-manage.md":  {
-                                                                               "source":  "content/skills/1c-metadata-manage",
-                                                                               "installedHash":  "766ae8a1b7ae2b03b7aa5191f822ae73a4fc11b045d21b2f869a292a6a3fe331"
-                                                                           },
-                  ".cursor/skills/1c-metadata-manage/docs/ssl-patterns.md":  {
-                                                                                 "source":  "content/skills/1c-metadata-manage",
-                                                                                 "installedHash":  "e8a5aacca730353ad58cf706c3a15f4c00be6f3f64581737844f38d6d1b1c915"
-                                                                             },
-                  ".cursor/skills/1c-metadata-manage/docs/subsystem-manage.md":  {
-                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                     "installedHash":  "6b11df0c02d8ccd19e094c32d451955a4cb686acdc88692e4ac8c0dc82e888b2"
-                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/docs/template-manage.md":  {
-                                                                                    "source":  "content/skills/1c-metadata-manage",
-                                                                                    "installedHash":  "53d14bf287d49fe63b503f6b8d1c4e4bb5f14aa445be026ee3137f02edade447"
-                                                                                },
-                  ".cursor/skills/1c-metadata-manage/docs/v8unpack-cf.md":  {
-                                                                                "source":  "content/skills/1c-metadata-manage",
-                                                                                "installedHash":  "765415147ab62fd30d9101969150b01b8452c2e35412385c9103019b99fb8490"
-                                                                            },
-                  ".cursor/skills/1c-metadata-manage/docs/web-manage.md":  {
-                                                                               "source":  "content/skills/1c-metadata-manage",
-                                                                               "installedHash":  "b81b1ee336aac7f773d109aa90af335e5930e3987d111d614ecc86fc6324de6b"
-                                                                           },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/cf-edit-reference.md":  {
-                                                                                                    "source":  "content/skills/1c-metadata-manage",
-                                                                                                    "installedHash":  "704f68d2d60f916d09927cdd1a870772d8339e77d5758ea53686d38981653020"
-                                                                                                },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-edit.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "dcb413ebfb6054387f46fd58559af3fb8b8b176641b9e190864121727bf5b9e5"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-info.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "ef10da022841cb576fc6115c42b19a1d2eec41d6eba442e6af2d336492cde7e0"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-init.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "38a15198c4ab3fafb7b136f5b787d07db82b392c3ced8d40b165f891482604bf"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-validate.ps1":  {
-                                                                                                       "source":  "content/skills/1c-metadata-manage",
-                                                                                                       "installedHash":  "530f5aa75ff53087054c82efd85884aeed3a591f316a4e167b1891fc4e17f808"
-                                                                                                   },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-borrow.ps1":  {
-                                                                                                       "source":  "content/skills/1c-metadata-manage",
-                                                                                                       "installedHash":  "7ae8bf04168860980ec499608948933f10a62797f03fc3adf4f857477c1c2a8a"
-                                                                                                   },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-diff.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "a5635607286992aa4aa39bc3f2d0a03e557b51d1ccb4ce2b33114994a50d0fda"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-init.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "712424b15ebd03cc599ba73f5abac8d8013de4a53a2b6f46fec03fd72e10ed1c"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-patch-method.ps1":  {
-                                                                                                             "source":  "content/skills/1c-metadata-manage",
-                                                                                                             "installedHash":  "9fc93d0efc6882141c37440d1acb7b583eaf10a3387eaa4e6babcb05af016578"
-                                                                                                         },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-validate.ps1":  {
-                                                                                                         "source":  "content/skills/1c-metadata-manage",
-                                                                                                         "installedHash":  "93b1e72f613d9da697d157055affb0689c8467810f80ea5e5b7e48771e2a7a31"
-                                                                                                     },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-create.ps1":  {
-                                                                                                  "source":  "content/skills/1c-metadata-manage",
-                                                                                                  "installedHash":  "902347aca2a3ff17e7daea15a715375f5d6493f72f0757225021aa0b1eb15575"
-                                                                                              },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-dump-cf.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "54faad81d514bf395adadead01f1b6a7635368447ddcca754dfe8d5715a5162a"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-dump-xml.ps1":  {
-                                                                                                    "source":  "content/skills/1c-metadata-manage",
-                                                                                                    "installedHash":  "3d9a8372b577aa9b4924cabdf76cd6c47c933896740ef0240f4b52ab056fa9f3"
-                                                                                                },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-cf.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "a35c5bfd94316795a3c5d509774f4aa7a081dfb05a080726f85dfed6206a4840"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-git.ps1":  {
-                                                                                                    "source":  "content/skills/1c-metadata-manage",
-                                                                                                    "installedHash":  "5394488d3a63dcfbd54d4f0b01dc5bce63b463f294cb64a5501c953804bb79cb"
-                                                                                                },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-xml.ps1":  {
-                                                                                                    "source":  "content/skills/1c-metadata-manage",
-                                                                                                    "installedHash":  "f312b4c0e8a7b2b4a0d74ab7b48e79d5cada847b6028cb51ea70885e45580fef"
-                                                                                                },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-run.ps1":  {
-                                                                                               "source":  "content/skills/1c-metadata-manage",
-                                                                                               "installedHash":  "a3a9d373001a6d8ca470f38fbaad97ca4d393123aab13d74c9dc5294fdb31fa5"
-                                                                                           },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-update.ps1":  {
-                                                                                                  "source":  "content/skills/1c-metadata-manage",
-                                                                                                  "installedHash":  "abe741d5c215046cc21db0c3608138486ba3f57dcc52bc8769dd1c3a3afe9207"
-                                                                                              },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-epf-build/scripts/epf-build.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "9cd2090a525648bea211e7c6390b9a9bcdc26d7e6ca9efbfac759dc65e9a4e2f"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-epf-build/scripts/stub-db-create.ps1":  {
-                                                                                                          "source":  "content/skills/1c-metadata-manage",
-                                                                                                          "installedHash":  "4cc9e24ef2c8cdc74824a77898b993e53228d68957e76c240be69454921b17eb"
-                                                                                                      },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-epf-dump/scripts/epf-dump.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "57e24dbc3e17334416ad24ba97df510d35a0f0494c0dc3bf21af123c491a4fa9"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-epf-scaffold/scripts/init.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "39cce6af2a31ef898b37a47fb5972b75ce0ddf7590a97648fb4796c563dce9ae"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-epf-validate/scripts/epf-validate.ps1":  {
-                                                                                                           "source":  "content/skills/1c-metadata-manage",
-                                                                                                           "installedHash":  "0c17225e870c6cdb39e11b915994bbb00aeeacb7fc108f16436e27be5414590b"
-                                                                                                       },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-erf-scaffold/scripts/init.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "9833c93ca021829cc9155ffb7cd3c6f14d7b3ef9b27f493fa2a7ad21413d41e0"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/presets/erp-standard.json":  {
-                                                                                                            "source":  "content/skills/1c-metadata-manage",
-                                                                                                            "installedHash":  "bb32a898f336dcbd93991db54c75dbb07546ea67e8da5fa4bda3c8b6310110c6"
-                                                                                                        },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/presets/README.md":  {
-                                                                                                    "source":  "content/skills/1c-metadata-manage",
-                                                                                                    "installedHash":  "6d5ad0bf3772167c0054e1689dea48ade9a55790c54a8402f8a2fabf65a1c7ce"
-                                                                                                },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/scripts/form-compile.ps1":  {
-                                                                                                           "source":  "content/skills/1c-metadata-manage",
-                                                                                                           "installedHash":  "340c9b1d341240993e8b2fa6a97d976d066f70f195a146653d4085516f63bd56"
-                                                                                                       },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-form-edit/scripts/form-edit.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "8149345b0a275c47817a487f845032ed95824a60b2b05442287847b38181a1f2"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-form-info/scripts/form-info.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "9905fc997225437158ea8dd7301066e081d6072dbfdc1270a5d316b272d70b90"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-form-scaffold/scripts/form-add.ps1":  {
-                                                                                                        "source":  "content/skills/1c-metadata-manage",
-                                                                                                        "installedHash":  "541d4ce08b946dc1acc05676f5e27f0cc6d50cdcb17e82cc730f05cfe2beb1ea"
-                                                                                                    },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-form-scaffold/scripts/remove-form.ps1":  {
-                                                                                                           "source":  "content/skills/1c-metadata-manage",
-                                                                                                           "installedHash":  "6dabf36f454abbaa6bb85a9a14026da7c88bd9d099c03d2324475d9a961db848"
-                                                                                                       },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-form-validate/scripts/form-validate.ps1":  {
-                                                                                                             "source":  "content/skills/1c-metadata-manage",
-                                                                                                             "installedHash":  "6229be6c411a1e238f4000b545fc36726de7b4718aef28a7353435ac25afa09a"
-                                                                                                         },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-help-manage/scripts/add-help.ps1":  {
-                                                                                                      "source":  "content/skills/1c-metadata-manage",
-                                                                                                      "installedHash":  "aac4878ffa46e4a6b33eb8a88a2d032a3b9f24b4f4a052533ccf0651c7990c7d"
-                                                                                                  },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/reference.md":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "852f6a584b94a79fc555c9cb733456ade9aa4f52dd08fa5ac0a8d28ef7fea6bd"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/scripts/interface-edit.ps1":  {
-                                                                                                                 "source":  "content/skills/1c-metadata-manage",
-                                                                                                                 "installedHash":  "bd56bdc3c70b3ecb61eb789f82fbc10e1adf879bd189dbfac855f8a407ca2b0b"
-                                                                                                             },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/scripts/interface-validate.ps1":  {
-                                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                                     "installedHash":  "64555e8452dac1bee57d15b1e7a6561caac3eb45277b10471e42124b44b6b283"
-                                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-meta-compile/scripts/meta-compile.ps1":  {
-                                                                                                           "source":  "content/skills/1c-metadata-manage",
-                                                                                                           "installedHash":  "61ca51b11691823b54c7402bcf661c4521d9f7bbe373050bb2daa87fdba1a549"
-                                                                                                       },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/child-operations.md":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "cfe2e2f143e0b904c47f6f1673dfce9914ce56a762a032f68db3cd8edcc0babe"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/json-dsl.md":  {
-                                                                                           "source":  "content/skills/1c-metadata-manage",
-                                                                                           "installedHash":  "ede3aaef5eaa9122d61b86db947294d7b586cc7f22e66f581197446ff7f44b5b"
-                                                                                       },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/properties-reference.md":  {
-                                                                                                       "source":  "content/skills/1c-metadata-manage",
-                                                                                                       "installedHash":  "fbd8941c35eb71be2bad7c54cc0b3b595e7ec7469927d6baa1a3e593a9ea5c74"
-                                                                                                   },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/scripts/meta-edit.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "5cfede62a9e4531d6c8b37e31d16e6c8b72b20a2e7790bae7c5d0dc7fda82ca1"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-meta-info/scripts/meta-info.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "078d50eaa28d9f009acd4961fb08389d7d7d3a4ba1a187aa60ed6383db1d207f"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-meta-remove/scripts/meta-remove.ps1":  {
-                                                                                                         "source":  "content/skills/1c-metadata-manage",
-                                                                                                         "installedHash":  "7bcc5c0acbc6459d734af347f14e32f0507971d019905348b11257fda5274317"
-                                                                                                     },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-meta-validate/scripts/meta-validate.ps1":  {
-                                                                                                             "source":  "content/skills/1c-metadata-manage",
-                                                                                                             "installedHash":  "8fb2d1c88ea7bd6cc0141bdedffafaf858a0f1d2a5f4d37d0d50633bb156fdf8"
-                                                                                                         },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-mxl-compile/scripts/mxl-compile.ps1":  {
-                                                                                                         "source":  "content/skills/1c-metadata-manage",
-                                                                                                         "installedHash":  "5bde51d89d8640f6935353497ab7b7ca0918beb848e7ccbca2c80368aef984f5"
-                                                                                                     },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-mxl-decompile/scripts/mxl-decompile.ps1":  {
-                                                                                                             "source":  "content/skills/1c-metadata-manage",
-                                                                                                             "installedHash":  "bb14e397e8f67ed197bf9bc48030bd80d1855b2929b399d534363cacecf59007"
-                                                                                                         },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-mxl-info/scripts/mxl-info.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "e21c1dd299c2dfebea1d80d5751836063199b0f1fd70e0a95362677b0f0474b2"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-mxl-validate/scripts/mxl-validate.ps1":  {
-                                                                                                           "source":  "content/skills/1c-metadata-manage",
-                                                                                                           "installedHash":  "854b22ae454cdf408a81a156ccc1cc45352be022a057ba11052f1740f7a19fbd"
-                                                                                                       },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-role-compile/dsl-reference.md":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "4ba71eaf2ddb2a219b4b9d278574155a32f012d50aa084c9788a5e5d32de9df0"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-role-compile/scripts/role-compile.ps1":  {
-                                                                                                           "source":  "content/skills/1c-metadata-manage",
-                                                                                                           "installedHash":  "907d955076a4a62a44cc165a91e3ac8b9f1d887d3ba88f448ee3cfa469c1eaf0"
-                                                                                                       },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-role-info/scripts/role-info.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "0aeb8bf6e6b1359709ac95ac98a67842fdc6e6daf328b5550f8db3404526c65c"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-role-validate/scripts/role-validate.ps1":  {
-                                                                                                             "source":  "content/skills/1c-metadata-manage",
-                                                                                                             "installedHash":  "0345c54b826db973baeb7698201ce8cf5a8b29433d22e42e1ecc72b44658432d"
-                                                                                                         },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-skd-compile/scripts/skd-compile.ps1":  {
-                                                                                                         "source":  "content/skills/1c-metadata-manage",
-                                                                                                         "installedHash":  "d68986001e62c09bdcdac8d61c8d1ff750d2449dd0de5b2ce2210905105135c4"
-                                                                                                     },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-skd-decompile/scripts/skd-decompile.ps1":  {
-                                                                                                             "source":  "content/skills/1c-metadata-manage",
-                                                                                                             "installedHash":  "7de465d66ee9a36e163d70fbb9f353a42e70f767c1a9e21099e4da1b9e8ffad8"
-                                                                                                         },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-skd-edit/scripts/skd-edit.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "80a704ee1d5d858ca8bac7eef64e1ad331e62ed0110d7a1441e6de6971f5079b"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-skd-info/modes-reference.md":  {
-                                                                                                 "source":  "content/skills/1c-metadata-manage",
-                                                                                                 "installedHash":  "2461d896f4f0ed09d146a2235bfd55dacdee000647a2e8a7e07158659c7250ba"
-                                                                                             },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-skd-info/scripts/skd-info.ps1":  {
-                                                                                                   "source":  "content/skills/1c-metadata-manage",
-                                                                                                   "installedHash":  "e14d4e1a2b8e28ef610c022e002591a22d5ee148d9a629ad32ac35e4e65584e6"
-                                                                                               },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-skd-validate/scripts/skd-validate.ps1":  {
-                                                                                                           "source":  "content/skills/1c-metadata-manage",
-                                                                                                           "installedHash":  "42258f9f288b4d824761eed3f0884bed5e4d3ab3356d137ad3234c7ed5348fe1"
-                                                                                                       },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-compile.ps1":  {
-                                                                                                                    "source":  "content/skills/1c-metadata-manage",
-                                                                                                                    "installedHash":  "03d46691fb72572a2e81bd7a3ec44e4c13c98fa616677badfc84109a2b2f125e"
-                                                                                                                },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-edit.ps1":  {
-                                                                                                                 "source":  "content/skills/1c-metadata-manage",
-                                                                                                                 "installedHash":  "a2e12bd4e8985aa2fe9024247ca23833f68d79ce355fa82e2d7f1fd7f05e217e"
-                                                                                                             },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-info.ps1":  {
-                                                                                                                 "source":  "content/skills/1c-metadata-manage",
-                                                                                                                 "installedHash":  "d5624d366612ebc4c5934d2ff820861f9f99bcbf8331b8a9b3e72ff0ce5e07b1"
-                                                                                                             },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-validate.ps1":  {
-                                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                                     "installedHash":  "2b65171db7a33df4cb712faff99e7728d9814ad4d05865d309cb924b589eb20c"
-                                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-template-manage/scripts/add-template.ps1":  {
-                                                                                                              "source":  "content/skills/1c-metadata-manage",
-                                                                                                              "installedHash":  "15cd929aafa6c5be44b74d70503daa82319efc5ba4ff50bc0f6f002781decac4"
-                                                                                                          },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-template-manage/scripts/remove-template.ps1":  {
-                                                                                                                 "source":  "content/skills/1c-metadata-manage",
-                                                                                                                 "installedHash":  "2847b4cdc6a860d9650b0051a40c15b05c84a8f4ae3f825bff986593d2fa77b7"
-                                                                                                             },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-info.ps1":  {
-                                                                                                  "source":  "content/skills/1c-metadata-manage",
-                                                                                                  "installedHash":  "4965c6bf78d731e74cf479ad78bf241fc24f9fdf9ffaabd7cc6179fe78d4203e"
-                                                                                              },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-publish.ps1":  {
-                                                                                                     "source":  "content/skills/1c-metadata-manage",
-                                                                                                     "installedHash":  "63bc15e3de1e5768ce98be73713424a8cff9d2ddd851bc7cf421a334675abeca"
-                                                                                                 },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-stop.ps1":  {
-                                                                                                  "source":  "content/skills/1c-metadata-manage",
-                                                                                                  "installedHash":  "d800e3fd86165561806d572fab7c8e3fb69cf24e8565f76b717659b3bdfde2bf"
-                                                                                              },
-                  ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-unpublish.ps1":  {
-                                                                                                       "source":  "content/skills/1c-metadata-manage",
-                                                                                                       "installedHash":  "bf14dcc7b484cc26f411a46db17834d6b9bcaf56eb3a51748ffab810f6e350b4"
-                                                                                                   },
-                  ".cursor/skills/caveman/SKILL.md":  {
-                                                          "source":  "content/skills/caveman",
-                                                          "installedHash":  "67c48a7d283159d733dc45854829f2bc8c1344883afd51bb50611113168c2711"
-                                                      },
-                  ".cursor/skills/handoff/SKILL.md":  {
-                                                          "source":  "content/skills/handoff",
-                                                          "installedHash":  "658f8b63850b2976245c6342f4e30a7cbf102484eaf31ba83f126a22c5eb53f5"
-                                                      },
-                  ".cursor/skills/img-grid-analysis/SKILL.md":  {
-                                                                    "source":  "content/skills/img-grid-analysis",
-                                                                    "installedHash":  "cc5c0b8e47bbebbe43fd1a5407da79b9c7a1b7e779720480ffa8672eb186a7f3"
-                                                                },
-                  ".cursor/skills/img-grid-analysis/scripts/overlay-grid.py":  {
-                                                                                   "source":  "content/skills/img-grid-analysis",
-                                                                                   "installedHash":  "eee10cf8cf168eaefa253f2db5b0af2a40050254a70733846a2e5d434ee4a742"
-                                                                               },
-                  ".cursor/skills/mcp-1c-tools/SKILL.md":  {
-                                                               "source":  "content/skills/mcp-1c-tools",
-                                                               "installedHash":  "0abee2dad7132f079a1fd29a8702bf1336832872ae9a01e3f93fd194d3436f4d"
-                                                           },
-                  ".cursor/skills/mcp-1c-tools/docs/1c-code-check-mcp.md":  {
-                                                                                "source":  "content/skills/mcp-1c-tools",
-                                                                                "installedHash":  "a747e8d0080964f4e8234f11ac38c8ebad4aa88fa6c63039f7179c2fc84be57a"
-                                                                            },
-                  ".cursor/skills/mcp-1c-tools/docs/1c-code-metadata-mcp.md":  {
-                                                                                   "source":  "content/skills/mcp-1c-tools",
-                                                                                   "installedHash":  "38b5cf15d3a2a8d24b2be67dd7dd9c7ea3b8b08abe590511a7e5aaa534144767"
-                                                                               },
-                  ".cursor/skills/mcp-1c-tools/docs/1c-data-mcp.md":  {
-                                                                          "source":  "content/skills/mcp-1c-tools",
-                                                                          "installedHash":  "0df04131d0312dd224c79215d304a1f4ab9321670a9e032dac666d915042f6b2"
-                                                                      },
-                  ".cursor/skills/mcp-1c-tools/docs/1C-docs-mcp.md":  {
-                                                                          "source":  "content/skills/mcp-1c-tools",
-                                                                          "installedHash":  "9859d3787db22b1b8647bd8a1f93f4faf27e04d991dabd346d04d8337738f578"
-                                                                      },
-                  ".cursor/skills/mcp-1c-tools/docs/1c-graph-metadata-mcp.md":  {
-                                                                                    "source":  "content/skills/mcp-1c-tools",
-                                                                                    "installedHash":  "38cfe4abd2a95f0b4bff24ac5208bc8ec3e53b108fbc1d300be0378e4138c3f1"
-                                                                                },
-                  ".cursor/skills/mcp-1c-tools/docs/1c-ssl-mcp.md":  {
-                                                                         "source":  "content/skills/mcp-1c-tools",
-                                                                         "installedHash":  "d654f57f82084f0259f76a56495b6f6bd44859fe8e552db5f03ed933703cd498"
-                                                                     },
-                  ".cursor/skills/mcp-1c-tools/docs/1c-syntax-checker-mcp.md":  {
-                                                                                    "source":  "content/skills/mcp-1c-tools",
-                                                                                    "installedHash":  "df77b4f939610a05b604eb5f7d1e6638e63ffb82f674c692bf14b8e834268840"
-                                                                                },
-                  ".cursor/skills/mcp-1c-tools/docs/1c-templates-mcp.md":  {
-                                                                               "source":  "content/skills/mcp-1c-tools",
-                                                                               "installedHash":  "de8ac43acbe7243e292698c10201fdf15660f46360c32b89742815f2e5b44604"
-                                                                           },
-                  ".cursor/skills/md-to-docx/SKILL.md":  {
-                                                             "source":  "content/skills/md-to-docx",
-                                                             "installedHash":  "920c87a5e714f3f1675dd865a32d85b4e54425b627b868accdb0e1888c5d20e0"
-                                                         },
-                  ".cursor/skills/md-to-docx/scripts/md_to_docx.js":  {
-                                                                          "source":  "content/skills/md-to-docx",
-                                                                          "installedHash":  "f7010e423d27ab4d198e6f5a0f28237526fc5ab5439c678b61c7a252dd3ad78b"
-                                                                      },
-                  ".cursor/skills/mermaid-diagrams/SKILL.md":  {
-                                                                   "source":  "content/skills/mermaid-diagrams",
-                                                                   "installedHash":  "de2a08fa46e00870ebe9e0203cf49dc5f3af91d313e4ba6fe699ce091cd6e169"
-                                                               },
-                  ".cursor/skills/powershell-windows/SKILL.md":  {
-                                                                     "source":  "content/skills/powershell-windows",
-                                                                     "installedHash":  "5da2c6b8abb2286b7420c8de049f9f3b7ea16d800709330c2f4b03af118e0e21"
-                                                                 },
-                  ".cursor/skills/prompt-enhancer/SKILL.md":  {
-                                                                  "source":  "content/skills/prompt-enhancer",
-                                                                  "installedHash":  "44764ef8ae108b8daf21ade098ed2ab42819b09380f47bcf058905469b34bfef"
-                                                              },
-                  ".cursor/skills/prompt-enhancer/examples/before-after-1.md":  {
-                                                                                    "source":  "content/skills/prompt-enhancer",
-                                                                                    "installedHash":  "2b3c1c0815291f3ac7f293fbc65cfb76417366521f9d3d7284ba66540e983a41"
-                                                                                },
-                  ".cursor/skills/transcribe/SKILL.md":  {
-                                                             "source":  "content/skills/transcribe",
-                                                             "installedHash":  "4d8a5339d53ca8c08dd6c538a8ca88eee288b38e384dcb09f975af68d94e6c4a"
-                                                         },
-                  ".cursor/skills/transcribe/scripts/transcribe.py":  {
-                                                                          "source":  "content/skills/transcribe",
-                                                                          "installedHash":  "9e46648e0d3fb57aea4f4c3ca80e270a90b9e118fb8de59f4b438bebac3fa3e6"
-                                                                      },
-                  ".cursor/commands/opsx-apply.md":  {
-                                                         "source":  "content/openspec-bundle/cursor/.cursor/commands/opsx-apply.md",
-                                                         "installedHash":  "3df83e66dd6938f0ac2a64118a9f89a2ec4d27ea9046b593df8163accb235e11"
-                                                     },
-                  ".cursor/commands/opsx-archive.md":  {
-                                                           "source":  "content/openspec-bundle/cursor/.cursor/commands/opsx-archive.md",
-                                                           "installedHash":  "089e3d29aab1eb0b8359e0a6c6fb89458e3397ea6aea782c5c1e6b35ee080de3"
-                                                       },
-                  ".cursor/commands/opsx-explore.md":  {
-                                                           "source":  "content/openspec-bundle/cursor/.cursor/commands/opsx-explore.md",
-                                                           "installedHash":  "8ec888a2f305dff6adb5484cb4b621ec0ead40a6979fd27ebf56db0825bd2f42"
-                                                       },
-                  ".cursor/commands/opsx-propose.md":  {
-                                                           "source":  "content/openspec-bundle/cursor/.cursor/commands/opsx-propose.md",
-                                                           "installedHash":  "c93a1951739c4129508ebd6e82a5f1ab3651a277e9adf9c6431ad4c78b64d128"
-                                                       },
-                  ".cursor/skills/openspec-apply-change/SKILL.md":  {
-                                                                        "source":  "content/openspec-bundle/cursor/.cursor/skills/openspec-apply-change/SKILL.md",
-                                                                        "installedHash":  "2e9e314473e59fc01ec70513b393b71a7d9f4f9cb8e00d2fd4dc1782d32471bb"
-                                                                    },
-                  ".cursor/skills/openspec-archive-change/SKILL.md":  {
-                                                                          "source":  "content/openspec-bundle/cursor/.cursor/skills/openspec-archive-change/SKILL.md",
-                                                                          "installedHash":  "b5ae83ba6b20d1748470d44d0897443281bd0120113a723a32e2b5a2af324581"
-                                                                      },
-                  ".cursor/skills/openspec-explore/SKILL.md":  {
-                                                                   "source":  "content/openspec-bundle/cursor/.cursor/skills/openspec-explore/SKILL.md",
-                                                                   "installedHash":  "054210f02db53d2ae5ba1a3e78404ed66dea9e8bf84cb370f885e440b3a28197"
-                                                               },
-                  ".cursor/skills/openspec-propose/SKILL.md":  {
-                                                                   "source":  "content/openspec-bundle/cursor/.cursor/skills/openspec-propose/SKILL.md",
-                                                                   "installedHash":  "6a57c231e1a8950340f9cb3a47e80508ec4464cde681458688d5afe35ffaf5e8"
-                                                               },
-                  ".dev.env":  {
-                                   "source":  ".dev.env.example",
-                                   "template":  true,
-                                   "installedHash":  "dcff064122d95731c25d52f6476cbd23d73b400c47f4394727e99dd867047d4d"
-                               },
-                  ".cursor/mcp.json":  {
-                                           "source":  "content/mcp-servers.json",
-                                           "userModified":  true,
-                                           "installedHash":  "0d9dbec0db5c8f7281b7f509398b013ab6e86709aa73eca43b6258462fe5d0cf"
-                                       },
-                  "AGENTS.md":  {
-                                    "source":  "AGENTS.md",
-                                    "rulesDir":  ".cursor/rules",
-                                    "rulesExt":  "mdc",
-                                    "installedHash":  "45ec2e600600e17d14999baa8ed01dd109742e7e09268a4ccb5fcf732a31ec9e",
-                                    "userModified":  true
-                                },
-                  "USER-RULES.md":  {
-                                        "source":  "USER-RULES.md",
-                                        "template":  true,
-                                        "installedHash":  "40fd37da9784adec3ff447c1b15cb5d5c063d3557302995fff8fc5773d0dd4f6"
-                                    },
-                  "memory.md":  {
-                                    "source":  "memory.md",
-                                    "template":  true,
-                                    "installedHash":  "e88b0713030a571141b850b17c2c2ced34ab498ab8a192a432274e4f27924964"
-                                }
-              },
-    "foreignFiles":  {
-                         "cursor":  [
-                                        ".cursor/agents/analytic.md",
-                                        ".cursor/agents/architect.md",
-                                        ".cursor/agents/arch-reviewer.md",
-                                        ".cursor/agents/code-reviewer.md",
-                                        ".cursor/agents/developer.md",
-                                        ".cursor/agents/doc-writer.md",
-                                        ".cursor/agents/error-fixer.md",
-                                        ".cursor/agents/explorer.md",
-                                        ".cursor/agents/metadata-manager.md",
-                                        ".cursor/agents/performance-optimizer.md",
-                                        ".cursor/agents/planner.md",
-                                        ".cursor/agents/refactoring.md",
-                                        ".cursor/agents/tester.md",
-                                        ".cursor/commands/checkmcp.md",
-                                        ".cursor/commands/deploy-and-test.md",
-                                        ".cursor/commands/doctor.md",
-                                        ".cursor/commands/getconfigfiles.md",
-                                        ".cursor/commands/installmcp.md",
-                                        ".cursor/commands/loadfrom1cbase.md",
-                                        ".cursor/commands/opsx-apply.md",
-                                        ".cursor/commands/opsx-archive.md",
-                                        ".cursor/commands/opsx-explore.md",
-                                        ".cursor/commands/opsx-propose.md",
-                                        ".cursor/commands/update1cbase.md",
-                                        ".cursor/commands/updatemcp.md",
-                                        ".cursor/commands/updaterules.md",
-                                        ".cursor/rules/1commerce-bsp-integration-checklists.mdc",
-                                        ".cursor/rules/1commerce-functional-testing.mdc",
-                                        ".cursor/rules/anti-patterns.mdc",
-                                        ".cursor/rules/async-methods.mdc",
-                                        ".cursor/rules/coding-standards.mdc",
-                                        ".cursor/rules/dcs-design.mdc",
-                                        ".cursor/rules/dev-standards-architecture.mdc",
-                                        ".cursor/rules/dev-standards-core.mdc",
-                                        ".cursor/rules/dev-standards-forms.mdc",
-                                        ".cursor/rules/extension-patterns.mdc",
-                                        ".cursor/rules/form-module.mdc",
-                                        ".cursor/rules/form-reserved-names.mdc",
-                                        ".cursor/rules/forms.mdc",
-                                        ".cursor/rules/forms-add.mdc",
-                                        ".cursor/rules/forms-events-add.mdc",
-                                        ".cursor/rules/getconfigfiles.mdc",
-                                        ".cursor/rules/integrations-add.mdc",
-                                        ".cursor/rules/locks-and-transactions.mdc",
-                                        ".cursor/rules/logging-strategy.mdc",
-                                        ".cursor/rules/mcp-first-search.mdc",
-                                        ".cursor/rules/metadata-xml-workarounds.mdc",
-                                        ".cursor/rules/module-structure.mdc",
-                                        ".cursor/rules/platform-solutions.mdc",
-                                        ".cursor/rules/refactor-add.mdc",
-                                        ".cursor/rules/registers-design.mdc",
-                                        ".cursor/rules/sdd-integrations.mdc",
-                                        ".cursor/rules/subagent-pipeline.mdc",
-                                        ".cursor/rules/subagents.mdc",
-                                        ".cursor/rules/systematic-debugging.mdc",
-                                        ".cursor/rules/tooling-playbooks.mdc",
-                                        ".cursor/rules/verification-checklist.mdc",
-                                        ".cursor/skills/1c-metadata-manage/docs/bsp-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/cfe-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/cf-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/db-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/epf-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/form-compile-dsl.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/form-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/form-patterns.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/help-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/interface-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/meta-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/mxl-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/query-optimization.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/query-writing.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/role-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/skd-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/ssl-patterns.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/subsystem-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/template-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/v8unpack-cf.md",
-                                        ".cursor/skills/1c-metadata-manage/docs/web-manage.md",
-                                        ".cursor/skills/1c-metadata-manage/SKILL.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-borrow.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-diff.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-init.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-patch-method.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/cf-edit-reference.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-edit.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-info.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-init.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-create.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-dump-cf.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-dump-xml.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-cf.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-git.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-xml.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-run.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-update.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-epf-build/scripts/epf-build.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-epf-build/scripts/stub-db-create.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-epf-dump/scripts/epf-dump.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-epf-scaffold/scripts/init.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-epf-validate/scripts/epf-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-erf-scaffold/scripts/init.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/presets/erp-standard.json",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/presets/README.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/scripts/form-compile.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-form-edit/scripts/form-edit.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-form-info/scripts/form-info.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-form-scaffold/scripts/form-add.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-form-scaffold/scripts/remove-form.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-form-validate/scripts/form-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-help-manage/scripts/add-help.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/reference.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/scripts/interface-edit.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/scripts/interface-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-meta-compile/scripts/meta-compile.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/child-operations.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/json-dsl.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/properties-reference.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/scripts/meta-edit.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-meta-info/scripts/meta-info.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-meta-remove/scripts/meta-remove.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-meta-validate/scripts/meta-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-mxl-compile/scripts/mxl-compile.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-mxl-decompile/scripts/mxl-decompile.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-mxl-info/scripts/mxl-info.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-mxl-validate/scripts/mxl-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-role-compile/dsl-reference.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-role-compile/scripts/role-compile.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-role-info/scripts/role-info.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-role-validate/scripts/role-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-skd-compile/scripts/skd-compile.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-skd-decompile/scripts/skd-decompile.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-skd-edit/scripts/skd-edit.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-skd-info/modes-reference.md",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-skd-info/scripts/skd-info.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-skd-validate/scripts/skd-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-compile.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-edit.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-info.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-validate.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-template-manage/scripts/add-template.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-template-manage/scripts/remove-template.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-info.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-publish.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-stop.ps1",
-                                        ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-unpublish.ps1",
-                                        ".cursor/skills/caveman/SKILL.md",
-                                        ".cursor/skills/handoff/SKILL.md",
-                                        ".cursor/skills/img-grid-analysis/scripts/overlay-grid.py",
-                                        ".cursor/skills/img-grid-analysis/SKILL.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-code-check-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-code-metadata-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-data-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1C-docs-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-ext-codemeta-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-ext-graph-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-graph-metadata-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-ssl-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-syntax-checker-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/docs/1c-templates-mcp.md",
-                                        ".cursor/skills/mcp-1c-tools/SKILL.md",
-                                        ".cursor/skills/md-to-docx/scripts/md_to_docx.js",
-                                        ".cursor/skills/md-to-docx/SKILL.md",
-                                        ".cursor/skills/mermaid-diagrams/SKILL.md",
-                                        ".cursor/skills/openspec-apply-change/SKILL.md",
-                                        ".cursor/skills/openspec-archive-change/SKILL.md",
-                                        ".cursor/skills/openspec-explore/SKILL.md",
-                                        ".cursor/skills/openspec-propose/SKILL.md",
-                                        ".cursor/skills/powershell-windows/SKILL.md",
-                                        ".cursor/skills/prompt-enhancer/examples/before-after-1.md",
-                                        ".cursor/skills/prompt-enhancer/SKILL.md",
-                                        ".cursor/skills/transcribe/scripts/transcribe.py",
-                                        ".cursor/skills/transcribe/SKILL.md"
-                                    ]
-                     },
-    "integrations":  {
-                         "openspec":  {
-                                          "detected":  true,
-                                          "files":  [
-                                                        "openspec/changes/README.md",
-                                                        "openspec/specs/README.md"
-                                                    ],
-                                          "scaffolded":  true,
-                                          "artifactsBundleVersion":  "1.2.0"
-                                      }
-                     }
+{
+  "protocol": "1.1",
+  "source": "https://github.com/comol/ai_rules_1c",
+  "version": "410951e",
+  "installedAt": "2026-07-07T10:02:58Z",
+  "updatedAt": "2026-11-05T12:17:21Z",
+  "lastChannel": "powershell",
+  "tools": [
+    "cursor"
+  ],
+  "language": "en",
+  "mcpServers": [
+    "1c-code-metadata-mcp",
+    "1c-syntax-checker-mcp",
+    "1C-docs-mcp",
+    "1c-templates-mcp",
+    "1c-graph-metadata-mcp",
+    "1c-code-check-mcp",
+    "1c-ssl-mcp",
+    "1c-data-mcp"
+  ],
+  "files": {
+    ".cursor/rules/anti-patterns.mdc": {
+      "source": "content/rules/anti-patterns.md",
+      "installedHash": "192c4a96852f15e60058870b36c38b630782bd4ee5ea7df498ecd7d1f1379356",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/async-methods.mdc": {
+      "source": "content/rules/async-methods.md",
+      "installedHash": "4004cb15e569b8f5b6dcb39fa7dc2a742fcc5b1312490f9a28809dbd581266ff",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/bsp-access-rights.mdc": {
+      "source": "content/rules/bsp-access-rights.md",
+      "installedHash": "c7107283bfeb14356b79d034fe9708bc05beec7c3ed3b7751bb515c8ddf44c05",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/coding-standards.mdc": {
+      "source": "content/rules/coding-standards.md",
+      "installedHash": "38e6d55a8732c0c1f83165935238fcde64177d9e0cfcad32dc8611e68e178e03",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/dcs-advanced-composition.mdc": {
+      "source": "content/rules/dcs-advanced-composition.md",
+      "installedHash": "426d3b701171f99735d678c1383be05e1e1649dee26add515a77b7c3d7676bf0",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/dcs-design.mdc": {
+      "source": "content/rules/dcs-design.md",
+      "installedHash": "4fe4dc5fd7671d087ef1f34962aef9f2bf17d95ed1808b281eef2bb46ec7e75b",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/dev-standards-architecture.mdc": {
+      "source": "content/rules/dev-standards-architecture.md",
+      "installedHash": "312c59df91d84a6b64ada041f81b3f0f88fa22d50cc79e0401dcb883cd08eb80",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/dev-standards-change-markers.mdc": {
+      "source": "content/rules/dev-standards-change-markers.md",
+      "installedHash": "d1f8dc72e9d7566c52e49359fee223f42d5659891fb870742acb93e1b6234f53",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/dev-standards-code-style.mdc": {
+      "source": "content/rules/dev-standards-code-style.md",
+      "installedHash": "c5643eb29cd11f71105909ad33777f879ffd73e3c3607d52739bbfe524b48d12",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/dev-standards-core.mdc": {
+      "source": "content/rules/dev-standards-core.md",
+      "installedHash": "75d908903788ecdfd04569efc3831f554aaddddee91b3e68fad7116c146977a1",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/dev-standards-env.mdc": {
+      "source": "content/rules/dev-standards-env.md",
+      "installedHash": "5de88ed297bcd12eaf95c4e256751d5d8b8b53eaf0fad8740c90e709eb223ef2",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/extension-patterns.mdc": {
+      "source": "content/rules/extension-patterns.md",
+      "installedHash": "d31721ec101768c21ec42580fb1b58be56087c55d5248b026ce2b6045a3a6fa4",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/form-module.mdc": {
+      "source": "content/rules/form-module.md",
+      "installedHash": "2af0aeb058a41029c5aec385317218c7f6f762f8b90c003eb7de3473672acff7",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/form-patterns.mdc": {
+      "source": "content/rules/form-patterns.md",
+      "installedHash": "2d500cd80408e0d2851f6843a762c9165aaf165062618bd0912231dccdaa8f6a",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/forms-add.mdc": {
+      "source": "content/rules/forms-add.md",
+      "installedHash": "3e55d8014c0c713a6e9284255db3cde0dc255bb13008879f20525e801766da2d",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/forms.mdc": {
+      "source": "content/rules/forms.md",
+      "installedHash": "cfbb4f1aecff2ea28431bc793b829ba98326c24aa00d52d98c77b71e6fbc39dc",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/getconfigfiles.mdc": {
+      "source": "content/rules/getconfigfiles.md",
+      "installedHash": "d741dad92c8f3c76ba66de979b872051e30ed5c093930d18e1686b8bc36d250b",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/integrations-add.mdc": {
+      "source": "content/rules/integrations-add.md",
+      "installedHash": "21f75a5c04e3893102eb8662a650b01ae302a1ca22b19345804f73cd6c5b9ac4",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/locks-and-transactions.mdc": {
+      "source": "content/rules/locks-and-transactions.md",
+      "installedHash": "9b39247229b33fee3166cdf1fad31c97eab263f3a5c1e5e636717861d77063d5",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/logging-strategy.mdc": {
+      "source": "content/rules/logging-strategy.md",
+      "installedHash": "beb7fa1ce4b8e6640050e8c55e0f0c9ced43daa94a498b37a1fbef466ea45c23",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/mcp-first-search.mdc": {
+      "source": "content/rules/mcp-first-search.md",
+      "installedHash": "6db4d4d25981344ce364c5cce89af829387a83de9cd2eb230402fbbf75c33127",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/metadata-xml-workarounds.mdc": {
+      "source": "content/rules/metadata-xml-workarounds.md",
+      "installedHash": "51117c01ee47d6c18c01fd1e48ab3010a1b61b48691f64bc3bebc428b3d54ff5",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/model-adaptation.mdc": {
+      "source": "content/rules/model-adaptation.md",
+      "installedHash": "197ddc0ae35aea9cff08956880a3466560bd35c9ca30c6840b76434a9fdb67b6",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/model-fable5.mdc": {
+      "source": "content/rules/model-fable5.md",
+      "installedHash": "bcf2ef4d35be7692995b2b99555f957cb69455ca9c8a77ea9f852e7d2c6ea859",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/model-gpt56.mdc": {
+      "source": "content/rules/model-gpt56.md",
+      "installedHash": "1c25b74bd52b2ac13d655df8e851acf7db8c668de85349ada5fc647a8ddd5474",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/model-opus5.mdc": {
+      "source": "content/rules/model-opus5.md",
+      "installedHash": "1d102f23a15455e2a5f913f2a20724a047b2079f94cadf3c178d87c0e94893a0",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/model-sonnet5.mdc": {
+      "source": "content/rules/model-sonnet5.md",
+      "installedHash": "fb05893ff0c9f6168239ec9ab8f75abeae5430b667a25997d6d6f2de692a47c6",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/module-structure.mdc": {
+      "source": "content/rules/module-structure.md",
+      "installedHash": "809bb893044791d92cf14fd4b043200ed883f2b849bbac37c3c4cbd9defa5a76",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/orchestrator-economy.mdc": {
+      "source": "content/rules/orchestrator-economy.md",
+      "installedHash": "6fecc4698abbb4ee820afd973cb2d8a2f72d9ea904f1aa51a4973a80516822e4",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/platform-solutions.mdc": {
+      "source": "content/rules/platform-solutions.md",
+      "installedHash": "43bfd6cfdff31acc09f826ce523d7d93312e30a07a2ee567d4ba9285f150a031",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/query-design.mdc": {
+      "source": "content/rules/query-design.md",
+      "installedHash": "a907bda3069af8dd3209dc54b97aef09a82500f23d79f74ea48de6c3bddde97e",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/registers-design.mdc": {
+      "source": "content/rules/registers-design.md",
+      "installedHash": "74d4959d5a163bd4507f472a0ba35078e21523150c1dcdeaf382828e76dad40c",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/sdd-integrations.mdc": {
+      "source": "content/rules/sdd-integrations.md",
+      "installedHash": "b40fb191d0ff2ec1f96b59d6b2aadb04666531910e15d30d2a6398ea7b438f9d",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/subagent-pipeline.mdc": {
+      "source": "content/rules/subagent-pipeline.md",
+      "installedHash": "05e12597e623a3471e22f848c3a727c6561270f6dcf40dd7d3388fbb4e768fb3",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/subagents.mdc": {
+      "source": "content/rules/subagents.md",
+      "installedHash": "49a29f38761ffc3cc8b137ffb31b95756d1498b40390f60a78b98566926da07e",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/systematic-debugging.mdc": {
+      "source": "content/rules/systematic-debugging.md",
+      "installedHash": "b7b6099b1c844c25d8c78c2bf96ff3493345d9fed5b8dd59a5278f8f4b1006ee",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/tooling-playbooks.mdc": {
+      "source": "content/rules/tooling-playbooks.md",
+      "installedHash": "eabf14ddb67dd7d270362a44e63c9263df5a2a22e1dc8232fb266c370a9c7b20",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/ui-testing-tools.mdc": {
+      "source": "content/rules/ui-testing-tools.md",
+      "installedHash": "67848f02a35b8be7a1a8818996b512f25dfcb58696971fd4c97ed8b5a33653a3",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/verification-checklist.mdc": {
+      "source": "content/rules/verification-checklist.md",
+      "installedHash": "f9fd5a477bf9de5618a7cbc8a44f73dd49507523466b497ac95e3c7ed44b560e",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/verification-delivery.mdc": {
+      "source": "content/rules/verification-delivery.md",
+      "installedHash": "b6650b89c8428b68aef7d8a4c1a6e70ad90e74e3c9bb94fba0e487ea0ba476e7",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/verification-gates.mdc": {
+      "source": "content/rules/verification-gates.md",
+      "installedHash": "3dd40970c1b728ead12849cdfc2b8e291e350396c3e3c5a92753f3f4278fc29d",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/rules/verification-policy.mdc": {
+      "source": "content/rules/verification-policy.md",
+      "installedHash": "9ae2fc3b9a1e4d6c2f60f65121986b869b20061bfdbd1510c5056dfcad5cdb96",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/rules/web-client-driving.mdc": {
+      "source": "content/rules/web-client-driving.md",
+      "installedHash": "6d26bdff62f7e58d902b463d7cf09c480e5a20851629a5cc249827f908f57a46",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/analytic.md": {
+      "source": "content/agents/analytic.md",
+      "installedHash": "9a7900bd7be7ddedceab82be3b4741002fe77d1919557983ff967584586cfa28",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/arch-reviewer.md": {
+      "source": "content/agents/arch-reviewer.md",
+      "installedHash": "d7f249a7ec985fee7f94c4a15b67c1baa1eb947b0c0402ae03f82586fc4f3b43",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/architect.md": {
+      "source": "content/agents/architect.md",
+      "installedHash": "9a0da60c3f2bb3c97bc723546bbac3168e6f78a3b174c6fd9f7a1762e78e6ca2",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/code-reviewer.md": {
+      "source": "content/agents/code-reviewer.md",
+      "installedHash": "8a3b5a8b80aff77b60ffea885c52f43ca6cb4018eda173b8c6288518a19c32bc",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/developer.md": {
+      "source": "content/agents/developer.md",
+      "installedHash": "075003f3219341d68ffcd70832ff2641d5fb41584f00f4ea3f5c1d22dda41fd3",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/doc-writer.md": {
+      "source": "content/agents/doc-writer.md",
+      "installedHash": "5672ab4901c65fc43edab053c71247fcce8ef18ba0b10189eacb69d98493a710",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/error-fixer.md": {
+      "source": "content/agents/error-fixer.md",
+      "installedHash": "c0ef4bb83b0c6e13996bf2a2f7640953060f73628d8e61dc39b03f46642df00e",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/explorer.md": {
+      "source": "content/agents/explorer.md",
+      "installedHash": "5b06f88145e360ca0d922df7140aa128bb8e79173ff905ebf5ddcba3c4ba80ea",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/agents/metadata-manager.md": {
+      "source": "content/agents/metadata-manager.md",
+      "installedHash": "29c1291fc42dcfeadced637ce8da6dcae902fae1da391b4011f52363a3124b1f",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/performance-optimizer.md": {
+      "source": "content/agents/performance-optimizer.md",
+      "installedHash": "85730c8e170ec5f672d45ecf0b011090b5704680ccd9fba7417c8c5921022c7b",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/planner.md": {
+      "source": "content/agents/planner.md",
+      "installedHash": "c37ea61aa42e3df7bd43d11f3ac5ae33bc96760b533c739c7c029886e5ffec3f",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/refactoring.md": {
+      "source": "content/agents/refactoring.md",
+      "installedHash": "bc099880846352150e374d28da9f769f6c117b204433e119f9b35c7aeaed9dec",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/agents/tester.md": {
+      "source": "content/agents/tester.md",
+      "installedHash": "74afc369b60ddac7392941803185f86350fb01ca8a1b00f10ef42c6eb7608d7d",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/caveman.md": {
+      "source": "content/commands/caveman.md",
+      "installedHash": "833f0943fa1f80d7efc783f12c89e8b0ae00187d036d9d7266658208b71c2940",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/check-uuid.md": {
+      "source": "content/commands/check-uuid.md",
+      "installedHash": "494fe54e19064e9a5662c31c104f69ad48ceb5fc46db863b171b5850397fa38d",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/checkmcp.md": {
+      "source": "content/commands/checkmcp.md",
+      "installedHash": "01e44680c5499f08f8c705c260b204f7b6edf261d28510af88929888c34de3d8",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/commands/deploy-and-test.md": {
+      "source": "content/commands/deploy-and-test.md",
+      "installedHash": "01c7969bc1131c0482c89ace56088037e93a9a200ce63b6ce2a79fd32680c5a8",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/doctor.md": {
+      "source": "content/commands/doctor.md",
+      "installedHash": "7f462b53ca86bb5e241e16d85c1057dcc3ecb3bea1696267fe7847e568286015",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/commands/economymode.md": {
+      "source": "content/commands/economymode.md",
+      "installedHash": "1c4281f6fb1147a86952c3f9c52542f4003c64c36ebb22cab69a85134d5efd89",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/evolve.md": {
+      "source": "content/commands/evolve.md",
+      "installedHash": "56c853711d787581e8001a3f8dab21f821c55078427849b1a52db2509ca9d0ff",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/getconfigfiles.md": {
+      "source": "content/commands/getconfigfiles.md",
+      "installedHash": "639c60dcad6a61f8c392a83f5230404052b55e9694c6299b99c900da8cdd9573",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/install-agent-browser.md": {
+      "source": "content/commands/install-agent-browser.md",
+      "installedHash": "ce219ebd47bbc0cf7b5a04cc98c625bda5d0beac94bcc9a7759053d110234bd1",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/install-windows-mcp.md": {
+      "source": "content/commands/install-windows-mcp.md",
+      "installedHash": "a2c2a3ef74d29b911f06cefaf952ac5b5ee962cd0b3895e463f572259cf48002",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/installmcp.md": {
+      "source": "content/commands/installmcp.md",
+      "installedHash": "1ec8db37d981d5c9e41051959d4073a5b64791ccfd5eb3c91c57b6171e08babc",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/litemode.md": {
+      "source": "content/commands/litemode.md",
+      "installedHash": "0a348f9e9ec9167dc3b9a61631dbcee96ad1cfc5bccdfb28428f8b6450271300",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/loadfrom1cbase.md": {
+      "source": "content/commands/loadfrom1cbase.md",
+      "installedHash": "09c1ec30ab525ed003a82a2af1d432cc6029fbbe312a7604989ebcce12a4d4dd",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/rulesmodel.md": {
+      "source": "content/commands/rulesmodel.md",
+      "installedHash": "876d6abcf74738db02d4a46968755d0bdee9c8128ba628b8328dc324837f2f15",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/update1cbase.md": {
+      "source": "content/commands/update1cbase.md",
+      "installedHash": "84d0a9a1134c122a808324c2721525a2e75d3a821ee97ac4b2bd95f3894bef09",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/updatemcp.md": {
+      "source": "content/commands/updatemcp.md",
+      "installedHash": "2b90e1ca7d7aef529f21e0da74854c9d9106d964b2a642c22dcaa85bc17155c1",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/updaterules.md": {
+      "source": "content/commands/updaterules.md",
+      "installedHash": "5e340851f96cd47c0ab47e9f8d8c5d9a598e8225f45edb07c973ba7b8603cedd",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/1c-metadata-manage/SKILL.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "1e79b4c635b1729d8560b68af0c2228da95c8d103694781193514d95816e0b31",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/bsp-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "28733d921f491808d27c7ac261948219600ddd388ea80567e8d2907d78885816",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/cf-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "e559f6228f750a7ce2a21b51e55e2658a2dc884b6f07a2909eeaade16db0b634",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/cfe-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "7b875d7a44f7e0eae6bf7f34eb982e3b31520dd34ecbf347e8b8e6b4d334c8c8",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/1c-metadata-manage/docs/db-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "3d2b027a20b67590bc68b51d3829fe4e08c180fcfac168982b989bd433fa68c6",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/1c-metadata-manage/docs/epf-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "0e7d0b674c3e65f0640872d67cf6b381ba81b624fa8d7cbcdaa63209964ec81e",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/form-compile-dsl.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "4a9b318dce7223a9ac7c0fe9017a7bc0c2d70446fbaab16492220d80009f2404",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/form-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "84ba108363a86ad2aff57ca9886292070823113a150c2ce5c42b892eb4558946",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/form-patterns.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "a3df4767e19d23635474de1d1e346d91ccc57b81f2448077a56838d6e42b09d7",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/help-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f5642f7eabd9bb37cc386f5520cfa7b209f25bd3a55ec8ede12446bfc52cf4c5",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/interface-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "32ad6c919801f77c17a31928ffb3d17177304c8843762519571cd7d6c6299cfb",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/meta-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "c0db1abcc457dc9eaba7eb09815f464c63142eb3fe3f8974eacf03debda92520",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/mxl-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "69c3742ecb8cf2b5834cfb6b8e1608a6b83d4aaf0a40092dd430027f707aabad",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/query-optimization.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "cedafdbae50dbc5ad53330cc7c7568c99acdb512156d1676288f64679c3036e4",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/query-writing.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "0ca88cd2141b1d3f3c98204cf45c6166d6c0aff2c6bd193e345013a67608decf",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/role-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "2dbbec9f9df0d1152bf765d5283d9df0b6a7e3d362a55a85a7627b8d3f9030dc",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/1c-metadata-manage/docs/skd-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "8c2934f21989504f1a8168cffc7d537c0dd2d63d3af28835edd0f564836d5721",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/ssl-patterns.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "c92eecdb8ebc4b908ad07ef2aa46043d8f2f6e471e7b015325b98a11bda6992c",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/subsystem-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "1ddcc47a21a9643e069afb49e254f8b10fa3ae938085bab80d6be1631631b086",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/support-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "e46d63f73f06576efb66d9556c640764e081994f2120ccaaf8d067704c635d7f",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/template-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "737e4f3f54584fe66b5bb216e75f60e558de8f9de0d72a892fecc3885bcfa94d",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/uuid-check.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "dfb60813035da819201937e382ba51313022a3dd49c4c7db7f0c9781c822bdd2",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/v8unpack-cf.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f844af5f7a403bb4f9db907c2ffbaa08440fdbb496b0800dac1a7771d638aba7",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/web-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "3a0db796a0671b43ac90927adfd2cdce46c9f84fa0727854b6591008b2aa9997",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/docs/xdto-manage.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "268f5e32175df02ab1df59f68aa74bc54f628b58c0733fb4ed788d3a3b38e4f2",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/cf-edit-reference.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "9cae981c56f017da40b81ccef59a463bfc9f952090926bb8f68bd40029f472bb",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-edit.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "a415c14fe6edc94d71edf5e91d6c56c13fe9186539f721f78d17ee8e5dff3cc7",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "8e1987dec6d34c64a158ba6b75acd436f5221f45f7a7fb4f5e359092aceb46ab",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-init.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "980033ea0f20ad6ece99914435dde119dfe322bf43cd4b210276b65e9b894dbd",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cf-manage/scripts/cf-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "dd0cf00f654a852009a74c33d281251c163059faa63a9a9980503f2bf055283c",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-borrow.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "fedf21147760d09b4f159b048ba4c0803efc8aee181cf7be5882c1d4a43d1a8f",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-diff.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "a5635607286992aa4aa39bc3f2d0a03e557b51d1ccb4ce2b33114994a50d0fda",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-init.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f3ec361d1b27140d78f914b805488ffc7da0ad76dee89402ecebf06b76698200",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-patch-method.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "d082ba2133e793ac7d21372f20b43076a27b507d1fb886ea49ae0bb4341f3297",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-cfe-manage/scripts/cfe-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "8fdc73847901ae9e7ff3113f3d6edcca878cf8e26ec160438784d8dd2081ad45",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-create.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "ea7a15a0f9de12a04371634f61fdff289bbdf23d74e3f49ff6340ed923c46cac",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-dump-cf.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "9e080f1c65d7839c276b9938a80cce4ee9cbcd5599612a5d18d8bcd51466b857",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-dump-dt.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "e395aa570cebe28b702d1ddca232d797fdf146bc243810f5e6f761de9de96079",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-dump-xml.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "81db8aa2f804400ea2c3db32956a345b0c7576067c454f3376726ba02062437f",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-cf.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "fb3303faeb19ae2d2d1dd0df82585698faea4395efd42d24349ab65c5318be03",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-dt.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "e4430d71bea3af3c162f341d942e597769b1e38057c052c799a588fbff3df97c",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-git.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f08671c410adb34ffda5bb771af3311db46d4053cd3be2bfc6d08ecef49561d7",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-load-xml.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "ed83ff450da6e17c406515f42715abb643bc5f8d290b541c742c55be1627671e",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-run.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "902d6b5673360e0562185d32c5a7632e414ac22be2a721ad09a1fa1c8408a1f0",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-db-ops/scripts/db-update.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "4d4c49c2aaa0027f52b5c6e251d562f41e8caccbb551c63b45d219fb54858412",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-epf-build/scripts/epf-build.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "45c7a129f30ae1ded5ec343367c19d0084f33f9bd04186c72e6adaa3102313a0",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-epf-build/scripts/stub-db-create.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "8b8db05844ed1cc00a92e31af85ddd74d3744127b5646967d833a7ff000a2153",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-epf-dump/scripts/epf-dump.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "0a2908c9534f3005f5020a98acd7eccb4a2f172abf15e6510d672168bd34a7e5",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-epf-scaffold/scripts/init.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "39cce6af2a31ef898b37a47fb5972b75ce0ddf7590a97648fb4796c563dce9ae",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-epf-validate/scripts/epf-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "0c17225e870c6cdb39e11b915994bbb00aeeacb7fc108f16436e27be5414590b",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-erf-scaffold/scripts/init.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "9833c93ca021829cc9155ffb7cd3c6f14d7b3ef9b27f493fa2a7ad21413d41e0",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/form-dsl-spec.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "d37bb0356ce1a01ec46ae5264ac3165318fa774cf49908f2173044c33fb288f5",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/presets/erp-standard.json": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "bb32a898f336dcbd93991db54c75dbb07546ea67e8da5fa4bda3c8b6310110c6",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/presets/README.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "6d5ad0bf3772167c0054e1689dea48ade9a55790c54a8402f8a2fabf65a1c7ce",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-compile/scripts/form-compile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "21b539f6ad3bd8277144474e963a209e9813233e1f0aad722fa4c265b2b928a8",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-edit/scripts/form-edit.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f999a464e8b30dddcd716db7c1b91ea9f18c823286d1a6eb850e0756ab2718a8",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-info/scripts/form-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "d446157624bb61131486496c99e5944dd7919a219a80369fdc955782aecd99c8",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-scaffold/scripts/form-add.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "4efcc0624b946cf8d72b26f29e394aca48c2be2296eebe7a6d91f971fa263da0",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-scaffold/scripts/remove-form.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "d271c497ac1c61c3074d3206a3d95b73bb7927cd74740914125a98a9bc9e5a0e",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-form-validate/scripts/form-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "ed00e9a47aaf820acbe5544bbf75d76d13c606e4e13b5faf101ac47eb863926a",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-help-manage/scripts/add-help.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "477d97f8bec2fc69030a14e8ce5249972db6621c65044af558b2f4e71518c719",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/reference.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "852f6a584b94a79fc555c9cb733456ade9aa4f52dd08fa5ac0a8d28ef7fea6bd",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/scripts/interface-edit.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "3d3dc38f542f4d224ce8e355f5c4b78979fc9ecfc998e138cf3eefafbb5cdf4d",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-interface-manage/scripts/interface-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "64555e8452dac1bee57d15b1e7a6561caac3eb45277b10471e42124b44b6b283",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-compile/meta-dsl-spec.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "9dc5c903427f6b028b68c2ad7bb698d8f090edf04c197e72536bd2a08da46782",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-compile/scripts/meta-compile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "639fcaaf7671e115c31eba5bc77322a516cb1cbf12d0a57043dd516aba859887",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/child-operations.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "d0d60daac87610a56c74d162e93ef1404208e65466d1958d53e61a26380a4b7f",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/json-dsl.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "cc597bf3923e6c3eb91e7c30d305b0004723400ff9d7589b2debe283c1cfde5c",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/properties-reference.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "ffa45cac51a4f35ecdc0621b338f09ae28ef087bbd151ce46e852399736ea757",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-edit/scripts/meta-edit.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "9f511c92f8bc49134e6c44e5dc17a0099a2bf3b23140b6a4c9f5b387e7a73569",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-info/scripts/meta-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "2279d40c22b3676c75467a3b35bd31d3961ac9d00994dc3ecbf4571fdadf067f",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-remove/scripts/meta-remove.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f285ac8b9d600d73d51adf4904fce0f66a97679685486f8ed20268a2519ffba7",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-meta-validate/scripts/meta-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "095dfcb6202d8cb5869ae11aeddc707f026a9e03fab8d90e63a13383c8a023a8",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-mxl-compile/scripts/mxl-compile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "ec3f729063e112944b6c4af09920ae4dc947b155820f4128357f415e93a059b7",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-mxl-decompile/scripts/mxl-decompile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "bb14e397e8f67ed197bf9bc48030bd80d1855b2929b399d534363cacecf59007",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-mxl-info/scripts/mxl-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "1f9b2bf46056f9f38b00bfeb8c7197f21d61e3473c5bc1f71b86626dfd450487",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-mxl-validate/scripts/mxl-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "854b22ae454cdf408a81a156ccc1cc45352be022a057ba11052f1740f7a19fbd",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-role-compile/dsl-reference.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "03fc9da03885e5f17f4729b6e2dc19109cf192914a47a99408a066e6cc330a40",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-role-compile/scripts/role-compile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "03d0dc068875ac2625783a1dc447d73eb8099e3cca1b500407cd3722cbc5f70a",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-role-info/scripts/role-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "b4c9669327160d3f6478eca2467d119de1bcb73c23e41530af24d623c5068c94",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-role-validate/scripts/role-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "0345c54b826db973baeb7698201ce8cf5a8b29433d22e42e1ecc72b44658432d",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-skd-compile/skd-dsl-spec.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "06131fc52c6bffc6f1b0b0af8d694609673b3542df64c28e5894502ab78904c5",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-skd-compile/scripts/skd-compile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "d616cfdbf4b6718f2dd9983d0ec8950e2dd318281f83fffd712930800c2510ad",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-skd-decompile/scripts/skd-decompile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "a088b44bbccd319ad9dda834978dab634d42f08c7378a15773c9c15debd1fc84",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-skd-edit/scripts/skd-edit.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "1e31b2d3e9b620c127f41f196753a4dc8bc0ceb00449f49c2c1f87a4890ede05",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-skd-info/modes-reference.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "1ceb4f73febe0e0c5dc1e859149ab702ea69f1a87c2f740bb4bcbcfdb65bd8e3",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-skd-info/scripts/skd-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "e562601d1fe557bf00742763703cc20b5ce779097e8c4c30556b45c97f2ade65",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-skd-validate/scripts/skd-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "42258f9f288b4d824761eed3f0884bed5e4d3ab3356d137ad3234c7ed5348fe1",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-compile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "0af7878011486ed9f28fa9ee634492a45370d7af2329deef5b35ee5ffb3c6842",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-edit.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "e055f586a8a018e6463296aaf7343133982170e2760338b5af96235acf428d23",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "b6a2cef1d91e4a0a749b64172263195cc05f24053ef3e11c525a7dfca1e55aff",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-subsystem-manage/scripts/subsystem-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "2b65171db7a33df4cb712faff99e7728d9814ad4d05865d309cb924b589eb20c",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-support-manage/scripts/support-edit.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "6d526d3559bfeda9c9027796538aaaeb951488c8c0780aef23183fff4065bc51",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-template-manage/scripts/add-template.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "5b98051b13e9079ba85b240485f0cb49e4c66b147d0007280615cd83e428c155",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-template-manage/scripts/remove-template.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f2cb90aa0206d9e511443ad508e4ee144790ba7a04aa8d60a84d589569cb748d",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-uuid-check/scripts/uuid-check.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "22c2080ed1f4c95f17aa69f971f9427eea2879e2447d9e4184d442d1cedc9396",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "75bf157229d0b6992a70e54d8d4c278e36a141f76a602601fe19c423e78be020",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-publish.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "5499b4adc1d5a7af580af58ed00d7b30305515fae8bafbac1db04531faa624f8",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-stop.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "9a91202af9d2c6c4d49381b1438e528842513154ddb2ff72fa1e96199cb76129",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-web-ops/scripts/web-unpublish.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "ad14cba2fe1324e6d8cc75dea7c7421e9c9eba8a173360d0e152b2159d0a4fd8",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-xdto-manage/xsd-reference.md": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "c599412bd8e91f0ac0cd38ee52939ebaf3de55223676c802a6f057eff458d416",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-xdto-manage/scripts/xdto-compile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f49e6f165f796530bf5dee9ce8899fe334fb1e925c0181b3427e5c71877da648",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-xdto-manage/scripts/xdto-decompile.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "d82533b0031fb1ed2249435d27fc1158487d93621ab6d7343181848a592d1638",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-xdto-manage/scripts/xdto-edit.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "1c371f1a635586653930c12cb5dc005e2c3727ad888f36f1f52c7c4527bbe763",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-xdto-manage/scripts/xdto-info.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "f8261cc1ccca7a30f75f6b8dec371d018cc85d836d1c5f530fcaa95fda30c875",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/1c-xdto-manage/scripts/xdto-validate.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "be495782f84e2ea0bc103742bf02a64ac5a378b61b0c02d2faa66caf5c5bf168",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/1c-metadata-manage/tools/_common/DevEnv.ps1": {
+      "source": "content/skills/1c-metadata-manage",
+      "installedHash": "9eddfdd69555125ea67a880613ab1bbd69d9aefe3b4b33f26d036b2a25fba6c0",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/caveman/SKILL.md": {
+      "source": "content/skills/caveman",
+      "installedHash": "1bf57a20a579200801e6d400047212d22a748f34c883c6fc38a36b30b3e1f748",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/handoff/SKILL.md": {
+      "source": "content/skills/handoff",
+      "installedHash": "658f8b63850b2976245c6342f4e30a7cbf102484eaf31ba83f126a22c5eb53f5",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/img-grid-analysis/SKILL.md": {
+      "source": "content/skills/img-grid-analysis",
+      "installedHash": "cc5c0b8e47bbebbe43fd1a5407da79b9c7a1b7e779720480ffa8672eb186a7f3",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/img-grid-analysis/scripts/overlay-grid.py": {
+      "source": "content/skills/img-grid-analysis",
+      "installedHash": "eee10cf8cf168eaefa253f2db5b0af2a40050254a70733846a2e5d434ee4a742",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/mcp-1c-tools/SKILL.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "d85b4ed7b549da1fbf5e1e287827c2fce1dd60b0a5534a02061efacbb204154d",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/mcp-1c-tools/docs/1c-code-check-mcp.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "1996d78054779a9caf73a8a7f36b2983e1ec64c926571e52ea9cfe91b6a6c870",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/mcp-1c-tools/docs/1c-code-metadata-mcp.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "a386c108b256f2c6cd0b95753c47f3341fca53facad0d604a5ff55ec7a412d4a",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/mcp-1c-tools/docs/1c-data-mcp.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "0df04131d0312dd224c79215d304a1f4ab9321670a9e032dac666d915042f6b2",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    ".cursor/skills/mcp-1c-tools/docs/1C-docs-mcp.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "73dbba60bedeca3cc546be3e531741186a9e306e115ac379a2b5aa3ab2e5e2f4",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/mcp-1c-tools/docs/1c-graph-metadata-mcp.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "38cfe4abd2a95f0b4bff24ac5208bc8ec3e53b108fbc1d300be0378e4138c3f1",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/mcp-1c-tools/docs/1c-ssl-mcp.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "d654f57f82084f0259f76a56495b6f6bd44859fe8e552db5f03ed933703cd498",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/mcp-1c-tools/docs/1c-syntax-checker-mcp.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "368a4bd38a21e3851039bbe6fed13b58526034c3a1dfbbfc3dee0b39b2029bf3",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/mcp-1c-tools/docs/1c-templates-mcp.md": {
+      "source": "content/skills/mcp-1c-tools",
+      "installedHash": "890acc48a80c438ffb41021b5b0aa8cb7500aee13c7e040cef52da303a078601",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/md-to-docx/package-lock.json": {
+      "source": "content/skills/md-to-docx",
+      "installedHash": "34c823d7271c8a7dfcb0b28366bc1c0a85f52321c881586978d1fb7cbc34f314",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/md-to-docx/package.json": {
+      "source": "content/skills/md-to-docx",
+      "installedHash": "b9cbf3fdcd638e06e25ed3c23ad719c5d1c4f48a83bbd1d958544cc3b9625eda",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/md-to-docx/SKILL.md": {
+      "source": "content/skills/md-to-docx",
+      "installedHash": "778db1eaa627fcfa8bd5f83068e151607e404293e6c43bc304bf3099de9c733a",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/md-to-docx/scripts/md_to_docx.js": {
+      "source": "content/skills/md-to-docx",
+      "installedHash": "f8a1b1d79c58784f3f25f37a096d3de88d158e10054e5f984022c596709213e7",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/mermaid-diagrams/SKILL.md": {
+      "source": "content/skills/mermaid-diagrams",
+      "installedHash": "de2a08fa46e00870ebe9e0203cf49dc5f3af91d313e4ba6fe699ce091cd6e169",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/powershell-windows/SKILL.md": {
+      "source": "content/skills/powershell-windows",
+      "installedHash": "bb80c075a169c1fb03b909f8bac2d3ccfa0b2b11aac838706f2fa7079725e30d",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/prompt-enhancer/SKILL.md": {
+      "source": "content/skills/prompt-enhancer",
+      "installedHash": "44764ef8ae108b8daf21ade098ed2ab42819b09380f47bcf058905469b34bfef",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/prompt-enhancer/examples/before-after-1.md": {
+      "source": "content/skills/prompt-enhancer",
+      "installedHash": "2b3c1c0815291f3ac7f293fbc65cfb76417366521f9d3d7284ba66540e983a41",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/transcribe/SKILL.md": {
+      "source": "content/skills/transcribe",
+      "installedHash": "9b855eede4baf0f00c2360a788a00780349bc10178fcfc3e839dc9f2d6f7b77a",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/transcribe/scripts/transcribe.py": {
+      "source": "content/skills/transcribe",
+      "installedHash": "4d41ae06009463cf56d2132a86d08664391a89842ab01e484cf2ea5a62af5871",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/skills/v8unpack-cf/SKILL.md": {
+      "source": "content/skills/v8unpack-cf",
+      "installedHash": "b1b68561df5f8c931f70d19d36318d0a9ffd647cffeb2ac2a3c9177d72e0010f",
+      "owners": [
+        "cursor"
+      ]
+    },
+    ".cursor/commands/opsx-apply.md": {
+      "source": "content/openspec-bundle/cursor/.cursor/commands/opsx-apply.md",
+      "installedHash": "498931c9487771d81b9c88eb739aa93ed124f6e8db916ee9bf8b3e4ce70d0eb9"
+    },
+    ".cursor/commands/opsx-archive.md": {
+      "source": "content/openspec-bundle/cursor/.cursor/commands/opsx-archive.md",
+      "installedHash": "089e3d29aab1eb0b8359e0a6c6fb89458e3397ea6aea782c5c1e6b35ee080de3"
+    },
+    ".cursor/commands/opsx-explore.md": {
+      "source": "content/openspec-bundle/cursor/.cursor/commands/opsx-explore.md",
+      "installedHash": "8ec888a2f305dff6adb5484cb4b621ec0ead40a6979fd27ebf56db0825bd2f42"
+    },
+    ".cursor/commands/opsx-propose.md": {
+      "source": "content/openspec-bundle/cursor/.cursor/commands/opsx-propose.md",
+      "installedHash": "c93a1951739c4129508ebd6e82a5f1ab3651a277e9adf9c6431ad4c78b64d128"
+    },
+    ".cursor/skills/openspec-apply-change/SKILL.md": {
+      "source": "content/openspec-bundle/cursor/.cursor/skills/openspec-apply-change/SKILL.md",
+      "installedHash": "0af9f84116cc137d7a1ebdb727f4b5db87ccb7a4158cebd8978a572439e50229"
+    },
+    ".cursor/skills/openspec-archive-change/SKILL.md": {
+      "source": "content/openspec-bundle/cursor/.cursor/skills/openspec-archive-change/SKILL.md",
+      "installedHash": "b5ae83ba6b20d1748470d44d0897443281bd0120113a723a32e2b5a2af324581"
+    },
+    ".cursor/skills/openspec-explore/SKILL.md": {
+      "source": "content/openspec-bundle/cursor/.cursor/skills/openspec-explore/SKILL.md",
+      "installedHash": "054210f02db53d2ae5ba1a3e78404ed66dea9e8bf84cb370f885e440b3a28197"
+    },
+    ".cursor/skills/openspec-propose/SKILL.md": {
+      "source": "content/openspec-bundle/cursor/.cursor/skills/openspec-propose/SKILL.md",
+      "installedHash": "6a57c231e1a8950340f9cb3a47e80508ec4464cde681458688d5afe35ffaf5e8"
+    },
+    ".dev.env": {
+      "source": ".dev.env.example",
+      "template": true,
+      "installedHash": "2b4b8efbe5d0a13afe51b568cad49b6711e1020151b83d176f54bf139dcd7068"
+    },
+    ".cursor/mcp.json": {
+      "source": "content/mcp-servers.json",
+      "installedHash": "422e3c258266c778ab834b1048461df4a899cbc362ac1f2bd51ad942d01c466b",
+      "owners": [
+        "cursor"
+      ],
+      "userModified": true
+    },
+    "AGENTS.md": {
+      "source": "AGENTS.md",
+      "rulesDir": ".cursor/rules",
+      "rulesExt": "mdc",
+      "installedHash": "bd7543be4952d48ad53a5f10c207c6c03a4425742a75eee53e35ddf110555ea8",
+      "userModified": true
+    },
+    "USER-RULES.md": {
+      "source": "USER-RULES.md",
+      "template": true,
+      "installedHash": "26d9fa88b4972690f0e62d7faa51af3f312a938813139000065aab03fdf7f04d",
+      "userModified": true
+    },
+    "memory.md": {
+      "source": "memory.md",
+      "template": true,
+      "installedHash": "391b859e67c5bc7f372a986bf165beced964da7c31a5b0895d96e1a14d1beaad"
+    },
+    "LLM-RULES.md": {
+      "source": "LLM-RULES.md",
+      "template": true,
+      "installedHash": "99db0fd59bf2b7ab7cba3e8ea2e3a98358554f982c49849b423a83ae2ec5cded"
+    }
+  },
+  "foreignFiles": {
+    "cursor": []
+  },
+  "integrations": {
+    "openspec": {
+      "detected": true,
+      "files": [
+        "openspec/changes/README.md",
+        "openspec/specs/README.md"
+      ],
+      "scaffolded": true,
+      "artifactsBundleVersion": "1.2.0"
+    }
+  }
 }

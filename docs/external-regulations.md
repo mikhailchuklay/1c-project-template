@@ -20,7 +20,7 @@
 Project-delta (правила строже ИТС) — в:
 
 - `dev-standards-architecture.mdc` (запросы)
-- `dev-standards-forms.mdc` (UX форм)
+- `forms-add.mdc` → «Form UX (project-delta)» (UX форм; до 1c-rules @410951e — `dev-standards-forms.mdc`)
 - `extension-patterns.mdc` (multi-CFE)
 
 ## Авторитетные источники (приоритет выше dev-rules)
