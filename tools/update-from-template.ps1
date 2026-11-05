@@ -215,6 +215,12 @@ Copy-FileSync -SourceFile (Join-Path $cache 'docs\headless-agent.md') -DestFile 
 Write-Step "Sync tools/update-from-template.ps1"
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\update-from-template.ps1') -DestFile (Join-Path $ProjectRoot 'tools\update-from-template.ps1') -Label 'tools/update-from-template.ps1'
 
+# Extension load used by rules (headless-agent) and its environment helpers.
+Write-Step "Sync tools/deploy-extension.sh and tools/dev-standalone"
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\deploy-extension.sh') -DestFile (Join-Path $ProjectRoot 'tools\deploy-extension.sh') -Label 'tools/deploy-extension.sh'
+$ds = Copy-TreeSync -SourceDir (Join-Path $cache 'tools\dev-standalone') -DestDir (Join-Path $ProjectRoot 'tools\dev-standalone')
+Write-Host ("  dev-standalone: +{0} ~{1} skip {2}" -f $ds.Added, $ds.Updated, $ds.Skipped)
+
 # .gitattributes: the project may have its own rules - create when missing, never overwrite.
 Write-Step "Sync .gitattributes (only if missing)"
 $gaSrc = Join-Path $cache '.gitattributes'

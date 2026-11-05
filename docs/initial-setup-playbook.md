@@ -243,7 +243,7 @@ cd {PROJECT_ROOT}
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template.ps1
 ```
 
-Скрипт клонирует/обновляет кэш шаблона и копирует `.cursor/rules`, skills (кроме Platform Tools), agents, commands, `AGENTS.md`, `.dev.env.example`, `docs/headless-agent.md` и сам `tools/update-from-template.ps1`; `.gitattributes` — только если в проекте его нет (существующий не перезаписывается, расхождение выводится предупреждением).  
+Скрипт клонирует/обновляет кэш шаблона и копирует `.cursor/rules`, skills (кроме Platform Tools), agents, commands, `AGENTS.md`, `.dev.env.example`, `docs/headless-agent.md` сам `tools/update-from-template.ps1`, `tools/deploy-extension.sh` и `tools/dev-standalone/`; `.gitattributes` — только если в проекте его нет (существующий не перезаписывается, расхождение выводится предупреждением).  
 **Не трогает:** `.dev.env`, `memory.md`, `USER-RULES.md`, `.cursor/mcp.json`, `src/`, `openspec/specs|changes`.
 
 После обновления: сравните diff `AGENTS.md`; новые ключи из `.dev.env.example` (например `CONFIG_STORAGE_*`) перенесите в `.dev.env`.
