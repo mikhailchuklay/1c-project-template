@@ -18,6 +18,9 @@ From the template clone into the **current project**:
 - `.cursor/commands/**`
 - `AGENTS.md`
 - `.dev.env.example`
+- `docs/headless-agent.md`
+- `tools/update-from-template.ps1` (the script updates itself)
+- `.gitattributes` — only when the project has none; an existing one is never overwritten, a difference is reported for a manual merge
 
 Stamp file written: `.rules-template-sync.json` (commit / URL / time).
 
