@@ -75,6 +75,5 @@ Do not include in the delivery summary:
 - **Looping on AI non-determinism** — if `check_1c_code` returns different items each run on the **same** code, take the strictest set and stop. Do not burn the 3-call budget on noise.
 - **Marking the task done** with un-removed `Debug.*` log entries or temporary `ПоказатьЗначение` calls — soft gate A failure.
 - **Auto-running `1c-code-reviewer`** when the user did not ask — soft gate C failure, and a direct violation of `subagents.md`.
-- **Declaring form/UI work done after static gates + API functional tests only** — Gate 6 failure (`verification-gates.md`); `syntaxcheck` does not validate programmatic form element properties at runtime.
-- **Treating `SKIP [form]` in data-mcp as verified** — wrong channel; Gate 6 still open.
-- **Ticking OpenSpec `tasks.md` form items** without Gate 6 PASS — soft gate B failure.
+- **Reporting form/UI work as verified after static gates + API functional tests only** (project overlay) — `syntaxcheck` does not validate programmatic form element properties at runtime; a form that was never opened goes under **Risks**, not under passed checks (`1commerce-functional-testing.mdc → Form / UI changes`).
+- **Treating `SKIP [form]` in data-mcp as verified** (project overlay) — wrong channel; the UI question stays open.

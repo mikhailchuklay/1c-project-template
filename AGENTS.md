@@ -125,15 +125,13 @@ Load `.cursor/rules/<name>.mdc` on its trigger only; routers pull companions and
 
 # Project overlays (1c-project-template)
 
-This project was created from `mikhailchuklay/1c-project-template`; the vendored ruleset above is `comol/ai_rules_1c`. The overlays below are the only project-specific additions — everything else is vendor canon.
+Project-specific items only:
 
-- **Rules update:** `/updaterules` runs `tools/update-from-template.ps1` (template is the source of truth for `.cursor/rules`, skills, agents, commands), **not** the vendor `install.ps1`. The monthly updates check (`.cursor/rules/support-feedback.mdc §4`) is `tools/update-from-template.ps1 -DryRun`, not `/checkupdates`; a vendor-side `/checkupdates` result is informational only. Project initialization — `TEMPLATE.md`.
-- **Standalone dev environment:** file infobase under `ibsrv` with its own web publication (`tools/dev-standalone/start.ps1` / `stop.ps1`, `docs/dev-environment.md`). Vendor `web-ops` (Apache) stays available for server infobases; do not mix the two on one base.
-- **`1c-data-mcp` on a non-anonymous publication** (`ibsrv`, or IIS / Apache not published anonymously): native tools stay hidden (Cursor sends no `Authorization`); call the service with Basic through `tools/dev-standalone/Invoke-DataMcp.ps1` — never `mcp_auth`, never the COM connector. Readiness gate and test-data discovery before a behavioural check — `.cursor/rules/1commerce-functional-testing.mdc`. Details — `.cursor/skills/mcp-1c-tools/docs/1c-data-mcp.md`.
-- **`rlm-tools-bsl`** — availability substitute for the project-index lane only: when neither graph nor code-metadata is exposed for the contour and `rlm_start` is, RLM runs before native search (`.cursor/skills/mcp-1c-tools/docs/rlm-tools-bsl.md`, setup `docs/rlm-setup.md`, rule `rlm-project-setup`).
-- **`v8std`** — v8std.ru standards and BSLLS / ACC / EDT diagnostic bridge; complements ITS, never replaces `its_help` → `fetch_its` for normative decisions (`.cursor/skills/mcp-1c-tools/docs/v8std-mcp.md`).
-- **Project-specific rules (load on their trigger):** `1commerce-functional-testing` — proving behaviour on a live infobase (`1c-data-mcp` vs UI, readiness gate); `1commerce-bsp-integration-checklists` — БСП hook checklists for new documents, print, input-based-on, form blocking, multi-extension layout; `headless-agent` — unattended agent runs (`docs/headless-agent.md`); `devbox-setup-discovery` — discovering the company devbox-managed environment; `rlm-project-setup` — RLM index of the dump.
-- **Validators:** `cfe-validate` carries project checks 20–21 (role rights on non-securable types, exchange-plan content) after the vendored 1–19 — run it before every load of an extension from XML.
+- `/updaterules` → `tools/update-from-template.ps1`, not vendor `install.ps1`; monthly check: `-DryRun`.
+- Standalone dev base `ibsrv` (`tools/dev-standalone/`); vendor `web-ops` only for server infobases.
+- `1c-data-mcp` behind Basic auth: native tools stay hidden — use `tools/dev-standalone/Invoke-DataMcp.ps1`, never `mcp_auth` / COM; readiness gate — `1commerce-functional-testing.mdc`.
+- `rlm-tools-bsl` — fallback when graph / code servers are not exposed; `v8std` — standards / diagnostics bridge, not a gate.
+- Project rules: `1commerce-functional-testing`, `1commerce-bsp-integration-checklists`, `headless-agent`, `devbox-setup-discovery`; `cfe-validate` checks 20–21 after vendored 1–19.
 
 # Spec-driven development workspace
 

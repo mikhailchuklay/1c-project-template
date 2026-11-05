@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Жёсткий перезапуск ibsrv с ожиданием HTTP 200.

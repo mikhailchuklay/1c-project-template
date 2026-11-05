@@ -51,7 +51,7 @@ All typical form modifications are performed **programmatically**, not visually.
 
 ### Verification before delivery (project overlay)
 
-Programmatic form changes (`Элементы.Добавить`, `ИзменитьРеквизиты`, `Переместить`, visibility/command wiring) require **Gate 6** — see `verification-gates.mdc → Gate 6` and `1commerce-functional-testing.mdc → Programmatic form runtime gate`. Static validators do not execute form open handlers; API-only functional tests do not replace UI smoke.
+Programmatic form changes (`Элементы.Добавить`, `ИзменитьРеквизиты`, `Переместить`, visibility/command wiring) are not proven by static validators: `syntaxcheck` does not execute form open handlers, and API-only functional tests do not open the form. Treat the form as a new / changed capability under `UI_TESTING` (`essential` by default — `dev-standards-env.mdc`): run the UI route from `ui-testing-tools.mdc` when one is available, otherwise record *"form open not verified — no UI route"* under **Risks** (`1commerce-functional-testing.mdc → Form / UI changes`). Never report an unopened form as verified.
 
 ### Form Commands
 

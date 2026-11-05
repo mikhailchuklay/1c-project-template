@@ -14,6 +14,8 @@
 | `1c-qa` | QA MCP: test manager driving a 1C test client — UI checks under `UI_TESTING` | `.cursor/skills/1c-qa-testing/SKILL.md` |
 | `1c-kd20` *(conditional)* | «Конвертация данных» 2.0 exchange rules: matching, authoring, validation by the БСП runtime, registration rules, review of existing rules, optional sandbox checks; read-only EnterpriseData (КД 3) exchange manager checks; profiles and launch strings of the two exchange bases. Installed separately; only for exchange-rule tasks | [mcp-conversion-data20.md](mcp-conversion-data20.md) |
 | `edt-mcp` *(conditional)* | Live EDT workspace | [edt-mcp.md](edt-mcp.md) |
+| `rlm-tools-bsl` *(project overlay)* | Local SQLite index of a dump: module / object / method lookup, call graph, usages — substitute when the project graph / code servers are not exposed for the contour | [rlm-tools-bsl.md](rlm-tools-bsl.md) |
+| `v8std` *(project overlay)* | v8std.ru development standards, BSLLS / ACC / EDT diagnostic codes → standard text; not a verification gate | [v8std-mcp.md](v8std-mcp.md) |
 
 ### Optional pre-alpha servers
 

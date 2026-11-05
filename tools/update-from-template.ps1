@@ -233,6 +233,29 @@ if (-not (Test-Path $gaDst)) {
     Write-Host "  .gitattributes up to date"
 }
 
+# Advisory: keys present in the template .dev.env.example but missing from the project .dev.env, and legacy keys.
+Write-Step "Check .dev.env keys"
+$exampleKeys = @()
+$examplePath = Join-Path $cache '.dev.env.example'
+if (Test-Path $examplePath) {
+    $exampleKeys = Get-Content $examplePath -Encoding UTF8 | Where-Object { $_ -match '^[A-Z0-9_]+=' } | ForEach-Object { ($_ -split '=', 2)[0] }
+}
+if (Test-Path $devEnv) {
+    $projectKeys = Get-Content $devEnv -Encoding UTF8 | Where-Object { $_ -match '^[A-Z0-9_]+=' } | ForEach-Object { ($_ -split '=', 2)[0] }
+    $missing = $exampleKeys | Where-Object { $projectKeys -notcontains $_ }
+    if ($missing) {
+        Write-Warning ("Keys missing in .dev.env (copy from .dev.env.example): " + ($missing -join ', '))
+    } else {
+        Write-Host "  .dev.env has every key of .dev.env.example"
+    }
+    $legacy = $projectKeys | Where-Object { $_ -like 'CONFIG_STORAGE_*' }
+    if ($legacy) {
+        Write-Warning ("Legacy keys in .dev.env: " + ($legacy -join ', ') + " -> REPOSITORY_PATH / REPOSITORY_USER / REPOSITORY_PASSWORD (1c-repository-manage); remove the old keys afterwards")
+    }
+} else {
+    Write-Host "  .dev.env not found - skipped"
+}
+
 # Lightweight stamp (does not replace .ai-rules.json protocol from install.ps1)
 $stampPath = Join-Path $ProjectRoot '.rules-template-sync.json'
 $commit = (git -C $cache rev-parse --short HEAD)
@@ -256,7 +279,8 @@ Preserved (not overwritten):
 
 Next:
   1. Diff AGENTS.md / .dev.env.example / .gitattributes if you had local edits.
-  2. If CONFIG_STORAGE_* appeared in .dev.env.example - copy new keys into .dev.env and answer the storage question (TEMPLATE.md).
+  2. Copy the keys listed above as missing from .dev.env.example into .dev.env (TOOL_*, USE_EDT, REPOSITORY_* ...).
+     Legacy CONFIG_STORAGE_* -> REPOSITORY_PATH / REPOSITORY_USER / REPOSITORY_PASSWORD, then delete the old keys.
   3. Reload Cursor window if commands/skills list looks stale.
 
 Upstream comol/ai_rules_1c is NOT applied here. Template maintainers refresh the template separately, then projects pull via this command.

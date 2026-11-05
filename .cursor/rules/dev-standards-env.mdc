@@ -71,10 +71,6 @@ Used by `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test
 | `{UI_TESTING}` | UI-testing mode: `essential` \| `auto` \| `manual` \| `off` | Defaulted | Empty = `essential`; invalid = `manual` (see below) |
 | `{MCP_QA_CLIENT_VISIBLE}` | Window of a 1C test client the agent starts for QA MCP checks | Defaulted | Empty / missing / invalid = visible; `false`, `0`, `no`, `off` = hidden desktop |
 | `{IBCMD_CONFIG}` | Path to standalone-server `config.yml` for `ibcmd`-based ops | Defaulted | Empty = fallback to Designer (per `.dev.env.example`) |
-| `{CONFIG_STORAGE_ENABLED}` | `true` enables configuration-storage gate/skill (project overlay — `configuration-storage.md`) | Highly desirable for storage-bound ops; **ask at project init** (see `TEMPLATE.md` / `AGENTS.md`) | Empty = regimen off |
-| `{CONFIG_STORAGE_URL}` | Storage URL (`http://…` / tcp / path) | Highly desirable when enabled | Ask at init if yes; else when gate in scope |
-| `{CONFIG_STORAGE_USER}` | Storage user | Highly desirable when enabled | Ask at init if yes; else when gate in scope |
-| `{CONFIG_STORAGE_PASSWORD}` | Storage password | Defaulted | Empty = omit `/ConfigurationRepositoryP` |
 | `{PLATFORM_ARGS}` / `{IBCMD_ARGS}` | Extra launch arguments (comma-separated) appended to every `1cv8.exe` / `ibcmd` run by the `1c-metadata-manage` `db-*` / `epf-*` tools | Defaulted | Empty = no extra arguments. **Never ask.** Arguments the tool owns itself (`/F`, `/S`, `/N`, `/P`, `/UpdateDBCfg`, `--db-path`, …) are rejected by the scripts — pass those as regular parameters |
 | `{SUPPORT_GUARD}` | Reaction of the vendor-support guard (`1c-metadata-manage` tools, the hook below) to an object "на замке": `deny` \| `warn` \| `off` | Defaulted | Empty = `deny`. **Never ask**; see the note below |
 | `{SUPPORT_GUARD_HOOK}` | `on` = that guard also on direct `Edit` / `Write` of dump files (experimental Claude Code plugin hook) | Defaulted | Empty = off. **Never ask or set it yourself** |

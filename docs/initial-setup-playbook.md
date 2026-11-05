@@ -188,7 +188,7 @@ IB_PASSWORD=ваш_пароль
 INFOBASE_PUBLISH_URL=http://{PROD_HOST}/{PROJECT_SLUG}/
 ```
 
-**Хранилище конфигурации (обязательный вопрос при init):** спросите один раз, ведётся ли проект через хранилище 1С. Да → `CONFIG_STORAGE_ENABLED=true` + `CONFIG_STORAGE_URL` / `USER` / `PASSWORD`. Нет → `CONFIG_STORAGE_ENABLED=false` или пусто. Подробно: `TEMPLATE.md` §2, `AGENTS.md`, `.cursor/rules/configuration-storage.mdc`.
+**Хранилище конфигурации (обязательный вопрос при init):** спросите один раз, ведётся ли проект через хранилище 1С. Да → `REPOSITORY_PATH` + `REPOSITORY_USER` / `REPOSITORY_PASSWORD`. Нет → `REPOSITORY_PATH` пустой. Подробно: `TEMPLATE.md` §2, `AGENTS.md`, skill `1c-repository-manage`.
 
 ## 5. Зависимости проекта (vanessa-runner)
 
@@ -246,7 +246,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template
 Скрипт клонирует/обновляет кэш шаблона и копирует `.cursor/rules`, skills (кроме Platform Tools), agents, commands, `AGENTS.md`, `.dev.env.example`, `docs/headless-agent.md` сам `tools/update-from-template.ps1`, `tools/deploy-extension.sh` и `tools/dev-standalone/`; `.gitattributes` — только если в проекте его нет (существующий не перезаписывается, расхождение выводится предупреждением).  
 **Не трогает:** `.dev.env`, `memory.md`, `USER-RULES.md`, `.cursor/mcp.json`, `src/`, `openspec/specs|changes`.
 
-После обновления: сравните diff `AGENTS.md`; новые ключи из `.dev.env.example` (например `CONFIG_STORAGE_*`) перенесите в `.dev.env`.
+После обновления: сравните diff `AGENTS.md`; новые ключи из `.dev.env.example` (скрипт перечисляет их; например `TOOL_*`, `USE_EDT`, `REPOSITORY_*`) перенесите в `.dev.env`; старые `CONFIG_STORAGE_*` замените на `REPOSITORY_*`.
 
 ### 6.3. Что ставится
 

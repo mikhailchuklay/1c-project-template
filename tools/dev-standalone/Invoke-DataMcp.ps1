@@ -8,7 +8,7 @@
     Вызывает инструменты live-базы по протоколу MCP (JSON-RPC поверх Streamable HTTP):
       vcexecutecode  — выполнить BSL-код   (значение возвращается через переменную Результат);
       vcexecutequery — выполнить запрос    (результат — текстовая таблица);
-      validatequery  — проверить запрос    (без выполнения);
+      vcvalidatequery — проверить запрос   (без выполнения);
       vcloggetlasterror — последняя ошибка журнала регистрации за 24 ч.
 
     Переносимость: адрес и учётные данные читаются из .dev.env проекта
@@ -200,7 +200,7 @@ else {
     switch ($Action) {
         'code'           { $name = 'vcexecutecode';  $toolArgs = @{ bslcode   = (Get-Payload) } }
         'query'          { $name = 'vcexecutequery'; $toolArgs = @{ querytext = (Get-Payload) } }
-        'validate-query' { $name = 'validatequery';  $toolArgs = @{ querytext = (Get-Payload) } }
+        'validate-query' { $name = 'vcvalidatequery'; $toolArgs = @{ querytext = (Get-Payload) } }
         'last-error'     { $name = 'vcloggetlasterror'; $toolArgs = @{} }
         'raw' {
             if (-not $Tool) { throw "Для Action=raw укажите -Tool." }

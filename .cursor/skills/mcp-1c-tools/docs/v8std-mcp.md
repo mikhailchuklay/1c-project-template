@@ -67,6 +67,6 @@ Do **not** use `v8std_search` first when you already have diagnostic codes or a 
 
 ## Notes
 
-- v8std is **not** a verification gate — do not add it to `verification-checklist.mdc`.
+- v8std is **not** a verification gate — do not add it to `verification-gates.mdc`.
 - Prefer `mode="hybrid"` (default) for `v8std_search`; narrow with `types` when the target kind is known.
 - Source repository: [github.com/zeegin/v8std](https://github.com/zeegin/v8std) (CC0).

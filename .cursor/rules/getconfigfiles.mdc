@@ -60,7 +60,7 @@ Reference: 1C:Enterprise 8.3.27 Administrator Guide, [batch configuration comman
 
 Classes, defaults and the ask-policy (Defaulted keys are never asked for; credentials re-asked only after an authentication error, `LOG_PATH` only when non-writable) — `dev-standards-env.md §1`.
 
-If `CONFIG_STORAGE_ENABLED=true` in `.dev.env`, also follow `.cursor/rules/configuration-storage.mdc` when the export is part of a change that will later be locked/committed back to storage (export alone does not require a lock).
+If `REPOSITORY_PATH` is non-empty in `.dev.env`, also follow the `1c-repository-manage` skill (`.cursor/skills/1c-repository-manage/SKILL.md`) when the export is part of a change that will later be locked / committed back to the repository (export alone does not require a lock).
 
 ## Steps
 

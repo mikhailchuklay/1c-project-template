@@ -6,7 +6,7 @@ description: "Update agent rules from 1c-project-template (https://github.com/mi
 
 **Source of truth for this command:** [mikhailchuklay/1c-project-template](https://github.com/mikhailchuklay/1c-project-template) (`master` by default).
 
-Projects created from this template should **not** run `comol/ai_rules_1c` `install.ps1 update` as the primary path — that installer expects the `content/` layout of `ai_rules_1c` and will miss template overlays (e.g. `configuration-storage`, 1commerce rules, `CONFIG_STORAGE_*`).
+Projects created from this template should **not** run `comol/ai_rules_1c` `install.ps1 update` as the primary path — that installer expects the `content/` layout of `ai_rules_1c` and will miss template overlays (1commerce rules, `rlm-tools-bsl`, `v8std`, `dev-standalone`, cfe-validate checks 20–21, section 2а/2c keys of `.dev.env.example`).
 
 ## What is synced
 
@@ -75,7 +75,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template
 4. After sync:
 
 - Diff `AGENTS.md` if the project had local edits — merge back anything project-specific into `USER-RULES.md` or contribute to the template.
-- If `.dev.env.example` gained new keys (e.g. `CONFIG_STORAGE_*`), copy them into `.dev.env`. For storage: ask once whether the project uses configuration storage (`TEMPLATE.md` §2).
+- If `.dev.env.example` gained new keys (the script lists them), copy them into `.dev.env`. Legacy `CONFIG_STORAGE_*` keys: `CONFIG_STORAGE_ENABLED=true` + `CONFIG_STORAGE_URL` → `REPOSITORY_PATH`, `CONFIG_STORAGE_USER` / `CONFIG_STORAGE_PASSWORD` → `REPOSITORY_USER` / `REPOSITORY_PASSWORD`; then delete the old keys. The repository question is asked once at project init only (`TEMPLATE.md` §2).
 - Reload the Cursor window if slash commands look stale.
 
 ## Not in scope
