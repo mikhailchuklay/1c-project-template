@@ -209,6 +209,30 @@ if (-not $SkipDevEnvExample) {
     Copy-FileSync -SourceFile (Join-Path $cache '.dev.env.example') -DestFile (Join-Path $ProjectRoot '.dev.env.example') -Label '.dev.env.example'
 }
 
+Write-Step "Sync docs/headless-agent.md"
+Copy-FileSync -SourceFile (Join-Path $cache 'docs\headless-agent.md') -DestFile (Join-Path $ProjectRoot 'docs\headless-agent.md') -Label 'docs/headless-agent.md'
+
+Write-Step "Sync tools/update-from-template.ps1"
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\update-from-template.ps1') -DestFile (Join-Path $ProjectRoot 'tools\update-from-template.ps1') -Label 'tools/update-from-template.ps1'
+
+# Extension load used by rules (headless-agent) and its environment helpers.
+Write-Step "Sync tools/deploy-extension.sh and tools/dev-standalone"
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\deploy-extension.sh') -DestFile (Join-Path $ProjectRoot 'tools\deploy-extension.sh') -Label 'tools/deploy-extension.sh'
+$ds = Copy-TreeSync -SourceDir (Join-Path $cache 'tools\dev-standalone') -DestDir (Join-Path $ProjectRoot 'tools\dev-standalone')
+Write-Host ("  dev-standalone: +{0} ~{1} skip {2}" -f $ds.Added, $ds.Updated, $ds.Skipped)
+
+# .gitattributes: the project may have its own rules - create when missing, never overwrite.
+Write-Step "Sync .gitattributes (only if missing)"
+$gaSrc = Join-Path $cache '.gitattributes'
+$gaDst = Join-Path $ProjectRoot '.gitattributes'
+if (-not (Test-Path $gaDst)) {
+    Copy-FileSync -SourceFile $gaSrc -DestFile $gaDst -Label '.gitattributes'
+} elseif ((Test-Path $gaSrc) -and ((Get-FileHash $gaSrc).Hash -ne (Get-FileHash $gaDst).Hash)) {
+    Write-Warning ".gitattributes differs from the template - merge manually (template: $gaSrc)"
+} else {
+    Write-Host "  .gitattributes up to date"
+}
+
 # Lightweight stamp (does not replace .ai-rules.json protocol from install.ps1)
 $stampPath = Join-Path $ProjectRoot '.rules-template-sync.json'
 $commit = (git -C $cache rev-parse --short HEAD)
@@ -231,8 +255,8 @@ Preserved (not overwritten):
   .dev.env, memory.md, USER-RULES.md, .cursor/mcp.json, src/, build/, openspec/specs, openspec/changes
 
 Next:
-  1. Diff AGENTS.md / .dev.env.example if you had local edits.
-  2. If CONFIG_STORAGE_* appeared in .dev.env.example — copy new keys into .dev.env and answer the storage question (TEMPLATE.md).
+  1. Diff AGENTS.md / .dev.env.example / .gitattributes if you had local edits.
+  2. If CONFIG_STORAGE_* appeared in .dev.env.example - copy new keys into .dev.env and answer the storage question (TEMPLATE.md).
   3. Reload Cursor window if commands/skills list looks stale.
 
 Upstream comol/ai_rules_1c is NOT applied here. Template maintainers refresh the template separately, then projects pull via this command.
