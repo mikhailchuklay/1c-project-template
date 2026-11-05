@@ -78,6 +78,15 @@
             "url": "https://ai.v8std.ru/mcp",
             "description": "Стандарты разработки 1С (v8std.ru) и расшифровка диагностик BSL LS / EDT / АПК",
             "disabled": false
+        },
+        "vrunner": {
+            "command": "xvfb-run",
+            "args": [
+                "-a",
+                "vrunner-mcp"
+            ],
+            "description": "vanessa-runner MCP (Linux, контейнер агента): загрузка/выгрузка cf/cfe/epf, обновление БД, хранилище, проверки и тесты. Подключение — переменные VRUNNER_* из .dev.env и секретов (выставляет agent-run). На Windows не нужен: там Platform Tools и скрипты 1c-metadata-manage.",
+            "disabled": true
         }
     }
 }
