@@ -206,8 +206,11 @@ Set-TextFile -RelativePath '.cursor\mcp.json' -Content @'
         "1c-qa": {
             "url": "https://mcp.1commerce.ru/qa/mcp",
             "connection_id": "1c_qa_service_001",
-            "description": "QA MCP (comol/qa_mcp): UI-проверки в тонком клиенте под UI_TESTING. Выключен, пока стенд не поднят; включить вместе с TOOL_QA=auto в .dev.env",
-            "disabled": true
+            "headers": {
+                "Authorization": "Bearer ${env:QA_MCP_TOKEN}"
+            },
+            "description": "QA MCP (comol/qa_mcp 0.8.0): UI-проверки в тонком клиенте под UI_TESTING. Стенд на mcp.1commerce.ru поднят 07.11.2026, работает с Linux-тест-клиентом 1С 8.5 через прослойку протокола на сервере (пилот). Токен — переменная окружения QA_MCP_TOKEN, в репозиторий не кладётся; TOOL_QA=off в .dev.env отключает маршрут",
+            "disabled": false
         }
     }
 }

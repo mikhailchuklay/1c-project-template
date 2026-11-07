@@ -75,7 +75,7 @@ When Windows-MCP is the chosen tool: drive it through its MCP tools; **do not** 
 
 | Need | Command |
 |---|---|
-| UI checks in the thin client | QA MCP: Docker image `comol/qa_mcp` from the MCP server distribution, client connection `1c-qa`; the ruleset's MCP installers do not set it up yet |
+| UI checks in the thin client | QA MCP: shared stand `https://mcp.1commerce.ru/qa/mcp` (image `comol/qa_mcp` 0.8.0, Linux test client 8.5 supported through a server-side protocol shim), client connection `1c-qa` enabled in the template; the token comes from the `QA_MCP_TOKEN` environment variable |
 | Web UI testing, token-efficient browser | `/install-agent-browser` |
 | Unavoidable Windows desktop automation | `/install-windows-mcp` |
 
