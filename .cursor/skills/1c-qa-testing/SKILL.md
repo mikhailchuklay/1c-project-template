@@ -19,7 +19,7 @@ All of these hold:
 
 Otherwise use the web fallback of `ui-testing-tools.md`, or report the check unrun with the reason. `TOOL_QA=required` with the server missing blocks the check; the web client does not replace it.
 
-**Before the first action load `.cursor/rules/qa-testclient.mdc`.** It owns what the server does not do: starting and stopping the test client, visible or hidden window, screenshots, Windows-MCP, and confirming data through `1c-data-mcp`. Tool argument names come from the exposed schemas; `qa_playbook` returns the sequence for the current executor.
+**Before the first action load `.cursor/rules/qa-testclient.mdc`.** It owns what the server does not do: starting and stopping the test client (`scripts/qa-testclient.ps1` on Windows, `scripts/qa-testclient.sh` on Linux), visible or hidden window, screenshots, Windows-MCP, where the server expects the client to be, and confirming data through `1c-data-mcp`. Tool argument names come from the exposed schemas; `qa_playbook` returns the sequence for the current executor.
 
 ## Other MCP servers in a check
 
@@ -75,7 +75,7 @@ Before asserting changed field values, navigating table rows/tabs, writing/posti
 
 Keep a journal of every check so that another session can continue it after a crash, a lost link or a context reset. A one-off request to open or show something — no change under check, no data written — needs no journal and no screenshot: answer with what was read.
 
-- Where: the task's output directory; otherwise `%TEMP%\qa-runs\<YYYY-MM-DD>-<short name>\journal.md`. Screenshots go next to it. Give the path in the report.
+- Where: the task's output directory; otherwise `%TEMP%\qa-runs\<YYYY-MM-DD>-<short name>\journal.md` on Windows, `${TMPDIR:-/tmp}/qa-runs/<YYYY-MM-DD>-<short name>/journal.md` on Linux. Screenshots go next to it. Give the path in the report.
 - Write it as you go, after each step:
   - header: scenario, infobase and its role, executor, test-client port, window mode (visible / hidden), start time;
   - per step: number, tool and key arguments, what was observed, verdict, evidence (tool answer or screenshot path);
@@ -92,7 +92,7 @@ Keep a journal of every check so that another session can continue it after a cr
 
 ## Not available in `native`
 
-`qa_setup` and `qa_install_client` answer `executor_capability`. `ui_eval` / `qa_run_script` are replaced by `1c-data-mcp`, `ui_screenshot` and the hidden desktop by the Windows side of `qa-testclient.md`. Do not emulate anything else; report the gap. A tool that is missing from the list is not replaced by `ui_eval` or another workaround.
+`qa_setup` and `qa_install_client` answer `executor_capability`. `ui_eval` / `qa_run_script` are replaced by `1c-data-mcp`, `ui_screenshot` and the hidden desktop by the launcher side of `qa-testclient.md` (hidden desktop on Windows, Xvfb on Linux). Do not emulate anything else; report the gap. A tool that is missing from the list is not replaced by `ui_eval` or another workaround.
 
 ## Report
 

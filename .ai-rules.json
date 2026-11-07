@@ -1782,6 +1782,13 @@
         "cursor"
       ]
     },
+    ".cursor/skills/1c-qa-testing/scripts/qa-testclient.sh": {
+      "source": "content/skills/1c-qa-testing",
+      "installedHash": "e7d7d1340c6653565cfec8955203b0a1d5c5eaa991be40b58609e44f0192853e",
+      "owners": [
+        "cursor"
+      ]
+    },
     ".cursor/skills/1c-qa-testing/scripts/qa-testclient.ps1": {
       "source": "content/skills/1c-qa-testing",
       "installedHash": "cf22c070ad283c24adb8d1e2cd86ccd89e752a2962d7d8c87732632386bc259d",
