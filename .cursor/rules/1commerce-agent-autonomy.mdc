@@ -1,11 +1,11 @@
 ---
-description: "Project overlay: keep moving through the task plan — pre-existing validator findings on untouched modules are a Risks line, not a CONFUSION; after a clean deploy continue with the acceptance items. Load with every full-cycle task."
-alwaysApply: false
+description: "Project overlay, always on: keep moving through the task plan — pre-existing validator findings on untouched modules are a Risks line, not a CONFUSION; a finished command or background task is not the end of the turn; questions the rules already answer are not asked."
+alwaysApply: true
 ---
 
 # Agent autonomy — when to continue, when to ask (project overlay)
 
-**When to load this file:** at the start of every full-cycle or quick-fix task, and whenever a validator result or a finished command makes you consider ending the turn with a question. This overlay narrows two vendor behaviours that stop work for no good reason; every other stop rule (`AGENTS.md → CONFUSION`, `verification-policy.md`, `dev-standards-env.md → INFOBASE_ROLE`) stays as is.
+**Scope:** always on, for interactive Cursor sessions and the headless agent alike. This overlay narrows vendor behaviours that stop work for no good reason; every other stop rule (`AGENTS.md → CONFUSION`, `verification-policy.md`, `dev-standards-env.md → INFOBASE_ROLE`, `headless-agent.mdc` status protocol) stays as is.
 
 ## 1. Pre-existing findings on modules you did not change
 
@@ -27,8 +27,22 @@ The vendor commands (`/deploy-and-test`, `/update1cbase`, the validator chain) e
 - acceptance passed → tick `tasks.md`, write the delivery summary (`verification-delivery.md`), and only then end the turn;
 - an item cannot run (no route, no data, production target) → one line under **Risks** and the next item, not a question.
 
+Questions the rules already answer are not asked. With `INFOBASE_ROLE=dev` or `test` and a task that says full cycle, deliver, "до коммита", "до PR" or the like, these are decided and done, not asked: load the extension into the dev/test base; commit; push; open the PR (draft unless told otherwise); tick `tasks.md`; archive the change when `sdd-integrations.mdc` says it is complete. "Коммитить?", "Загружать в DEV?", "Пуш делать?", "архив — отдельный шаг" are not valid turn endings. `INFOBASE_ROLE=prod` or empty keeps the vendor rule: ask once, then follow the answer.
+
+Open acceptance items that genuinely need the user (a password, an account that does not exist, credentials, a restart of the client) are collected and asked in **one** message with one request per item and the agent's recommendation; everything that does not depend on them is finished first, in the same turn.
+
 Stop and hand back the turn only on: a real CONFUSION trigger from `AGENTS.md`, an action that needs the user's consent by rule (mutation on a live base, `-Force` repository operation, production target, `/install-*`), the user's explicit "stop here", or the end of the plan. "What next?" from the user means a stop of this kind happened for no reason — note the cause in the report so it can be fixed in the rules.
 
-## 3. Report wording
+## 3. A finished or interrupted background task is not the end of the turn
+
+Cursor delivers the end of a background shell, browser or test-client task as a system notification. Treat it as data for the current step, never as a reason to answer with a status line and stop:
+
+- the task succeeded → take the result and go on to the next open item of the plan in the same turn;
+- the task hung, lost the connection, the thin or web client closed, the Designer froze → **one** retry by another route (QA MCP ↔ web client, `1c-data-mcp` / `vcexecutecode` for server logic, a fresh client session instead of the stale one), then one line under **Risks** and the next item. Do not run the same failing route a third time and do not report the same outcome for the same process twice;
+- the notification concerns a process you already accounted for → do not restate it; continue.
+
+The same applies when a vendor command (`/deploy-and-test`, `/update1cbase`, a validator chain) or a subagent returns: its report feeds the plan, the turn goes on.
+
+## 4. Report wording
 
 Never present a stop as the user's decision when the rules already decide it. State what is established, what is pre-existing, what remains unverified, and the next step you are taking. The report at the end of the task follows `verification-delivery.md`; intermediate command reports are one paragraph at most.
