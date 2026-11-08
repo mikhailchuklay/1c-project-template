@@ -1,5 +1,5 @@
 ---
-description: "1C test client for QA MCP checks — start and stop (qa-testclient.ps1), visible or hidden window, screenshots, Windows-MCP, developer-licence trap, extension safe mode, data confirmation through 1c-data-mcp"
+description: "1C test client for QA MCP checks — start and stop (qa-testclient.ps1 on Windows, qa-testclient.sh on Linux), visible or hidden window, screenshots, Windows-MCP, developer-licence trap, extension safe mode, data confirmation through 1c-data-mcp"
 alwaysApply: false
 ---
 
@@ -7,7 +7,9 @@ alwaysApply: false
 
 **When to load:** with the skill `.cursor/skills/1c-qa-testing/SKILL.md`, before starting or stopping a 1C test client, hiding or showing it, taking a screenshot of it, or confirming what a UI step wrote. Whether a check runs at all is `UI_TESTING` (`dev-standards-env.md`); the driver order is `ui-testing-tools.md`.
 
-These are not QA MCP functions. The server drives forms only. Everything on the Windows machine — starting the test client, the hidden desktop and screenshots in `native`, the MCPQAClient pointer, installing the extension — is done by the agent with the project's tools under this rule: the `qa-testclient.ps1` script of the `1c-qa-testing` skill (`scripts/qa-testclient.ps1`, found by file name in the installed skills folder), PowerShell, a project launcher script, Windows-MCP, Designer in batch mode. Do not write a home-grown screenshotter, OCR or window automation.
+These are not QA MCP functions. The server drives forms only. Everything on the test-client machine — starting the test client, the hidden desktop or virtual display and screenshots in `native`, the MCPQAClient pointer, installing the extension — is done by the agent with the project's tools under this rule: the launcher scripts of the `1c-qa-testing` skill (`scripts/qa-testclient.ps1` on Windows, `scripts/qa-testclient.sh` on Linux, found by file name in the installed skills folder), PowerShell or bash, a project launcher script, Windows-MCP, Designer in batch mode. Pick the script by the OS of the shell that will start the client: Windows → `.ps1`, Linux (a developer container, a headless agent container) → `.sh`. Do not write a home-grown screenshotter, OCR or window automation.
+
+**Where the server looks for the client.** In `native` the server connects to the test-client address configured on the QA MCP stand (`MCP_QA_TESTCLIENT`, host and port); `qa_start(port=)` overrides the port only, never the host. A client started on a machine or container the stand does not point to is never found, however healthy the launcher reports it. On the shared stand `mcp.1commerce.ru/qa` the client is expected in the developer's or agent's own container; which container the server is pointed to is the stand owner's setting, not the agent's. When `qa_start` does not find the client the launcher reports as listening, report the check not run with this reason instead of relaunching the client.
 
 ## Windows scenario (`native`)
 
@@ -24,6 +26,18 @@ Settle two facts once per session:
 | **D.** Neither | the person, with the command line the agent gives | none | the person on request; otherwise the visual check is reported not done |
 
 `platform` executor: `qa_start` starts the client itself, `qa_start(hidden_desktop=True)` hides it, `ui_screenshot` takes screenshots; connection string and password come from a profile (`qa_profiles`), never from the chat.
+
+## Linux scenario (`native`)
+
+The agent's shell runs in a Linux container with the 1C thin client (`/opt/1cv8/x86_64/<build>/1cv8c`): a developer workplace container or a headless agent container. There is no Windows-MCP and no hidden desktop; the client runs on an X display.
+
+| Scenario | Start and stop | Hidden window | Screenshot |
+|---|---|---|---|
+| **L1.** Own shell in the container of the test client | `qa-testclient.sh` | default: own `Xvfb` display (`:99`), nothing on the person's screen | `qa-testclient.sh capture` |
+| **L2.** Own shell, visible to the person | `qa-testclient.sh start --display "$DISPLAY"` of the person's graphical session (the RDP session of a workplace container) | none | `qa-testclient.sh capture` shoots the whole display, the person's other windows included; the person on request |
+| **L3.** No shell in that container | the person, with the command line below | none | the person on request; otherwise the visual check is reported not done |
+
+Windows outside the testing model (OS and file dialogs, platform error windows the test client does not reach) have no driver on Linux: capture them as evidence and report the step not done, or hand them to the person in L2.
 
 ## `qa-testclient.ps1`
 
@@ -45,30 +59,52 @@ qa-testclient.ps1 status [-Port 1538]
 - `stop` closes only a client this script started, through its main window, and refuses a client the person started. It waits `-CloseTimeoutSec` for the process to exit and answers `how: closed` with `port_free`. While it waits it clicks a window whose text is «Завершить работу» when the exit question «Завершить работу с программой?» is open, including on the hidden desktop. If that question is visible but the button is not a window the script can click, the answer is `how: exit question`. If a new owned `V8TopLevelFrameSDIsec` dialog appears after the close request but its text and buttons are not exposed as windows, `stop` immediately returns `how: exit question` and preserves the process and state. This structural signal does not identify the dialog text: connect to that same client with `qa_start`, inspect `ui_dialog`, and answer only the confirmed exit question; never send Enter to an unknown dialog. A client that has not closed and has neither signal answers `how: still closing`. In both cases there is an `error`: `capture`, then `stop` again. `-Force` ends the process; use it only when the person agrees (licence trap below).
 - `status` answers `started_here: true` only while that client is alive. A client the person closed, or one that exited, is forgotten with its deadline watchdog and reported once as `gone`. A closed client can take over a minute to exit (seen on a large configuration): `alive` or a refused `start` right after closing means "wait and ask `status` again", not a conflict.
 
+## `qa-testclient.sh`
+
+Bash wrapper around an embedded Python 3 program: `bash <path>/qa-testclient.sh <action> …`. Dependencies in the container: `python3`, `python3-xlib`, `Xvfb`, `xdotool`, `x11-utils` (`xdpyinfo`), `iproute2` (`ss`), and `imagemagick` (`import`) or `x11-apps` (`xwd`) for `capture`. A missing dependency is an error before the client starts. Verified on the pilot with the Linux client 8.5 against the build of the pilot cluster (`services/qa-mcp.md` of `1commerce-infra`).
+
+```
+qa-testclient.sh start --version <x.y.z.b> --connect '/S"<server>:<port>\<infobase>"' | --connect '/F<path>' [--user <name>] [--port 1538] [--display :99] [--platforms /opt/1cv8/x86_64]
+qa-testclient.sh status
+qa-testclient.sh capture [--out <file.png>]
+qa-testclient.sh stop [--timeout 30]
+```
+
+- It prints one JSON object (`ok`, `action`, result fields); `ok: false` with `error` and exit code 1 mean failure. State and logs live in `~/.local/state/mcp_qa_testclient/` (`state.json`, `1cv8c.log`, `xvfb.log`, `lock`), private to the user. Every option also reads an environment variable: `QA_TC_CONNECT`, `QA_TC_VERSION`, `QA_TC_PLATFORMS`, `QA_TC_PORT`, `QA_TC_DISPLAY`, `QA_TC_USER`.
+- Parameters come from `.dev.env`: `INFOBASE_KIND` + `INFOBASE_PATH` → `--connect` as one `/S"server:port\base"` or `/F<path>` argument (quote it for the shell; the script passes it to 1C as a single parameter); `IB_USER` → `--user`; `PLATFORM_PATH` → `--version` is its version folder name and `--platforms` its parent (`/opt/1cv8/x86_64/8.3.27.2130` → `--platforms /opt/1cv8/x86_64 --version 8.3.27.2130`). `--version` is mandatory and must match the build of the cluster.
+- **No password parameter.** The script never takes a password: the 1C sign-in happens in the client's own dialog. On the Xvfb display nobody can type it, so a test copy for unattended runs needs a user without a password (or OS authentication); otherwise start visibly (L2) and let the person sign in, or report the check not run. Never pass a password through `--connect` or the command line.
+- `start` starts `Xvfb` on `--display` when nothing listens there (the display is reused afterwards and left running), launches `1cv8c ENTERPRISE <connect> /TestClient -TPort<port> /DisableStartupDialogs /DisableStartupMessages [/N<user>]`, and waits up to 90 s until that process listens on the port. The port opens before sign-in and licence checks: `listening: true` does not mean the main window is open; read it with `qa_start` or `capture`. A client that exits during start-up is reported from `1cv8c.log`; do not retry in a loop. A port already in use, or a second `start` while the tracked client is alive (`already_running: true`), is a conflict to look at, not to close.
+- `status` answers `running` (the tracked process is alive and is the same executable, start time, boot and PID namespace) and `listening` for its port. There are no `-MaxSeconds`, `-Execute` or `-Hidden` equivalents: a deadline is the agent's own bookkeeping, and hidden means the Xvfb display.
+- `capture` saves the whole display (`import -window root`, else `xwd` to `.xwd`) of the tracked client: on Xvfb that is the client alone; on the person's display (L2) it is their entire screen, so delete copies that caught unrelated windows. Default path `~/.local/state/mcp_qa_testclient/capture.png`; pass `--out <journal folder>/<step>.png`.
+- `stop` finds the largest visible window of the tracked process (`xdotool`) and sends it `WM_DELETE_WINDOW` through python-xlib, then waits `--timeout` seconds. The exit question «Завершить работу с программой?» is not answered by the script: it returns `ok: false` with `close requested; client still running` and leaves the process alive. Then `capture`, confirm the dialog through `qa_start` + `ui_dialog` (never a blind Enter), and `stop` again. It never sends signals, `windowkill` or `windowclose`; there is no `--force`.
+- **Never kill the client** (`kill`, `pkill`, `docker restart`): the developer-licence trap below applies on Linux too.
+
 ## Starting and connecting
 
 - Start a test client only for an infobase whose `INFOBASE_ROLE` is `dev` or `test`, or that the person confirmed as a test copy; otherwise ask once and wait. Never switch infobases silently.
 - If the port already listens, run `status` first. A client of the same infobase on that port is connected to with `qa_start`; a client of another base, or one owned by another agent, is a conflict to resolve — never close it.
-- Start with the project launcher if there is one, else `qa-testclient.ps1 start` (A, B), or this command line (C through Windows-MCP, D for the person):
+- Start with the project launcher if there is one, else `qa-testclient.ps1 start` (A, B) or `qa-testclient.sh start` (L1, L2), or this command line (C through Windows-MCP, D and L3 for the person):
 
   ```
   1cv8c ENTERPRISE /F"<infobase path>" /TestClient -TPort1538 /DisableStartupDialogs
   ```
 
+  On Linux the same line with `/opt/1cv8/x86_64/<build>/1cv8c` and `/S"<server>:<port>\<infobase>"`, run under the person's `DISPLAY`.
+
   Add `/N<user>` only when the infobase needs it; the person types the password themselves. A web client under test: `…/<base>/?TestClient&TestClientID=<id>` with the same id in the server's `MCP_QA_TESTCLIENT_ID`.
 - Then `qa_start` (skill `1c-qa-testing`).
-- Close only a client you started: `qa_stop`, then `qa-testclient.ps1 stop`, or leave it to its `-MaxSeconds` deadline. Leave a client the person started running.
+- Close only a client you started: `qa_stop`, then `qa-testclient.ps1 stop` / `qa-testclient.sh stop`, or leave it to its `-MaxSeconds` deadline (Windows). Leave a client the person started running.
 - **Never kill a client by force** (`Stop-Process`, `taskkill`). Under the 1C developer licence a killed client keeps its place in the client count of a file infobase while another process holds the base open — for example the IIS application pool of its web publication — and further clients exit with «Превышено ограничение лицензии для разработчиков на количество клиентов информационной базы». Restarting that process frees the place, only with the person's consent. One test client per infobase at a time unless the licence allows more.
 
 ## Visible or hidden window
 
 `MCP_QA_CLIENT_VISIBLE` in `.dev.env` sets the window of a client the agent starts (canon: `dev-standards-env.md`). Default: visible. Only `false`, `0`, `no` or `off` hides it; missing, empty or invalid values mean visible. `/uitests visible|hidden` switches it. Read it before every launch; never change it to suit the agent.
 
-- **Visible:** `start` without `-Hidden`; `platform`: `qa_start(hidden_desktop=False)`.
-- **Hidden:** `start -Hidden` (A, B) — the client runs on a separate hidden desktop; `platform`: `qa_start(hidden_desktop=True)`. In C and D there is no hidden launch: start visible and say so once.
+- **Visible:** `start` without `-Hidden` (Windows); `qa-testclient.sh start --display "$DISPLAY"` of the person's session (Linux, L2); `platform`: `qa_start(hidden_desktop=False)`.
+- **Hidden:** `start -Hidden` (A, B) — the client runs on a separate hidden desktop; `qa-testclient.sh start` with the default Xvfb display (L1); `platform`: `qa_start(hidden_desktop=True)`. In C, D and L3 there is no hidden launch: start visible and say so once. A headless agent container has no person's display at all: there the client is always on Xvfb, and "visible" is reported as not applicable.
 - A step that needs Windows-MCP (a window outside the testing model) runs with a visible client.
 
-Windows cannot move a window between desktops. **The client becomes visible** by restarting it visible:
+Neither Windows nor X can move the client between a hidden desktop or Xvfb and the person's screen. **The client becomes visible** by restarting it visible:
 
 - **The person asks to show it** ("покажи", "хочу посмотреть", "сам покликаю"): warn that open forms and unsaved input are lost, then `qa_stop`, `stop`, `start` without `-Hidden`, `qa_start`, and bring the client back to the form in question by navigation link. Continue in observation mode.
 - **An error while hidden** — a 1C error window, an unexpected refusal, a failed assertion or a lost link:
@@ -90,7 +126,7 @@ When the person wants to watch or click themselves:
 ## Screenshots
 
 - Observe and assert through structured reads (`ui_window_tree`, `ui_inspect`, `ui_get_text`). A screenshot is for layout questions (overlaps, clipped text) and as evidence of key states — form opened, data entered, save or posting, error, completion — never after every action and never as the observe loop.
-- Take it by the scenario: `qa-testclient.ps1 capture -Out <journal folder>\<step>.png` (A, B), Windows-MCP (C, and in A for windows outside the client), the person (D), `ui_screenshot` (`platform`). When none is possible, the report says the visual check was not done.
+- Take it by the scenario: `qa-testclient.ps1 capture -Out <journal folder>\<step>.png` (A, B), `qa-testclient.sh capture --out <journal folder>/<step>.png` (L1, L2), Windows-MCP (C, and in A for windows outside the client), the person (D, L3), `ui_screenshot` (`platform`). When none is possible, the report says the visual check was not done.
 - Save screenshots next to the journal and reference them by step number. Look at the PNG with the agent's image viewer when there is one.
 - A task that asks for a screenshot needs a real one of the updated infobase — a client capture, or a web-client screenshot through the browser driver. Structured results, SVG, HTML or mock images do not replace it.
 
@@ -105,7 +141,7 @@ Windows outside the testing model — platform error dialogs it does not reach, 
 ## MCPQAClient extension
 
 - Needed for `ui_form_schema`, `qa_data_candidates` and `ui_open` through `ОткрытьФорму`; install it only in a test copy: `qa_install_client` (`platform`) or Designer in batch mode (`native`, `.cursor/rules/designer-batch-checks.mdc`), then turn off its safe mode (next section).
-- `native`: after each `qa_start`, write `client_hook.pointer` from its answer into `%TEMP%\mcp_qa_client_spool.txt` on the test-client machine. The extension re-reads it every 5 s; `qa_status` then shows `client_hook.available: true`.
+- `native`: after each `qa_start`, write `client_hook.pointer` from its answer into `%TEMP%\mcp_qa_client_spool.txt` on the test-client machine (Windows). The extension re-reads it every 5 s; `qa_status` then shows `client_hook.available: true`. On Linux the spool location has not been confirmed on the pilot: without `client_hook.available: true` work without the extension (`ui_open` by navigation link) and say so in the report.
 
 ## Extensions under test: safe mode
 
