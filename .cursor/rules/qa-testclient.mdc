@@ -27,6 +27,10 @@ Settle two facts once per session:
 
 `platform` executor: `qa_start` starts the client itself, `qa_start(hidden_desktop=True)` hides it, `ui_screenshot` takes screenshots; connection string and password come from a profile (`qa_profiles`), never from the chat.
 
+## One server, one session
+
+The paired server `qa-<login>` holds one session for all MCP clients, and every Cursor window of the workplace is such a client. Before touching the test client: `qa_status`; an active link this window did not start means another window is testing — report «QA MCP занят» and wait (repeat `qa_status` at most once a minute), do not start, attach or stop anything of theirs. A test client already listening on the port (`qa-testclient.sh status` → `running`, or `already_running` on `start`) that this window did not start is the same situation: leave it alone. Details — `1c-qa-testing/SKILL.md → Session → One session per server`.
+
 ## Linux scenario (`native`)
 
 The agent's shell runs in a Linux container with the 1C thin client (`/opt/1cv8/x86_64/<build>/1cv8c`): a developer workplace container or a headless agent container. There is no Windows-MCP and no hidden desktop; the client runs on an X display.

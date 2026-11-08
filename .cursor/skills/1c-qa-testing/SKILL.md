@@ -27,6 +27,13 @@ When a check needs metadata, form structure, impact, error source or live data, 
 
 ## Session
 
+**One session per server.** The QA server keeps a single session for every MCP client connected to it: another Cursor window of the same workplace (another project, another chat window) shares `qa-<login>` with you, and its `qa_start` silently drops your session, after which both sides get timeouts, `already connected to another manager` and AgentBusy answers. So:
+
+- `qa_status` first, always. An answer with an active link (`active`, a `connection` label, `started_at`) that this window did not start means the server is taken: do not call `qa_start`, do not attach that client with `qa_clients`, do not call `qa_stop` on it. Report «QA MCP занят другой задачей (сеанс «<label>» с <time>)» and stop the UI check, or wait: repeat `qa_status` at most once a minute and start only when the link is gone. Never free the server yourself — `qa_stop` of a foreign session breaks someone else's test.
+- Give `qa_start(connection=)` a label that names the project and the task (`docmng-checkfix`), so the other window can read who holds the server.
+- One check at a time per window: finish with `qa_stop` before starting another scenario, and call `qa_stop` when the task ends or is abandoned, so the server does not stay taken.
+- A second Cursor window that needs QA at the same time waits for the first one; running two UI checks in parallel on one workplace is not supported, and a port of its own (`qa_start(port=)`) does not help while the server session is single.
+
 1. `qa_status` — the executor decides who starts 1C:
 
    | `executor` | What it is | Test client |
@@ -35,7 +42,7 @@ When a check needs metadata, form structure, impact, error source or live data, 
    | `platform` | Windows manager next to the platform | `qa_start` starts it itself |
 
 2. Start or find the test client (`qa-testclient.md`), then `qa_start(connection="<session name>")`; `port=` overrides the port of `MCP_QA_TESTCLIENT`. The name given to `qa_start` is only a label shown by `qa_status`: the session's own client is addressed in every `ui_*` call without `connection=` (or as `"main"`). `connection=<id>` in `ui_*` is for clients attached with `qa_clients(action="connect")` only; passing the session name there fails with «Unknown connection … Connected: main». No Windows account is needed: the test client accepts the channel's Windows authentication from any identity (8.3.27.2130); the 1C sign-in happens when the client starts.
-3. `qa_status` again: executor, link, target. A `test client is already connected to another manager` answer means another agent owns the client — a conflict to resolve, not a client to close.
+3. `qa_status` again: executor, link, target. A `test client is already connected to another manager` answer means another agent owns the client — a conflict to resolve, not a client to close; the usual cause is a second Cursor window on the same workplace (see «One session per server» above).
 4. At the end: `qa_stop`. In `native` it only disconnects; the client is closed by the tool that started it (`qa-testclient.md`). A new MCP session or a restarted client needs a new `qa_start`; `save_as` aliases and `ui_here` pins do not survive it.
 
 After `/update1cbase`, `/deploy-and-test` or `/restore-testbase` the update ends the sessions of the infobase: a client started before it is stale. Start a fresh client, `qa_start`, and read the main window before the first step.
