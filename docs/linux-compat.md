@@ -1,6 +1,6 @@
 # Шаблон в Linux-среде: Windows-зависимости и их замены
 
-Где шаблон написан под Windows и что делать на Linux (контейнер разработчика или агента: bash, python3, git, Xvfb, vanessa-runner, платформа в `/opt/1cv8/x86_64/<версия>`, **pwsh нет**). Состояние на 08.11.2026. Правила сюда не ссылаются: это справочник для сопровождающих шаблона и людей, которые настраивают среду.
+Где шаблон написан под Windows и что делать на Linux (контейнер разработчика или агента: bash, python3, git, Xvfb, vanessa-runner, платформа в `/opt/1cv8/x86_64/<версия>`, **pwsh 7 — с 09.11.2026** в образах `onec-agent-cursor` и `onec-desktop`). Состояние на 09.11.2026. Правила сюда не ссылаются: это справочник для сопровождающих шаблона и людей, которые настраивают среду.
 
 Решения: **пара** — POSIX-вариант есть; **добавить** — нужен POSIX-вариант (S/M/L — трудоёмкость); **только Windows** — на Linux используется указанная замена. Приоритет: **P1** — агент в контейнере упрётся в обычной работе; **P2** — настройка и обслуживание, запускает человек; **P3** — возможность рабочего стола Windows.
 
@@ -15,7 +15,7 @@
 | Пакетный Конфигуратор (`designer-batch-checks.mdc`, рецепт PowerShell) | `tools/designer-batch.sh` — пара: свой виртуальный экран, флаги, тайм-аут, вердикт по трём сигналам; секция POSIX в правиле |
 | `/DisableStartupDialogs` в рецептах `deploy-and-test.md`, `update1cbase.md`, `loadfrom1cbase.md`, `getconfigfiles.mdc` | флаг добавлен (на Windows рецепт остаётся PowerShell) |
 | `headless-agent.mdc` §2а, `docs/headless-agent.md`: «Конфигуратор работает без окон» | уточнено: только на виртуальном экране и с флагами; порядок `ibcmd` → `vrunner` → обёртка |
-| `tools/update-from-template.ps1` (на dev-workplaces нет pwsh, синхронизацию делали вручную) | `tools/update-from-template.sh` — пара; команда `/updaterules` показывает оба варианта |
+| `tools/update-from-template.ps1` (до 09.11.2026 на dev-workplaces не было pwsh, синхронизацию делали вручную) | `tools/update-from-template.sh` — пара; команда `/updaterules` показывает оба варианта |
 | `dev-standards-env.mdc`: `PLATFORM_PATH` «must contain `bin\1cv8.exe`» | указана Linux-раскладка `/opt/1cv8/x86_64/<ver>` без `bin/` и `.exe` |
 | `AGENTS.md`, `1commerce-agent-autonomy.mdc` | строка про экран и ссылка на обёртку |
 
@@ -24,8 +24,8 @@
 | Место | Что Windows-специфично | Решение | Приоритет |
 |---|---|---|---|
 | `1c-metadata-manage`: `form-add`, `remove-form`, `form-compile`, `meta-edit`, `meta-validate`, `web-*` | PowerShell | **пара**: `.py` с тем же набором параметров (`docs/runtime-selection.md`); в доменных доках (`form-manage.md`, `meta-manage.md`) показан только `powershell.exe` — дописать строку `python3` (S) | P1 |
-| `1c-metadata-manage`: семейства `cfe-*`, `cf-*`, `form-edit/info/validate`, `meta-compile/remove/info`, `skd-*`, `role-*`, `mxl-*`, `uuid-check` (~85 тыс. строк) | нужен pwsh; Windows-кода нет, это работа с XML | **добавить**: pwsh 7 в образ агента и прогон семейств на Linux (S + M) или Python-порты (L). Пока без pwsh задача считается заблокированной (`runtime-selection.md`: ручная правка XML запрещена) — заимствование в расширение, правка форм, СКД, ролей в контейнере недоступны | P1 |
-| `subsystem-*`, `xdto-*`, `interface-*`, `help`, `template-manage`, `support-edit`, `epf/erf-scaffold`, `epf-validate` | нужен pwsh | **добавить**: тем же pwsh (S); порт по требованию | P2 |
+| `1c-metadata-manage`: семейства `cfe-*`, `cf-*`, `form-edit/info/validate`, `meta-compile/remove/info`, `skd-*`, `role-*`, `mxl-*`, `uuid-check` (~85 тыс. строк) | нужен pwsh; Windows-кода нет, это работа с XML | **закрыто 09.11.2026**: pwsh 7.6.9 в образах `onec-agent-cursor` и `onec-desktop` (1commerce-infra), вызов `pwsh -NoLogo -NonInteractive -File <скрипт.ps1> …`; прогон семейств на Linux — раздел «Прогон под pwsh 7» ниже; единственная починка — запуск валидатора через `powershell.exe` в семи скриптах правки. `runtime-selection.md` больше не считает задачу заблокированной | — |
+| `subsystem-*`, `xdto-*`, `interface-*`, `help`, `template-manage`, `support-edit`, `epf/erf-scaffold`, `epf-validate` | нужен pwsh | pwsh есть в образах; `add-template` прогнан (см. ниже), остальные не прогонялись — в `subsystem-edit`, `subsystem-compile`, `interface-edit`, `xdto-edit` починен тот же запуск валидатора через `powershell.exe` | P2 |
 | `_common/Invoke-1CEdit.ps1` (`METADATA_PREVIEW`) | только PowerShell | **добавить** `invoke_1c_edit.py` (M); пока `-DryRun` инструмента + `git diff` | P2 |
 | `_common/DevEnv.ps1` | — | **пара**: `_common/dev_env.py` | — |
 | `db-*` (`db-load-xml`, `db-dump-xml`, `db-update`, `db-cfe-admin`, `db-load-git`) | `1cv8.exe`, `C:\Program Files\1cv8` | **только Windows**; на Linux — vrunner (`cf_load`/`cfe_load --no-update-db` + `infobase_update`, `cf_unload`/`cfe_unload` с явным `extension_name`), `tools/deploy-extension.sh`, `tools/load-objlist-*.sh`. Комментарий в `db-load-xml.ps1:11` и `epf-build.ps1` про «.py-порт» неверен — в шаблоне порта нет, убрать (S) | P1 |
@@ -73,6 +73,27 @@
 
 `.bat`/`.cmd`, обращений к реестру Windows и `cmd /c` в инструкциях нет.
 
+## Прогон под pwsh 7 (09.11.2026)
+
+Среда: контейнер образа `onec-agent-cursor:20261109-pwsh` (Ubuntu 24.04, PowerShell 7.6.9 из пакета Microsoft, пользователь `dev`, `LANG=ru_RU.UTF-8`, вывод UTF-8), платформа 8.3.27.2130 с ro-тома, временная файловая база `ibcmd infobase create` в `/tmp`; шаблон `b43a151` + правки этой ветки. Вызов везде `pwsh -NoLogo -NonInteractive -File <скрипт.ps1> …` с теми же параметрами, что на Windows. Выгрузка после всех правок загружена в базу (`ibcmd infobase config import` → `apply --force` → `check`), расширение — `import --extension` → `apply`: платформа приняла сгенерированные XML. Всего 66 вызовов, 51 в первом проходе и 15 после починки.
+
+| Семейство | Что вызывалось | Результат |
+|---|---|---|
+| `cf-*` | `cf-info`, `cf-validate` (9 проверок), `dump-validate`, `cf-edit modify-property` | ok; `cf-edit` — после починки |
+| `meta-*` | `meta-compile` (Catalog, Enum, Report), `meta-info`, `meta-edit add-ts` / `add-attribute` / `modify-property`, `meta-validate` (14 проверок), `meta-remove -DryRun`, `uuid-check` | ok; `meta-edit` — после починки; `meta-remove -DryRun` отказал по ссылкам на объект (rc=1 — штатно, не Linux) |
+| `form-*` | `form-add` (Object, List), `form-info` (+ `-Handlers`), `form-edit` (реквизит, флажок, событие — заглушка обработчика дописана в `Module.bsl`), `form-validate` (27 проверок, обе формы), `form-compile -FromObject` | ok с первого прохода |
+| `role-*` | `role-compile`, `role-info`, `role-edit add-rights`, `role-validate` (9 проверок) | ok; `role-edit` — после починки |
+| `skd-*` | `add-template DataCompositionSchema -SetMainSKD`, `skd-compile`, `skd-info`, `skd-edit add-parameter`, `skd-validate` (11 проверок; XSD не проверялся — нет схем `v8-xsd-fetch`), `skd-decompile` | ok с первого прохода |
+| `mxl-*` | `add-template SpreadsheetDocument`, `mxl-compile`, `mxl-info`, `mxl-validate` (6 проверок), `mxl-decompile` | ok с первого прохода |
+| `cfe-*` | `cfe-init -ConfigPath`, `cfe-borrow -Module ObjectModule`, `cfe-patch-method Before` (+ `-Check`), `cfe-validate -ConfigPath` (17 проверок), `cfe-diff` | ok с первого прохода (первый `cfe-patch-method` отказал штатно: в модуле-источнике не было метода) |
+| платформа | `ibcmd infobase create`, `config export` / `import` / `apply --force` / `check`, `config import --extension` / `apply --extension` | ok: конфигурация с каталогом, перечислением, отчётом, формами, ролью, СКД, макетом и расширение с заимствованием и перехватчиком применены |
+
+**Что сломалось на Linux и починено** (один класс дефекта): семь скриптов правки после записи запускают свой валидатор как `& powershell.exe -NoProfile -File …` — на Linux такого исполняемого файла нет, правка уже записана, а запуск падает с кодом 1. Исправлено в `cf-edit`, `meta-edit`, `role-edit`, `subsystem-edit`, `subsystem-compile`, `interface-edit`, `xdto-edit` (2 места): хост выбирается по `$PSVersionTable.PSEdition` (`pwsh` на Core, `powershell.exe` на Windows PowerShell) — тот же приём, что уже был в `meta-compile`. На Windows под 5.1 поведение прежнее.
+
+**Не подтвердилось как проблема:** `Join-Path` с обратными слешами (`..\..\_common\DevEnv.ps1`), `[Environment]::NewLine`, BOM и CRLF в записываемых XML и BSL, кириллица в путях и параметрах, `[System.IO.Path]::GetTempPath()`, `Start-Process` в `meta-compile` (пакетный режим не вызывался).
+
+**Не проверено:** семейства `subsystem-*`, `xdto-*`, `interface-*`, `help`, `support-edit`, `epf-validate`, `epf/erf-scaffold` (только та же починка); Python-порты на Linux; `_common/Invoke-1CEdit.ps1` (`METADATA_PREVIEW`); пакетный режим `meta-compile`; прогон исправленных скриптов на Windows (только разбор парсером PowerShell 5.1); загрузка в серверную базу и работа на реальной конфигурации (БП) — прогон был на пустой файловой базе.
+
 ## Бэклог
 
-Незакрытые пункты из таблиц — в issue шаблона «Linux-совместимость: остаток аудита 08.11.2026». Первые по важности: pwsh в образ агента или порт `cfe-*`; Linux-ветки в командах загрузки и выгрузки; `uuid-check.py`; паритет `invoke-datamcp.sh`.
+Незакрытые пункты из таблиц — в issue шаблона «Linux-совместимость: остаток аудита 08.11.2026». Первые по важности: Linux-ветки в командах загрузки и выгрузки; `uuid-check.py` (под pwsh работает `uuid-check.ps1`); паритет `invoke-datamcp.sh`.

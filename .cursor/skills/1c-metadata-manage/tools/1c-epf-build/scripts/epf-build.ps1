@@ -7,7 +7,6 @@
 #   Every Designer launch passes /DumpResult and fails on a non-zero or missing result (Get-DumpResultError).
 #   Source pre-check: /DumpResult on /CheckConfig; common modules from .dev.env EXPORT_PATH before
 #   the registry configSrc; the printed check command line is masked; the stub runs under pwsh on Core.
-# NB: *nix-раскладку платформы (/opt/1cv8/<ver>/1cv8, без .exe) знает только .py-порт — PS на *nix не исполняется.
 <#
 .SYNOPSIS
     Сборка внешней обработки/отчёта 1С из XML-исходников

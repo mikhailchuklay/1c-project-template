@@ -8,7 +8,6 @@
 #   Repository credentials: .dev.env REPOSITORY_* before the registry record (main configuration only).
 #   Extension applicability check is opt-in (-ApplyCheck): /update1cbase Step 2c is the gate.
 #   Repository hints point at 1c-repository-manage and .dev.env.
-# NB: *nix-раскладку платформы (/opt/1cv8/<ver>/1cv8, без .exe) знает только .py-порт — PS на *nix не исполняется.
 <#
 .SYNOPSIS
     Загрузка конфигурации 1С из XML-файлов

@@ -4268,7 +4268,9 @@ $script:validateExitCode = 0
 if (-not $NoValidate) {
 	Write-Host ""
 	Write-Host "--- Running $($script:validateSkill) ---" -ForegroundColor DarkGray
-	& powershell.exe -NoProfile -File $script:validateScript -ObjectPath $resolvedPath
+	# Тот же хост, что и у этого скрипта: на Linux нет powershell.exe, валидатор запускается через pwsh.
+	$psHost = if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh' } else { 'powershell.exe' }
+	& $psHost -NoProfile -File $script:validateScript -ObjectPath $resolvedPath
 	$script:validateExitCode = $LASTEXITCODE
 	if ($script:validateExitCode -ne 0) {
 		[Console]::Error.WriteLine("[ERROR] $($script:validateSkill) завершился с кодом $($script:validateExitCode): изменение записано, но объект не проходит проверку. Разберите вывод выше перед загрузкой в базу.")

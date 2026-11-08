@@ -55,7 +55,7 @@ Reports (`status` / `history` / `diff`) are written to a file and only an excerp
 
 The prefix `skills/1c-repository-manage/...` is relative to the active tool's skills directory (`.claude/skills/...`, `.cursor/skills/...`, etc.), exactly as described in `.cursor/skills/1c-metadata-manage/SKILL.md → Path conventions`. In the `1c-rules` source repository prepend `content/`.
 
-Run the script per the `powershell-windows` skill conventions:
+Run the script per the `powershell-windows` skill conventions. In the Linux container of the headless agent `repo-ops.ps1` is not used: repository operations go through vanessa-runner (`repo_lock` / `repo_load` / `repo_commit` / `repo_unlock`) by `.cursor/rules/headless-agent.mdc` §2а, with the same object-list and comment discipline as here.
 
 ```powershell
 powershell -NoProfile -File "skills/1c-repository-manage/tools/1c-repo-ops/scripts/repo-ops.ps1" -Operation status
