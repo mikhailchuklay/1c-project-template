@@ -212,12 +212,14 @@ if (-not $SkipDevEnvExample) {
 Write-Step "Sync docs/headless-agent.md"
 Copy-FileSync -SourceFile (Join-Path $cache 'docs\headless-agent.md') -DestFile (Join-Path $ProjectRoot 'docs\headless-agent.md') -Label 'docs/headless-agent.md'
 
-Write-Step "Sync tools/update-from-template.ps1"
+Write-Step "Sync tools/update-from-template.{ps1,sh}"
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\update-from-template.ps1') -DestFile (Join-Path $ProjectRoot 'tools\update-from-template.ps1') -Label 'tools/update-from-template.ps1'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\update-from-template.sh') -DestFile (Join-Path $ProjectRoot 'tools\update-from-template.sh') -Label 'tools/update-from-template.sh'
 
-# Extension load used by rules (headless-agent) and its environment helpers.
-Write-Step "Sync tools/deploy-extension.sh and tools/dev-standalone"
+# Scripts the rules point at (headless-agent, designer-batch-checks) and their environment helpers.
+Write-Step "Sync tools/deploy-extension.sh, tools/designer-batch.sh and tools/dev-standalone"
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\deploy-extension.sh') -DestFile (Join-Path $ProjectRoot 'tools\deploy-extension.sh') -Label 'tools/deploy-extension.sh'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\designer-batch.sh') -DestFile (Join-Path $ProjectRoot 'tools\designer-batch.sh') -Label 'tools/designer-batch.sh'
 $ds = Copy-TreeSync -SourceDir (Join-Path $cache 'tools\dev-standalone') -DestDir (Join-Path $ProjectRoot 'tools\dev-standalone')
 Write-Host ("  dev-standalone: +{0} ~{1} skip {2}" -f $ds.Added, $ds.Updated, $ds.Skipped)
 

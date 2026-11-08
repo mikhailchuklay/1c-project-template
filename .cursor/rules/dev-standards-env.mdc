@@ -54,7 +54,7 @@ Used by `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test
 
 | Parameter | Effect | Class | Behavior when empty |
 |---|---|---|---|
-| `{PLATFORM_PATH}` | 1C platform install dir (must contain `bin\1cv8.exe`); used as the executable for all Designer-mode commands | Highly desirable for any IB-bound command | Ask when an IB-bound command is scheduled; the command cannot run without it |
+| `{PLATFORM_PATH}` | 1C platform install dir (Windows: contains `bin\1cv8.exe`; Linux: `/opt/1cv8/x86_64/<ver>` with `1cv8`, `1cv8c`, `ibcmd`, no `bin/`, no `.exe`); used as the executable for all Designer-mode commands | Highly desirable for any IB-bound command | Ask when an IB-bound command is scheduled; the command cannot run without it |
 | `{INFOBASE_KIND}` | `file` → `/F`, `server` → `/S` flag for Designer | Defaulted | Defaults to `file` (per `.dev.env.example`) |
 | `{INFOBASE_PATH}` | Path to file infobase or connection string of server infobase | **Highly desirable** for configuration load / dump operations | Ask only when `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test` is invoked; otherwise stay silent |
 | `{INFOBASE_ROLE}` | Role of the project infobase: `dev` \| `test` \| `prod`. The role covers the base at `INFOBASE_PATH` and its web publication `INFOBASE_PUBLISH_URL`, which `1c-data-mcp` and UI tests use. It is the explicit answer every "identified dev/test infobase" gate asks for | Defaulted | Empty = role unknown: each dev/test gate asks the user once before its first mutating step, as it always has. **Never set, lower or clear it yourself**; see the note below |

@@ -103,6 +103,7 @@ Map `.dev.env` keys to Designer flags:
     /N '{IB_USER}' `
     /P '{IB_PASSWORD}' `
     /DisableStartupMessages `
+    /DisableStartupDialogs `
     /LoadConfigFromFiles '{EXPORT_PATH}' `
     -updateConfigDumpInfo `
     -Extension {EXTENSION_NAME} `
@@ -135,6 +136,7 @@ Whenever this run loads an extension (`EXTENSION_NAME` filled, or an extension p
     /N '{IB_USER}' `
     /P '{IB_PASSWORD}' `
     /DisableStartupMessages `
+    /DisableStartupDialogs `
     /CheckModules -ThinClient -Server -ExternalConnection -Extension {EXTENSION_NAME} `
     /Out '{LOG_PATH}' `
     /DumpResult '{RESULT_PATH}'
@@ -152,6 +154,7 @@ For the main configuration alone the ladder is optional — run `/CheckConfig` w
     /N '{IB_USER}' `
     /P '{IB_PASSWORD}' `
     /DisableStartupMessages `
+    /DisableStartupDialogs `
     /UpdateDBCfg -Dynamic+ -SessionTerminate force `
     -Extension {EXTENSION_NAME} `
     /Out '{LOG_PATH}' `

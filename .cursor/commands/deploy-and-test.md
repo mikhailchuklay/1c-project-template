@@ -75,6 +75,7 @@ Read `{LOG_PATH}`. On errors, show the relevant log fragment and **do not run** 
     /N '{IB_USER}' `
     /P '{IB_PASSWORD}' `
     /DisableStartupMessages `
+    /DisableStartupDialogs `
     /LoadConfigFromFiles '{EXPORT_PATH}' `
     -updateConfigDumpInfo `
     -Extension {EXTENSION_NAME} `
@@ -94,6 +95,7 @@ Read the verdict from all three signals (`{RESULT_PATH}` = `0`, exit code, `{LOG
     /N '{IB_USER}' `
     /P '{IB_PASSWORD}' `
     /DisableStartupMessages `
+    /DisableStartupDialogs `
     /UpdateDBCfg -Dynamic+ -SessionTerminate force `
     -Extension {EXTENSION_NAME} `
     /Out '{LOG_PATH}' `
