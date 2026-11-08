@@ -93,7 +93,7 @@ Before writing or reviewing BSL/metadata, load `.cursor/rules/coding-standards.m
 ## Skills and Subagents
 
 - **Metadata mutations:** `.cursor/skills/1c-metadata-manage/SKILL.md` or `1c-metadata-manager`; hand edits only within the skill's exceptions, context checked before, XML after.
-- **Infobase operations:** matching command procedure or `db-ops`/`web-ops`, never ad-hoc `1cv8.exe`/`ibcmd`; keep escaping, logs, sessions and retries (`.cursor/commands/update1cbase.md`).
+- **Infobase operations:** matching command procedure or `db-ops`/`web-ops`, never ad-hoc `1cv8`/`ibcmd`, never on the session display or awaiting dialogs (`tools/designer-batch.sh`); keep escaping, logs, sessions, retries (`.cursor/commands/update1cbase.md`).
 - **Configuration repository:** `REPOSITORY_PATH` set → `.cursor/skills/1c-repository-manage/SKILL.md`: lock before edit, commit after verify; never unbind or clear the setting to bypass locks, even on request.
 - **Vendor support:** never bypass a locked-object refusal with XML edits; prefer an extension; `support-edit` only as a stated decision (`.cursor/skills/1c-metadata-manage/docs/support-manage.md`).
 - **Delegation:** `.cursor/rules/subagents.mdc` (+ `.cursor/rules/subagent-pipeline.mdc` for delegated full-cycle, `.cursor/rules/orchestrator-economy.mdc` when `ORCHESTRATION=economy`); subagents inherit these gates and `.cursor/rules/subagent-core.mdc`. Exploration — project `1c-explorer` only, never a host's generic explorer.
@@ -125,9 +125,9 @@ Load `.cursor/rules/<name>.mdc` on its trigger only; routers pull companions and
 
 # Project overlays (1c-project-template)
 
-`/updaterules` → `tools/update-from-template.ps1`, never vendor `install.ps1`; dev base `ibsrv` → `tools/dev-standalone/`; `1c-data-mcp` → `Invoke-DataMcp.ps1`, not `mcp_auth`; rules `1commerce-functional-testing`, `1commerce-bsp-integration-checklists`, `headless-agent`, `devbox-setup-discovery`; `cfe-validate` 20–21.
+`/updaterules` → `tools/update-from-template`, never vendor `install.ps1`; dev base `ibsrv` → `tools/dev-standalone/`; `1c-data-mcp` → `Invoke-DataMcp`, not `mcp_auth`; rules `1commerce-functional-testing`, `1commerce-bsp-integration-checklists`, `headless-agent`, `devbox-setup-discovery`; `cfe-validate` 20–21.
 
-**Keep moving** (`1commerce-agent-autonomy`, always on): a turn ends only at end of `tasks.md`/DoD, CONFUSION, a consent-by-rule action or "stop". A finished command or background task is not an end: next open item, same turn; hang / lost connection → one retry another way, then Risks. `INFOBASE_ROLE=dev` + full cycle: "commit? load? push?" are decided. User input → one message at the end.
+**Keep moving** (`1commerce-agent-autonomy`, always on): a turn ends only at end of `tasks.md`/DoD, CONFUSION, a consent-by-rule action or "stop". A finished command or background task is not an end: next open item, same turn. `INFOBASE_ROLE=dev` + full cycle: "commit? load? push?" are decided. User input → one message at the end.
 
 # Spec-driven development workspace
 

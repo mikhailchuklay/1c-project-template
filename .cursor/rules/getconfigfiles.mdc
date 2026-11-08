@@ -111,6 +111,7 @@ Drop unset optional flags (`--user`, `--password`, `--extension`). `--recursive`
     /N '{IB_USER}' `
     /P '{IB_PASSWORD}' `
     /DisableStartupMessages `
+    /DisableStartupDialogs `
     /DumpConfigToFiles '{EXPORT_PATH}' `
     -Format Hierarchical `
     -listFile 'repoobjects.txt' `

@@ -43,6 +43,10 @@ Cursor delivers the end of a background shell, browser or test-client task as a 
 
 The same applies when a vendor command (`/deploy-and-test`, `/update1cbase`, a validator chain) or a subagent returns: its report feeds the plan, the turn goes on.
 
-## 4. Report wording
+## 4. Platform processes stay off the human's screen
+
+A `1cv8` / `1cv8c` process you start never uses the session `DISPLAY` and never waits for a dialog: `ibcmd` → `vrunner` under `xvfb-run -a` → `tools/designer-batch.sh`; on Windows the hidden-window recipe of `designer-batch-checks.mdc`; never a hand-built `1cv8 DESIGNER` line.
+
+## 5. Report wording
 
 Never present a stop as the user's decision when the rules already decide it. State what is established, what is pre-existing, what remains unverified, and the next step you are taking. The report at the end of the task follows `verification-delivery.md`; intermediate command reports are one paragraph at most.

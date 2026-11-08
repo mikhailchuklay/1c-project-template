@@ -76,6 +76,7 @@ Map `.dev.env` keys to Designer flags:
     /N '{IB_USER}' `
     /P '{IB_PASSWORD}' `
     /DisableStartupMessages `
+    /DisableStartupDialogs `
     /DumpConfigToFiles '{EXPORT_PATH}' `
     -Format Hierarchical `
     -Extension {EXTENSION_NAME} `

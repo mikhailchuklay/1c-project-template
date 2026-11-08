@@ -12,10 +12,12 @@
 | `load-objlist-config.sh` | Частичная загрузка `src/cf` через ibcmd |
 | `load-objlist-extensions.sh` | Частичная загрузка `src/cfe/*` через ibcmd |
 | `deploy-extension.sh` | stop → import → apply → restart для CFE |
+| `designer-batch.sh` | Пакетный Конфигуратор на Linux: свой виртуальный экран, флаги, тайм-аут, вердикт по трём сигналам (`designer-batch-checks.mdc`) |
 | `mcp-platform-tools-launcher.sh` | MCP Platform Tools на Linux (локальный Cursor и Cursor Remote) |
 | `fix-1c-platform-tools-vrunner-cmd.ps1` | Workaround quoting vrunner на Windows |
 | `init-project-structure.ps1` | Каталоги vanessa-bootstrap (`project-structure.json`) |
 | `update-from-template.ps1` | Синхронизация rules/skills/agents/commands из git-шаблона (`/updaterules`) |
+| `update-from-template.sh` | То же для Linux/macOS без pwsh |
 | `export-project-template.ps1` | Сборка/экспорт чистого шаблона из проектного репозитория (для мейнтейнеров) |
 | `lists/` | Опциональные проектные списки partial-load |
 

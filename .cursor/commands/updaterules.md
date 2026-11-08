@@ -62,6 +62,17 @@ if (-not (Test-Path .\tools\update-from-template.ps1)) {
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template.ps1
 ```
 
+On Linux / macOS (no `pwsh`) use the POSIX twin — same file set, same flags in `--kebab-case`:
+
+```bash
+[ -f tools/update-from-template.sh ] || {
+    tmp="${TMPDIR:-/tmp}/1c-project-template-bootstrap"
+    [ -d "$tmp/.git" ] && git -C "$tmp" pull --ff-only || git clone --depth 1 https://github.com/mikhailchuklay/1c-project-template.git "$tmp"
+    mkdir -p tools && cp "$tmp/tools/update-from-template.sh" tools/
+}
+bash tools/update-from-template.sh            # --dry-run, --skip-agents-md, --skip-dev-env-example
+```
+
 Dry-run:
 
 ```powershell
