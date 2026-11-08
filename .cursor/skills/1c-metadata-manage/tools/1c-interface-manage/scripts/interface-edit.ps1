@@ -827,7 +827,9 @@ if (-not $NoValidate) {
 	if (Test-Path -LiteralPath $validateScript) {
 		Write-Host ""
 		Write-Host "--- Running interface-validate ---"
-		& powershell.exe -NoProfile -File $validateScript -CIPath $resolvedPath
+		# Тот же хост, что и у этого скрипта: на Linux нет powershell.exe, валидатор запускается через pwsh.
+		$psHost = if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh' } else { 'powershell.exe' }
+		& $psHost -NoProfile -File $validateScript -CIPath $resolvedPath
 		$script:validateExitCode = $LASTEXITCODE
 		if ($script:validateExitCode -ne 0) {
 			[Console]::Error.WriteLine("[ERROR] interface-validate завершился с кодом $($script:validateExitCode): изменение записано, но проверка не пройдена. Разберите вывод выше перед загрузкой в базу.")

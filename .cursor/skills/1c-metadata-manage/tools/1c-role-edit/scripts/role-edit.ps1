@@ -2465,7 +2465,9 @@ $script:validateExitCode = 0
 if (-not $NoValidate) {
 	Write-Host ""
 	Write-Host "--- Running role-validate ---"
-	& powershell.exe -NoProfile -File $script:validateScript -RightsPath $script:rightsPath
+	# Тот же хост, что и у этого скрипта: на Linux нет powershell.exe, валидатор запускается через pwsh.
+	$psHost = if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh' } else { 'powershell.exe' }
+	& $psHost -NoProfile -File $script:validateScript -RightsPath $script:rightsPath
 	$script:validateExitCode = $LASTEXITCODE
 	if ($script:validateExitCode -ne 0) {
 		[Console]::Error.WriteLine("[ERROR] role-validate завершился с кодом $($script:validateExitCode): изменение записано, но роль не проходит проверку. Разберите вывод выше перед загрузкой в базу.")

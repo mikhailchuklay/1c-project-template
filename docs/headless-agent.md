@@ -27,7 +27,7 @@
 
 ## Инструменты базы и хранилища (vanessa-runner)
 
-В Linux-контейнере агента PowerShell-скрипты `1c-metadata-manage` (`db-*`, `epf-*`) и `1c-repository-manage` (`repo-ops.ps1`) не исполняются. Их заменяет vanessa-runner 3.x: MCP-сервер `vrunner` в `.cursor/mcp.json` (в шаблоне выключен, в контейнере включается: `"disabled": false`) и та же утилита в оболочке, `xvfb-run -a vrunner …` (платформе нужен виртуальный экран).
+В Linux-контейнере агента есть PowerShell 7 (`pwsh`, образы `onec-agent-cursor` и `onec-desktop` с 09.11.2026): инструменты правки метаданных скилла `1c-metadata-manage` (`cfe-*`, `cf-*`, `form-*`, `meta-*`, `skd-*`, `role-*`, `mxl-*`) запускаются как `pwsh -NoLogo -NonInteractive -File <скрипт.ps1> …` с теми же параметрами, что на Windows; результаты прогона — `docs/linux-compat.md`. Не работают на Linux только скрипты, которые запускают `1cv8.exe` по Windows-путям: `db-*`, `epf-build`, `epf-dump`, `stub-db-create` (`1c-metadata-manage`) и `repo-ops.ps1` (`1c-repository-manage`). Их заменяет vanessa-runner 3.x: MCP-сервер `vrunner` в `.cursor/mcp.json` (в шаблоне выключен, в контейнере включается: `"disabled": false`) и та же утилита в оболочке, `xvfb-run -a vrunner …` (платформе нужен виртуальный экран).
 
 Параметры подключения агент не задаёт сам: `agent-run` выставляет их из `.dev.env` проекта и файлов `~/.secrets` контейнера. Уже заданные переменные не перезаписываются.
 

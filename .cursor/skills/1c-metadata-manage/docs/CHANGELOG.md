@@ -2,6 +2,10 @@
 
 The PowerShell tools under `tools/` are vendored from [Nikolay-Shirokov/cc-1c-skills](https://github.com/Nikolay-Shirokov/cc-1c-skills) (MIT). This file holds the per-document sync notes that used to close each `docs/*.md` (what each upstream sync changed, what was cross-checked and what stays deliberately local). It is maintainer history — nothing loads it during a task; the operational description of every tool lives in the domain doc named by each heading.
 
+## Linux runtime (pwsh 7) — `2026-11-09`
+
+Local delta, not an upstream sync. The whole toolchain runs on Linux / macOS under PowerShell 7 (`pwsh -NoLogo -NonInteractive -File …`); the `cfe-*`, `cf-*`, `form-*`, `meta-*`, `skd-*`, `role-*`, `mxl-*`, `add-template`, `uuid-check` families were exercised in the 1commerce agent container against a temporary file infobase (template `docs/linux-compat.md`, «Прогон под pwsh 7»). One fix: `cf-edit`, `meta-edit`, `role-edit`, `subsystem-edit`, `subsystem-compile`, `interface-edit`, `xdto-edit` launched their validator (or themselves) as `& powershell.exe …`; they now pick the host by `$PSVersionTable.PSEdition` like `meta-compile` already did. `runtime-selection.md`, `SKILL.md`, `form-manage.md`, `meta-manage.md` name `pwsh` as the Linux runtime; the wrong «.py-порт» note in `db-load-xml.ps1` / `epf-build.ps1` headers removed (there is no such port).
+
 ## bsp-manage.md
 
 ### Upstream sync `2026-07-30`

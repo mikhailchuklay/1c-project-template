@@ -19,6 +19,8 @@ Takes a JSON definition of a metadata object and generates XML + modules in the 
 powershell.exe -NoProfile -File skills/1c-metadata-manage/tools/1c-meta-compile/scripts/meta-compile.ps1 -JsonPath "<json>" -OutputDir "<ConfigDir>"
 ```
 
+Linux / macOS: the same command with `pwsh -NoLogo -NonInteractive -File` instead of `powershell.exe -NoProfile -File`, identical parameters. Python ports exist for `meta-edit` and `meta-validate` (`python3 <script>.py`, same switches); `meta-compile`, `meta-info` and `meta-remove` are PowerShell only — [runtime-selection.md](runtime-selection.md).
+
 `OutputDir` — directory containing type subfolders (`Catalogs/`, `Documents/`, ...) and `Configuration.xml`.
 
 ## Existing objects are refused (local, stronger than upstream)

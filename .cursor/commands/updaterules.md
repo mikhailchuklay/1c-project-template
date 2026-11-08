@@ -62,7 +62,7 @@ if (-not (Test-Path .\tools\update-from-template.ps1)) {
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\update-from-template.ps1
 ```
 
-On Linux / macOS (no `pwsh`) use the POSIX twin — same file set, same flags in `--kebab-case`:
+On Linux / macOS use the POSIX twin (or `pwsh -NoLogo -NonInteractive -File tools/update-from-template.ps1` where PowerShell 7 is installed, as in the 1commerce container images) — same file set, same flags in `--kebab-case`:
 
 ```bash
 [ -f tools/update-from-template.sh ] || {

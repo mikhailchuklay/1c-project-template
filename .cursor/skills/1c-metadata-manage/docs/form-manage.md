@@ -46,6 +46,8 @@ Creates a managed form (metadata XML + Form.xml + Module.bsl) and registers it i
 powershell.exe -NoProfile -File skills/1c-metadata-manage/tools/1c-form-scaffold/scripts/form-add.ps1 -ObjectPath "<ObjectPath>" -FormName "<FormName>" [-Purpose "<Purpose>"] [-Synonym "<Synonym>"] [-SetDefault]
 ```
 
+Linux / macOS: the same command with `pwsh -NoLogo -NonInteractive -File` instead of `powershell.exe -NoProfile -File`, identical parameters. Python ports exist for `form-add`, `remove-form` and `form-compile` (`python3 <script>.py`, same switches); `form-edit`, `form-info` and `form-validate` are PowerShell only — [runtime-selection.md](runtime-selection.md).
+
 The format version of `Form.xml` comes from the object's own root XML (or the nearest `Configuration.xml` / external-processor root); `xmlns:dcssch` in the form header follows the configuration's compatibility mode (declared always from 8.3.19, otherwise only when used).
 
 #### Purpose — Form Assignment
