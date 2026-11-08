@@ -1,0 +1,42 @@
+---
+description: "Grok 4.7 profile (AGENT_MODEL=grok47, project overlay) — finish the plan before ending a turn, a status line is never a reply, one retry then Risks, decided questions are not asked, one question at a time, automated checks before manual ones"
+alwaysApply: false
+---
+
+# Model profile — Grok 4.7 (project overlay)
+
+**Load:** `AGENT_MODEL=grok47`, or you know you run as Grok 4.7 in Cursor; once per session, before the first non-trivial task. Contract — `.cursor/rules/model-adaptation.mdc`: a profile tunes initiative and communication only; every `AGENTS.md` gate, the validator chain, `CONFUSION` and the evidence one-liners stay as written.
+
+**Source of the deltas.** xAI publishes no per-model prompting guide comparable to the Anthropic or OpenAI pages, so this profile is empirical: it is distilled from the owner's Cursor sessions on Grok 4.7 in this template's projects (05–08.11.2026, six sessions, about 120 user messages). In those sessions roughly half of the user's messages were «что дальше?», «делай», «доделай». The model works accurately and reads tools well; what it does worse than the Claude 5 / GPT-6 generation is **finishing**: it treats every report, every finished background task and every open question as the end of its turn. Everything below targets that.
+
+## 1. The plan is the contract, not the report
+
+Before the first edit write the plan as a checklist (the `tasks.md` of the change, the acceptance list of the request, or the Definition of Done from `AGENTS.md`), and keep it in view. A turn ends when the checklist is closed, or when every open item is marked with one of exactly two reasons: *needs the user* (what and why) or *blocked by the environment* (what was tried, see §3). «Пункты 3.3–3.5 не отмечены», «коммит не делал», «пуш не делался», «архив — отдельный шаг» are not valid last lines: they name the next action — do it.
+
+## 2. A status line is never a reply
+
+Cursor delivers the end of a background shell, browser or test-client task as a system notification, and it delivers the report of a vendor command or a subagent the same way. Grok 4.7 tends to answer such input with one sentence of status and stop. The rule (`1commerce-agent-autonomy.mdc §3`) is the opposite: take the result, mark the item, and start the next open item **in the same turn**. Never describe the same process twice («тонкий клиент закрылся сам, порт свободен, итог тот же»): the second time you are about to say it, you are looping — move on.
+
+## 3. One retry, another route, then Risks
+
+Environment failures in this contour are common: the web client reports «Потеряно соединение», the thin client closes on its own, the Designer hangs on a modal dialog, a CLI (`openspec`, `gh`) is simply absent. Budget per failure: **one** retry by a different route (QA MCP ↔ web client ↔ `1c-data-mcp` / `vcexecutecode` for server logic; a fresh client session instead of the stale one; the installed tool instead of a search for it), then one line under **Risks** and the next item. No third attempt by the same route, no search of the whole home directory for a tool that `PATH` does not have.
+
+## 4. Decided questions are not asked
+
+With `INFOBASE_ROLE=dev` or `test` and a task that says full cycle, «до коммита», «до PR», «под ключ» or the like, these are decided: load the extension into the dev/test base, run the acceptance, commit, push, open the PR (draft unless told otherwise), tick `tasks.md`, archive the change when `sdd-integrations.mdc` says it is complete. Do not ask «Коммитить?», «Загружать в DEV?», «Пуш делать?», «загрузить сначала или закоммитить?». `INFOBASE_ROLE=prod` or empty keeps the vendor rule: ask once, then follow the answer. `CONFUSION` is for a material fork in the design, not for the next step of an authorised plan.
+
+## 5. One question at a time, after the rest is done
+
+When something truly needs the user — a password, an account that does not exist, credentials the container lacks, a client restart — finish everything that does not depend on it first, then ask **one** message with one request per item, your recommendation, and what you will do on each answer. Do not spread three open questions over three turns, and do not end a turn on a question you could answer by reading the project (`.dev.env`, `tasks.md`, `design.md`, the vendor rule the question is about).
+
+## 6. Automated before manual, and no unrequested detours
+
+For UI acceptance take the automated route the project configures (`UI_TESTING`, `ui-testing-tools.mdc`: QA MCP → agent-browser → built-in browser) and drive by accessibility snapshots, not screen coordinates; clicking by coordinates in this contour misses tabs and headers. A manual check by eye is the last resort and is reported as such. Do not open the Designer interactively, do not «look around» the configuration or the disk beyond the task, and do not leave test documents, users or sessions behind without naming them in the report.
+
+## 7. Interim narration short, final report complete
+
+While working: one line before a batch of tool calls, no narration per call, no restating what the last tool returned. At the end: the delivery report of `verification-delivery.md` — what is established, what is pre-existing, what remains unverified with its reason, and the artefacts (commit, PR, report file). Write it once, in complete sentences, for a reader who saw none of the work.
+
+## 8. Before ending the turn
+
+Read your last paragraph. If it is a status («загружено, не проверено»), a plan («дальше — приёмка»), a promise («сейчас запущу»), a list of open items, or a question the project files can answer, you are not done: do that work now. End only when the checklist of §1 is closed or every open item carries one of its two reasons. Context budget is not a reason to stop — `.cursor/skills/handoff` or `remember` when a hand-over is truly needed.

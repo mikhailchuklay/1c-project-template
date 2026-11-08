@@ -12,7 +12,7 @@ Apply senior-level 1C/BSL expertise within the active role's scope and permissio
 
 ## Active model adaptation
 
-`AGENT_MODEL` in `.dev.env` (`opus5`, `sonnet5`, `fable5`, `gpt56`, `gpt6`) selects one profile, `.cursor/rules/model-<slug>.mdc`, read before the first non-trivial task. A known running model overrides a mismatched value (say so, suggest `/rulesmodel`); empty, invalid or no profile → base rules, never a neighbour, never ask. Profiles never relax gates (`.cursor/rules/model-adaptation.mdc`).
+`AGENT_MODEL` in `.dev.env` (`opus5`, `sonnet5`, `fable5`, `gpt56`, `gpt6`, `grok47`) selects one profile, `.cursor/rules/model-<slug>.mdc`, read before the first non-trivial task. A known running model overrides a mismatched value (say so, suggest `/rulesmodel`); empty, invalid or no profile → base rules, never a neighbour, never ask. Profiles never relax gates (`.cursor/rules/model-adaptation.mdc`).
 
 ## Development Procedure
 
@@ -127,7 +127,7 @@ Load `.cursor/rules/<name>.mdc` on its trigger only; routers pull companions and
 
 `/updaterules` → `tools/update-from-template.ps1`, never vendor `install.ps1`; dev base `ibsrv` → `tools/dev-standalone/`; `1c-data-mcp` → `Invoke-DataMcp.ps1`, not `mcp_auth`; rules `1commerce-functional-testing`, `1commerce-bsp-integration-checklists`, `headless-agent`, `devbox-setup-discovery`; `cfe-validate` 20–21.
 
-**Keep moving** (`1commerce-agent-autonomy`, always on): a turn ends only at end of `tasks.md`/DoD, a real CONFUSION, a consent-by-rule action or "stop". A finished command or background task is not an end: next open item, same turn; hang / lost connection → one retry another way, then Risks. `INFOBASE_ROLE=dev` + full cycle: "commit? load? push?" are decided. Needs the user → one message at the end.
+**Keep moving** (`1commerce-agent-autonomy`, always on): a turn ends only at end of `tasks.md`/DoD, CONFUSION, a consent-by-rule action or "stop". A finished command or background task is not an end: next open item, same turn; hang / lost connection → one retry another way, then Risks. `INFOBASE_ROLE=dev` + full cycle: "commit? load? push?" are decided. User input → one message at the end.
 
 # Spec-driven development workspace
 

@@ -1,13 +1,13 @@
 ---
 description: "Adapt the ruleset to the model that is actually running — normalize a free-form model name to a profile slug and write AGENT_MODEL (opus5|sonnet5|fable5|gpt56|gpt6) into .dev.env"
-argumentHint: "[opus5|sonnet5|fable5|gpt56|gpt6|<any model name>|auto|status|off]"
+argumentHint: "[opus5|sonnet5|fable5|gpt56|gpt6|grok47|<any model name>|auto|status|off]"
 ---
 
 # /rulesmodel — adapt the rules to the active model
 
 Bind the ruleset to the model that executes it by writing the `AGENT_MODEL` key in `.dev.env`. Canonical behaviour of the layer — `.cursor/rules/model-adaptation.mdc` and the profile files `.cursor/rules/model-<slug>.mdc` (installed copies; match by file name per the path convention in `AGENTS.md`). **Load `model-adaptation.md` before acting.**
 
-Supported profiles: `opus5` (Claude Opus 5), `sonnet5` (Claude Sonnet 5), `fable5` (Claude Fable 5 / Mythos 5), `gpt56` (GPT-5.6), `gpt6` (GPT-6 Astra). Any other model runs the base ruleset, which is model-neutral by design — that is a valid state, not a degraded one.
+Supported profiles: `opus5` (Claude Opus 5), `sonnet5` (Claude Sonnet 5), `fable5` (Claude Fable 5 / Mythos 5), `gpt56` (GPT-5.6), `gpt6` (GPT-6 Astra); project overlay: `grok47` (Grok 4.7, `.cursor/rules/model-grok47.mdc`). Any other model runs the base ruleset, which is model-neutral by design — that is a valid state, not a degraded one.
 
 Parameters, classes and defaults — `.cursor/rules/dev-standards-env.mdc §1`; Defaulted keys are never asked for.
 
@@ -37,6 +37,7 @@ The user may write the model name any way they like. Resolve free-form input to 
 | `fable5` | `fable5`, `fable 5`, `claude-fable-5`, `Claude Fable 5`, `mythos5`, `claude-mythos-5`, `фейбл 5`, `фабл 5`, `мифос 5` |
 | `gpt56` | `gpt56`, `gpt5.6`, `gpt-5.6`, `GPT 5.6`, `openai gpt-5.6`, `гпт 5.6`, `гпт-5.6` |
 | `gpt6` | `gpt6`, `gpt-6`, `GPT 6`, `gpt-6-astra`, `gpt6astra`, `astra`, `astra6`, `astra 6`, `openai gpt-6`, `гпт 6`, `гпт-6`, `астра`, `астра6`, `астра 6` |
+| `grok47` | `grok47`, `grok 4.7`, `grok-4.7`, `xai/grok-4.7`, `Grok 4.7`, `грок 4.7`, `грок-4.7` (project overlay) |
 
 ## Setting the profile (`auto`, a slug, or a free-form name)
 
