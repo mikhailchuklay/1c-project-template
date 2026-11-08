@@ -28,7 +28,7 @@ Trim whitespace and compare case-insensitively:
 
 ## Status and boundaries
 
-Status reports the effective `UI_TESTING` and window values and their source (session override, project setting or default), the available routes — QA MCP (`1c-qa` tools exposed, `TOOL_QA`) and the web client (publication URL, `TOOL_AGENT_BROWSER` / `TOOL_BROWSER`) — and any already-known environment/tool blocker. Do not connect to an infobase, start a test client or open a browser just to display policy.
+Status reports the effective `UI_TESTING` and window values and their source (session override, project setting or default), the available routes — QA MCP (`1c-qa` tools exposed, `TOOL_QA`; on Windows the server does not exist and `auto` reads as `off`) and the web client (publication URL, `TOOL_AGENT_BROWSER` / `TOOL_BROWSER`) — and any already-known environment/tool blocker. Do not connect to an infobase, start a test client or open a browser just to display policy.
 
 An explicit natural-language enable/disable request follows this command; mere discussion or quoted examples do not switch policy. A request to run tests once under `manual` does not change the persistent value. Under `off`, a test-run request alone does not enable UI; point to `/uitests essential`, `/uitests on` or `/uitests manual`. An explicit instruction to both enable and run needs no second toggle confirmation, but execution prerequisites still apply.
 

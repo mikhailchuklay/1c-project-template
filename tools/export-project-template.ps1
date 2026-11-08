@@ -204,13 +204,13 @@ Set-TextFile -RelativePath '.cursor\mcp.json' -Content @'
             "description": "1C data MCP on DEV publish. Замените {INFOBASE_PUBLISH_URL} после настройки .dev.env"
         },
         "1c-qa": {
-            "url": "https://mcp.1commerce.ru/qa/mcp",
+            "url": "http://qa:8020/mcp",
             "connection_id": "1c_qa_service_001",
             "headers": {
                 "Authorization": "Bearer ${env:QA_MCP_TOKEN}"
             },
-            "description": "QA MCP (comol/qa_mcp 0.8.0): UI-проверки в тонком клиенте под UI_TESTING. Стенд на mcp.1commerce.ru поднят 07.11.2026, работает с Linux-тест-клиентом 1С 8.5 через прослойку протокола на сервере (пилот). Токен — переменная окружения QA_MCP_TOKEN, в репозиторий не кладётся; TOOL_QA=off в .dev.env отключает маршрут",
-            "disabled": false
+            "description": "QA MCP (comol/qa_mcp 0.8.0): UI-проверки в тонком клиенте под UI_TESTING. Сервер есть только в Linux-рабочем месте dev-<логин> на dev-workplaces: парный контейнер qa-<логин> в приватной сети пары, адрес http://qa:8020/mcp (профиль tools/dev-env/linux/cursor-mcp.json), тест-клиент 1С запускается внутри рабочего места (qa-testclient.sh, порт 1538). Публичного стенда на mcp.1commerce.ru нет с 08.11.2026, для Windows-клиентов QA MCP недоступен — здесь блок выключен, TOOL_QA=auto даёт off. Включайте только при собственном экземпляре QA MCP, доступном с этой машины; токен — переменная окружения QA_MCP_TOKEN, в репозиторий не кладётся",
+            "disabled": true
         }
     }
 }
