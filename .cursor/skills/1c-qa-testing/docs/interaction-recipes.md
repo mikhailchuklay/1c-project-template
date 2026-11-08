@@ -17,6 +17,7 @@ Load a tool schema only for a selected action whose tool or argument is not show
 | Plain field | `ui_input(text="12,5", name="Цена")` → `ui_activate(name="<next field>")` | `value_after`, `verified: true`; `ui_messages()` when the change has checks |
 | Reference field | `ui_select(value="Молоко", name="Номенклатура")`; a composite type also needs `data_type=` | `actual` equals the value |
 | Row of a tabular section | `ui_table(action="add", name="Товары")` → `ui_select(value="Молоко", name="ТоварыНоменклатура", table="Товары")` → `ui_table(action="input_cell", name="Товары", column="ТоварыКоличество", value="5")` | `value_after`, `verified: true`; `ui_table(action="current", name="Товары")` shows the row |
+| Reference cell of a table or tree (work type, item, counterparty) | `ui_table(action="goto", name="<table>", row={…})` → `ui_select(value="Монтаж", name="<column>", table="<table>")`; a composite type also needs `data_type=` | `actual` equals the value; `input_cell` is for text, number and date columns only |
 | Write and stay | `ui_click(name="ФормаЗаписать")` → `ui_active_window()` → `ui_messages()`, `ui_errors()` | title without «(создание)» and « *», `modified: false`, `has_error: false` |
 | Write or post and close | `ui_click(name="ФормаЗаписатьИЗакрыть")` (`ФормаПровестиИЗакрыть`) → `ui_wait(form_name="<form_name>", closed=True)` → `ui_messages()` | `closed: true`; a form that stayed open has the reason in the messages or in a question |
 | Answer a question | `ui_active_window()` (`form_name: MessageBox`), its text in `ui_window_tree(detail="lite")` → `ui_dialog(title="Нет")` | `clicked: true`, then the window behind it |
@@ -35,5 +36,7 @@ What goes wrong around them:
 9. `ui_dialog(action="click")` needs `title=` or `name=` of the button; without them nothing is pressed.
 10. `ui_set` with text several items start with may leave the choice list open: `dropdown_selected: false`, `dropdown_open: true` — pick with `ui_field(action="dropdown_select", value=…)`. A click while the list is open only closes it.
 11. A report after «Сформировать»: an empty `ui_spreadsheet(action="size")` with `state.text` «Отчет формируется...» is not ready — read again after a pause; «Изменились настройки…» means the click did not generate it, click again.
+12. `ui_table(action="input_cell")` answering «Метод не может быть вызван для данного объекта (<column title>)» or «Неподходящее состояние элемента управления» means the column is a reference or choice field: switch to `ui_select(…, table=)` at once; another value in the same cell changes nothing. Tree tables (`Дерево…`) behave the same; expand the parent row first when the row is nested.
+13. `connection=` in `ui_*` calls names a client attached with `qa_clients`, never the `qa_start` session name; the session's own client is `main` or no `connection=` at all.
 
 Two attempts one way are the limit. After the second failure read the window (`ui_active_window`, `ui_window_tree(detail="lite")`), then choose another way or report what was reached; do not vary arguments blindly.
