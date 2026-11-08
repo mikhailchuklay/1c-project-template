@@ -125,13 +125,9 @@ Load `.cursor/rules/<name>.mdc` on its trigger only; routers pull companions and
 
 # Project overlays (1c-project-template)
 
-Project-specific items only:
+`/updaterules` → `tools/update-from-template.ps1`, never vendor `install.ps1`; dev base `ibsrv` → `tools/dev-standalone/`; `1c-data-mcp` → `Invoke-DataMcp.ps1`, not `mcp_auth`; rules `1commerce-functional-testing`, `1commerce-bsp-integration-checklists`, `headless-agent`, `devbox-setup-discovery`; `cfe-validate` 20–21.
 
-- `/updaterules` → `tools/update-from-template.ps1`, not vendor `install.ps1`.
-- Standalone dev base `ibsrv` (`tools/dev-standalone/`); vendor `web-ops` for server infobases only.
-- `1c-data-mcp` behind Basic auth: native tools stay hidden — use `tools/dev-standalone/Invoke-DataMcp.ps1`, never `mcp_auth` / COM.
-- `rlm-tools-bsl` — fallback when graph / code servers are not exposed; `v8std` — standards bridge, not a gate.
-- Project rules: `1commerce-agent-autonomy` (every task: untouched-module findings → Risks; after deploy go on), `1commerce-functional-testing`, `1commerce-bsp-integration-checklists`, `headless-agent`, `devbox-setup-discovery`; `cfe-validate` checks 20–21 after 1–19.
+**Keep moving** (`1commerce-agent-autonomy`, always on): a turn ends only at end of `tasks.md`/DoD, a real CONFUSION, a consent-by-rule action or "stop". A finished command or background task is not an end: next open item, same turn; hang / lost connection → one retry another way, then Risks. `INFOBASE_ROLE=dev` + full cycle: "commit? load? push?" are decided. Needs the user → one message at the end.
 
 # Spec-driven development workspace
 
