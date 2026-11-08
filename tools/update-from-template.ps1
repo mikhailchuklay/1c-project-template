@@ -256,6 +256,38 @@ if (Test-Path $devEnv) {
     Write-Host "  .dev.env not found - skipped"
 }
 
+# Executable bit: git on Windows (core.filemode=false) records copied files as 100644, so
+# Linux agents/containers get non-executable scripts. Restore the template's 100755 in the
+# project index for every synced file that is executable in the template.
+Write-Step "Restore executable bit from template (git index)"
+$prevEa = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+$inRepo = (git -C $ProjectRoot rev-parse --is-inside-work-tree 2>$null)
+$ErrorActionPreference = $prevEa
+if ($inRepo -ne 'true') {
+    Write-Host "  project is not a git work tree - skipped"
+} else {
+    $execFiles = @(git -C $cache ls-files -s | Where-Object { $_ -match '^100755 ' } |
+        ForEach-Object { ($_ -split "`t", 2)[1] })
+    $fixed = 0
+    foreach ($rel in $execFiles) {
+        $dst = Join-Path $ProjectRoot ($rel -replace '/', '\')
+        if (-not (Test-Path $dst)) { continue }
+        $entry = git -C $ProjectRoot ls-files -s -- $rel
+        if ($entry -and $entry -match '^100755 ') { continue }
+        if ($DryRun) {
+            Write-Host "  [dry-run] +x $rel"
+        } elseif ($entry) {
+            git -C $ProjectRoot update-index --chmod=+x -- $rel
+        } else {
+            # new file: stage it with the executable bit (git add --chmod, git >= 2.9)
+            git -C $ProjectRoot add --chmod=+x -- $rel
+        }
+        $fixed++
+    }
+    Write-Host ("  executable bit set: {0}" -f $fixed)
+}
+
 # Lightweight stamp (does not replace .ai-rules.json protocol from install.ps1)
 $stampPath = Join-Path $ProjectRoot '.rules-template-sync.json'
 $commit = (git -C $cache rev-parse --short HEAD)

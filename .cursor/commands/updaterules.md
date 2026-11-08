@@ -23,6 +23,8 @@ From the template clone into the **current project**:
 - `tools/deploy-extension.sh` and `tools/dev-standalone/**` (extension load used by the rules)
 - `.gitattributes` — only when the project has none; an existing one is never overwritten, a difference is reported for a manual merge
 
+Executable bit: for every synced file that is `100755` in the template (shell scripts in `tools/`, `qa-testclient.sh`), the script sets `+x` in the project git index (`update-index --chmod=+x`, new files — `git add --chmod=+x`). On Windows git records copied files as `100644`, and Linux agents/containers then cannot run them. Commit the resulting mode changes together with the sync.
+
 Stamp file written: `.rules-template-sync.json` (commit / URL / time).
 
 ## What is preserved
