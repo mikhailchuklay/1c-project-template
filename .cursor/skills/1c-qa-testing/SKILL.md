@@ -13,7 +13,7 @@ QA MCP (connection `1c-qa`) is the 1C test manager: it connects to a 1C test cli
 All of these hold:
 
 - `UI_TESTING` allows the check (`.cursor/rules/dev-standards-env.mdc → UI_TESTING`): `essential` / `auto` after the change reached the dev/test infobase, `manual` on an explicit request, never under `off`.
-- `TOOL_QA` is not `off` (`.cursor/rules/mcp-policy.mdc → Tool availability`).
+- `TOOL_QA` is not `off` (`.cursor/rules/mcp-policy.mdc → Tool availability`). The server exists only inside a Linux workplace `dev-<login>` on dev-workplaces (`http://qa:8020/mcp`, paired container `qa-<login>`); on Windows `auto` resolves to `off` and this route does not apply (`ui-testing-tools.md → Route order`).
 - The `qa_*` / `ui_*` tools are exposed in this session and `qa_status` answers. A config entry or `/healthz` proves nothing.
 - The target is an authorized dev/test infobase (`INFOBASE_ROLE`), the one in `.dev.env`.
 

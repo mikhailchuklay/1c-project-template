@@ -11,7 +11,7 @@ Whether a UI check runs at all is gated by `UI_TESTING` — canon: `dev-standard
 
 ## Route order (hard)
 
-1. **QA MCP (`1c-qa`)** — the main route for checks in the 1C interface. It drives the thin client's forms through the platform testing model and reads structured state. Eligible when `TOOL_QA` is not `off` and its `qa_*` / `ui_*` tools are exposed; it needs the project infobase (`INFOBASE_PATH`, `INFOBASE_ROLE`), not a web publication. Load `.cursor/skills/1c-qa-testing/SKILL.md` and `.cursor/rules/qa-testclient.mdc` (starting the test client, visible / hidden window, screenshots, data confirmation).
+1. **QA MCP (`1c-qa`)** — the main route for checks in the 1C interface. It drives the thin client's forms through the platform testing model and reads structured state. Eligible when `TOOL_QA` is not `off` and its `qa_*` / `ui_*` tools are exposed; it needs the project infobase (`INFOBASE_PATH`, `INFOBASE_ROLE`), not a web publication. The server exists only inside a Linux workplace `dev-<login>` on dev-workplaces (paired container `qa-<login>`, `http://qa:8020/mcp`, profile `tools/dev-env/linux/cursor-mcp.json`); there is no public stand since 08.11.2026 and none for Windows clients. `TOOL_QA=auto` therefore resolves to `off` outside a Linux workplace or when `http://qa:8020/healthz` does not answer — the Windows profile ships `1c-qa` disabled, and the web client is the route there without a question or an install attempt. Load `.cursor/skills/1c-qa-testing/SKILL.md` and `.cursor/rules/qa-testclient.mdc` (starting the test client, visible / hidden window, screenshots, data confirmation).
 2. **Web client** — the fallback when QA MCP is absent, disabled, cannot connect or cannot cover a step, and the primary route for web-client-specific behaviour or a requested web screenshot. Needs `INFOBASE_PUBLISH_URL`; runs the preflight and driver order below, then `web-client-driving.md`.
 3. **Windows-MCP** — windows outside the testing model (OS and file dialogs, platform error windows the test client does not reach, other applications) under the cautions of `qa-testclient.md → Windows-MCP`. It does not see 1C form controls and never drives forms that QA MCP or the web client can drive.
 
@@ -75,7 +75,7 @@ When Windows-MCP is the chosen tool: drive it through its MCP tools; **do not** 
 
 | Need | Command |
 |---|---|
-| UI checks in the thin client | QA MCP: shared stand `https://mcp.1commerce.ru/qa/mcp` (image `comol/qa_mcp` 0.8.0, Linux test client 8.5 supported through a server-side protocol shim), client connection `1c-qa` enabled in the template; the token comes from the `QA_MCP_TOKEN` environment variable |
+| UI checks in the thin client | QA MCP: only the paired container `qa-<login>` of a Linux workplace `dev-<login>` on dev-workplaces, `http://qa:8020/mcp` (image `comol/qa_mcp` 0.8.0; `1c-qa` enabled in `tools/dev-env/linux/cursor-mcp.json`, the token comes from the `QA_MCP_TOKEN` environment variable). Nothing to install on Windows: the shared stand on mcp.1commerce.ru was removed on 08.11.2026 and the Windows profile ships `1c-qa` disabled — use the web client |
 | Web UI testing, token-efficient browser | `/install-agent-browser` |
 | Unavoidable Windows desktop automation | `/install-windows-mcp` |
 

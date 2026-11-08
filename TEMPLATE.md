@@ -73,7 +73,7 @@ Copy-Item tools\vrunner.init.json.example tools\vrunner.init.json
 3. Если контуров больше одного (основная конфигурация + расширения, отдельные индексы) — опишите их в `project-contours.json` в корне проекта (формат и пример — `.cursor/rules/multi-contour-search.mdc`) и сошлитесь на файл из `USER-RULES.md`. Один контур — файл не нужен.
 4. Перезагрузите окно Cursor после правки MCP.
 
-Shared-сервисы (syntax, docs, templates, ssl, codecheck) уже указывают на `https://mcp.1commerce.ru/...`. Блок `1c-qa` (QA MCP, `https://mcp.1commerce.ru/qa/mcp`) включён, в `.dev.env.example` стоит `TOOL_QA=auto`: QA MCP — основной маршрут UI-проверок (`ui-testing-tools.mdc`), веб-клиент — запасной. Для подключения задайте переменную окружения `QA_MCP_TOKEN` (QA-токен стенда, выдаёт владелец инфраструктуры; в репозиторий не кладётся). `TOOL_QA=off` отключает QA MCP.
+Shared-сервисы (syntax, docs, templates, ssl, codecheck) уже указывают на `https://mcp.1commerce.ru/...`. Блок `1c-qa` (QA MCP) в Windows-профиле `.cursor/mcp.json` выключен: сервер QA MCP есть только в Linux-рабочем месте `dev-<логин>` на dev-workplaces (парный контейнер `qa-<логин>`, `http://qa:8020/mcp`), где его включает Linux-профиль `tools/dev-env/linux/cursor-mcp.json`; публичного стенда на mcp.1commerce.ru нет с 08.11.2026. В `.dev.env.example` стоит `TOOL_QA=auto`: в Linux-рабочем месте QA MCP — основной маршрут UI-проверок (`ui-testing-tools.mdc`), на Windows `auto` равносилен `off`, и UI-проверки идут веб-клиентом. Токен — переменная окружения `QA_MCP_TOKEN` (выдаёт владелец инфраструктуры; в репозиторий не кладётся). `TOOL_QA=off` отключает QA MCP везде.
 
 ### OneMCP в информационной базе (если ещё не установлено)
 

@@ -29,6 +29,10 @@ bash tools/dev-env/linux/apply.sh
 git update-index --no-skip-worktree .vscode/settings.json .vscode/launch.json .cursor/mcp.json
 ```
 
+## QA MCP (`1c-qa`)
+
+Сервер QA MCP есть только в Linux-рабочем месте `dev-<логин>` на dev-workplaces: парный контейнер `qa-<логин>` в приватной сети пары, адрес `http://qa:8020/mcp`. Linux-профиль `linux/cursor-mcp.json` подключает его включённым; в Windows-профиле `.cursor/mcp.json` блок `1c-qa` выключен — публичного стенда на mcp.1commerce.ru нет с 08.11.2026, для Windows резерва нет. `TOOL_QA=auto` на Windows равносилен `off`, UI-проверки идут веб-клиентом.
+
 ## Что остаётся локальным (не в git)
 
 - `.dev.env` — параметры ИБ, платформы, публикации
