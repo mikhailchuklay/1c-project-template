@@ -67,7 +67,7 @@ Invariant in every environment: a `1cv8` / `1cv8c` process the agent starts neve
 
 ## Common launch shape
 
-### POSIX (Linux, macOS)
+### Linux (bash 4+)
 
 ```bash
 tools/designer-batch.sh -- /CheckModules -ThinClient -Server -ExternalConnection -Extension "$EXTENSION_NAME"
