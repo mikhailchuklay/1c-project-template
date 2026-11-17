@@ -137,6 +137,21 @@ Notes on the switches:
 
 **Budget.** One run per check per artifact state. A failing check is fixed at the source and re-run once against the changed state — re-running an unchanged artifact is forbidden, same as for the MCP validators (`mcp-policy.md → C.1`).
 
+### Findings that are not yours — attribute before you judge
+
+An extension is checked inside the vendor configuration, so a whole-configuration check also reports problems in vendor code and in objects your change never touched. A typical case: `/CheckConfig -ExtendedModulesCheck` on БП prints dozens of «Возможно ошибочное обращение…» lines from vendor modules. The same applies to static validators run against the base configuration (`cfe-validate`). A non-zero verdict alone therefore does not tell you whether *your change* is clean. Attribute every finding before you decide:
+
+1. **Owned by the change** — the line names a module or object of this extension (own object, or an adopted object whose module the extension modifies) that the change created or edited. This blocks: fix it, and re-run once (budget above).
+2. **Pre-existing in the base** — the same finding appears when the same check, with the same keys, runs on the base state (the base commit of the branch, or the last released `.cfe`). It does not block this change and is not fixed silently outside the task scope. List it in the report under its own heading, with the evidence of the base run.
+3. **Vendor background** — the line names only vendor modules and objects the extension does not modify. It does not block. Report the count and a few samples, not the whole log.
+4. **Cannot attribute** — the log does not say where the finding is, or the base run is impossible. The check is *unverified*, not passed. Say so with the reason.
+
+The verdict of the change is «no new class-1 findings». It is never the bare exit code, and never a «clean» claim based on a check that still prints findings. Run the base comparison only when the current run actually reports something: it is a second run of the same check against a different artifact, so it is within budget. Keep the base and current logs side by side in the task evidence, so a reviewer can repeat the comparison.
+
+### Long runs — wait once, do not poll by hand
+
+A full `/CheckConfig` or a full dump of a vendor configuration can run for tens of minutes. Run the wrapper in the foreground with its own `--timeout` whenever the command limit of your environment allows it. If the environment caps a single command below the expected duration, start the run in the background with its exit code written to a file, then wait in **one** bounded command (a loop with `sleep` that ends on that file or on the timeout) and read the verdict once. Repeated separate «look at the log tail» calls are the expensive pattern: for an agent, every one is a full model turn that re-sends the whole context. The same applies to people scripting the check in CI.
+
 ## Extension apply and rollback
 
 Applying an extension to a base that already has one under that name is a **replacement**, and the platform keeps no undo for you. Preserve both states first — they are different things:
