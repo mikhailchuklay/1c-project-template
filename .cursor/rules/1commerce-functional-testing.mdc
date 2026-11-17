@@ -138,7 +138,7 @@ For `&Перед` / `&После` / `&Вместо` interceptors and «Созд�
 - **Declaring a blocker before the readiness gate** — Principle 0 violation. Anonymous `503` on `/hs/mcp` is the unauthenticated response; confirm with Basic before editing `config.yml`. Basic `503` with the site root at `200` is a missing `http-services` entry, not "no data".
 - **COM or `mcp_auth` instead of the helper script** — the standalone publication is HTTP Basic of the infobase user. `mcp_auth` does not attach Cursor to it, and the COM connector is not a fallback.
 - **Reading functional output before the smoke test passes** — empty results get blamed on "no data" when the real cause is the newline-injection quirk or an unpublished HTTP service.
-- **Multi-line payloads to `execute_code` / `execute_query`** — silent false negatives.
+- **Multi-line payloads to `vcexecutecode` / `vcexecutequery` / `vcvalidatequery`** — silent false negatives (an empty answer, no error). Send every argument as one line: `.cursor/skills/mcp-1c-tools/docs/1c-data-mcp.md` → *One line only*.
 - **Asserting against a random record** — test data must match the scenario's precondition, found by query, not assumed.
 - **Gathering metadata facts late** — resolve concrete types/values (incl. type traps from `memory.md`) during discovery, before writing the test payload.
 - **Trying to test client/UI behaviour through `1c-data-mcp`** — wrong channel; use UI for form/command/client events.
