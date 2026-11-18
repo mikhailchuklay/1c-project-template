@@ -510,7 +510,7 @@ git clone https://github.com/comol/ai_rules_1c.git $env:TEMP\1c-rules
 | Дополнительные источники | [rlm-tools-bsl](.cursor/skills/mcp-1c-tools/docs/rlm-tools-bsl.md) как запасной поиск при недоступных graph/code индексах; [v8std](.cursor/skills/mcp-1c-tools/docs/v8std-mcp.md) для стандартов и диагностики |
 | Проверка поведения | [1commerce-functional-testing](.cursor/rules/1commerce-functional-testing.mdc): готовность публикации, выбор данных и канала проверки. UI-проверки следуют вендорскому `UI_TESTING`; при отсутствии маршрута результат отмечается как непроверенный |
 | БСП и метаданные | [Чеклисты интеграции с БСП](.cursor/rules/1commerce-bsp-integration-checklists.mdc); дополнительные проверки 20–21 в `cfe-validate.ps1` для прав на несекьюрные объекты и состава плана обмена |
-| Headless-агент | [Порядок работы агента без интерфейса](docs/headless-agent.md), приёмка и передача результата; [обнаружение среды devbox](.cursor/rules/devbox-setup-discovery.mdc) |
+| Headless-агент | [Порядок работы агента без интерфейса](docs/headless-agent.md), приёмка и передача результата; [обнаружение среды devbox](.cursor/rules/devbox-setup-discovery.mdc); [роль технического архитектора](.cursor/rules/tech-architect.mdc) — полномочия в SVC-033-I 1commerce-regulations |
 | Каркас проекта | Каталоги `src/`, `tests/`, `features/`, `fixtures/`, OpenSpec и скрипты инициализации и экспорта шаблона |
 
 ### Настройки и границы поставки

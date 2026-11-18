@@ -125,9 +125,9 @@ Load `.cursor/rules/<name>.mdc` on its trigger only; routers pull companions and
 
 # Project overlays (1c-project-template)
 
-`/updaterules` → `tools/update-from-template`, never vendor `install.ps1`; dev base `ibsrv` → `tools/dev-standalone/`; `1c-data-mcp` → `Invoke-DataMcp`, not `mcp_auth`; rules `1commerce-functional-testing`, `1commerce-bsp-integration-checklists`, `headless-agent`, `devbox-setup-discovery`; `cfe-validate` 20–21.
+`/updaterules` → `tools/update-from-template`, not vendor `install.ps1`; dev base `ibsrv` → `tools/dev-standalone/`; `1c-data-mcp` → `Invoke-DataMcp`, not `mcp_auth`; rules `1commerce-functional-testing`, `1commerce-bsp-integration-checklists`, `headless-agent`, `devbox-setup-discovery`; `agent-run` architect → `tech-architect`; `cfe-validate` 20–21.
 
-**Keep moving** (`1commerce-agent-autonomy`, always on): a turn ends only at end of `tasks.md`/DoD, CONFUSION, a consent-by-rule action or "stop". A finished command or background task is not an end: next open item, same turn. `INFOBASE_ROLE=dev` + full cycle: "commit? load? push?" are decided. User input → one message at the end.
+**Keep moving** (`1commerce-agent-autonomy`, always on): turn ends only at `tasks.md`/DoD end, CONFUSION, consent-by-rule action or "stop". Finished command/background task → next item, same turn. `INFOBASE_ROLE=dev` + full cycle: commit/load/push decided. User input → 1 message at end.
 
 # Spec-driven development workspace
 
