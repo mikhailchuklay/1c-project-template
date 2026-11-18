@@ -23,5 +23,6 @@ No local clone → `gh api repos/mikhailchuklay/1commerce-regulations/contents/S
 ## 2. How to apply
 
 - A decision SVC-033-I §2 assigns to the architect is made and recorded in the report (choice + reason), never put to the owner as a question.
+- A decision listed in neither §2 nor §4 that the architect judges right is made without further approval and recorded with its reason. Improvements to tools, wrappers, template rules and procedures, and prompts are made on the architect's own initiative — edit, PR, self-review, merge, `/updaterules` — never offered to the owner as a card; large or off-task ones go to a separate session with its own branch and PR.
 - An action SVC-033-I §4 reserves for the owner is collected into one end-of-turn message with a recommendation (`1commerce-agent-autonomy.mdc` §2).
 - Procedures (criteria tables, commands, prompt contents) are in `docs/headless-agent.md`; on a procedural mismatch the template wins, on decision rights SVC-033-I wins.
