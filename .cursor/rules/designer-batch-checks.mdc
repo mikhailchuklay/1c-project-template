@@ -121,14 +121,16 @@ Run in this order. Each step costs more than the one before it, and a failure at
 
 | # | Check | Batch operation | Catches |
 |---|---|---|---|
-| 1 | **Syntax control** | `/CheckModules -ThinClient -Server -ExternalConnection [-Extension {EXTENSION_NAME}]` | BSL syntax and context errors per runtime |
-| 2 | **Applicability** (extensions only) | `/CheckCanApplyConfigurationExtensions [-Extension {EXTENSION_NAME}]` | missing intercepted methods, incompatible adopted objects, broken extension mapping |
-| 3 | **Full configuration check** | `/CheckConfig -ConfigLogIntegrity -IncorrectReferences -ThinClient -Server -ExternalConnection -HandlersExistence -ExtendedModulesCheck [-Extension {EXTENSION_NAME}]` | logical integrity, references to deleted objects, missing handlers, errors in `.`-access |
+| 1 | **Syntax control** | `/CheckModules -ThinClient -Server -ExternalConnection -Extension {EXTENSION_NAME}` | BSL syntax and context errors per runtime |
+| 2 | **Applicability** (extensions only) | `/CheckCanApplyConfigurationExtensions -Extension {EXTENSION_NAME}` | missing intercepted methods, incompatible adopted objects, broken extension mapping |
+| 3 | **Full configuration check** | `/CheckConfig -ConfigLogIntegrity -IncorrectReferences -ThinClient -Server -ExternalConnection -HandlersExistence -ExtendedModulesCheck -Extension {EXTENSION_NAME}` | logical integrity, references to deleted objects, missing handlers, errors in `.`-access |
 | 4 | **Apply** | `/UpdateDBCfg -Dynamic- -WarningsAsErrors -Extension {EXTENSION_NAME}` | — (mutating; see below) |
 | 5 | **Artifact verification** | `/DumpDBCfg '{CFE_PATH}' -Extension {EXTENSION_NAME}` | proves a non-empty database extension serializes; assert the `.cfe` exists and is non-zero |
 
 Notes on the switches:
 
+- **`-Extension {EXTENSION_NAME}` is mandatory on steps 1–3 whenever the artifact is an extension** (`EXTENSION_NAME` set, or each name of `EXTENSION_NAMES` in its own run). Without it `/CheckModules` and `/CheckConfig` check **only the main configuration**: the extension's modules are never compiled, and the log still says «Синтаксических ошибок не обнаружено!». Such a run is not evidence about the extension — report it as «не проверено», never as PASS. Quote the full command line next to every verdict so a reviewer can see the key. `tools/designer-batch.sh` refuses steps 1–3 without `-Extension` when `EXTENSION_NAME` is set; `--main-config` is the explicit opt-out for a deliberate main-configuration run (e.g. the base comparison of «Findings that are not yours»).
+- A clean syntax control does not prove a route works: a module compiles lazily on first call, so a loaded extension with an undefined method still serves every other route. Call each changed HTTP route at least once on the final build.
 - `/CheckModules` **requires at least one mode key** — it does nothing without one. Documented keys: `-ThinClient`, `-WebClient`, `-Server`, `-ExternalConnection`, `-ThickClientOrdinaryApplication`. Pick the ones the configuration actually runs in; the three in the table are the usual managed-application set.
 - `-ExtendedModulesCheck` (checks method / property access "through the dot") is documented for `/CheckConfig`. Current 8.3 platforms also accept it on `/CheckModules` — try it there, and drop it if the log reports an unknown key rather than assuming the check ran.
 - `/CheckConfig` accepts many more mode keys (`-WebClient`, `-MobileClient`, `-ThickClient*`, `-DistributiveModules`, `-UnreferenceProcedures`, `-EmptyHandlers`, …). Add the ones matching the project's run modes; the row above is the baseline, not the maximum.

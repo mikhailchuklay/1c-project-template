@@ -31,6 +31,9 @@ usage() {
   --result FILE   файл /DumpResult (по умолчанию RESULT_PATH или $TMPDIR/1cv8.result)
   --load          запуск загрузки/применения: предупреждения в логе не валят вердикт
   --dry-run       показать команду (пароль скрыт) и выбранный экран, не запускать
+  --main-config   осознанная проверка только основной конфигурации: снимает отказ
+                  /CheckModules, /CheckConfig, /CheckCanApplyConfigurationExtensions
+                  без -Extension при заданном EXTENSION_NAME
   --self-test     прогнать разбор лога на контрольных строках и выйти
   -h, --help      эта справка
 
@@ -125,6 +128,7 @@ OUT_FILE=""
 RESULT_FILE=""
 LOAD_MODE=0
 DRY_RUN=0
+MAIN_CONFIG=0
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--timeout) TIMEOUT="${2:?--timeout требует значение}"; shift 2 ;;
@@ -132,6 +136,7 @@ while [[ $# -gt 0 ]]; do
 		--result) RESULT_FILE="${2:?--result требует значение}"; shift 2 ;;
 		--load) LOAD_MODE=1; shift ;;
 		--dry-run) DRY_RUN=1; shift ;;
+		--main-config) MAIN_CONFIG=1; shift ;;
 		--self-test) self_test; exit $? ;;
 		-h|--help) usage; exit 0 ;;
 		--) shift; break ;;
@@ -203,6 +208,18 @@ fi
 # ---------------------------------------------------------------------------
 ROOT="$(dev_env_project_root "$0")"
 dev_env_load "$ROOT" || true
+
+# Без -Extension проверки идут только по основной конфигурации: модули расширения
+# не компилируются, а лог всё равно пишет «ошибок не обнаружено».
+case "$CMD" in
+	/checkmodules|/checkconfig|/checkcanapplyconfigurationextensions)
+		has_ext=0
+		for a in "${BATCH[@]}"; do [[ "${a,,}" == -extension ]] && has_ext=1; done
+		if ((has_ext == 0 && MAIN_CONFIG == 0)) && [[ -n "${EXTENSION_NAME// /}" ]]; then
+			refuse "${CMD} без -Extension не проверяет расширение адресно (/CheckModules и /CheckConfig — только основную конфигурацию). Добавьте -Extension \"${EXTENSION_NAME}\" (designer-batch-checks.mdc → The check ladder) или --main-config для осознанной проверки основной конфигурации."
+		fi
+		;;
+esac
 
 TIMEOUT="${TIMEOUT:-${DESIGNER_TIMEOUT:-600}}"
 [[ "$TIMEOUT" =~ ^[0-9]+$ && "$TIMEOUT" -gt 0 ]] || refuse "тайм-аут должен быть положительным числом секунд: $TIMEOUT"
