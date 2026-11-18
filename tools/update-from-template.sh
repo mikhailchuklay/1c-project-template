@@ -120,8 +120,21 @@ copy_file tools/designer-batch.sh && echo "  OK tools/designer-batch.sh"
 copy_file tools/check-bsl-calls.py && echo "  OK tools/check-bsl-calls.py"
 copy_file tools/stand-load-guard.sh && echo "  OK tools/stand-load-guard.sh"
 copy_file tools/agent-monitor.sh && echo "  OK tools/agent-monitor.sh"
+copy_file tools/release-gate.sh && echo "  OK tools/release-gate.sh"
+copy_file tools/task-board.sh && echo "  OK tools/task-board.sh"
 copy_file tools/lists/bsl-global-names.txt && echo "  OK tools/lists/bsl-global-names.txt"
 sync_tree tools/dev-standalone
+
+# Доска задач (tools/task-board.sh) лежит в основной копии вне git: путь должен быть в .gitignore.
+step "Ensure .gitignore ignores .task-board/"
+if [[ -f "$PROJECT_ROOT/.gitignore" ]] && grep -qxE '/?\.task-board/?' "$PROJECT_ROOT/.gitignore"; then
+	echo "  .gitignore already ignores .task-board/"
+elif ((DRY_RUN)); then
+	echo "  [dry-run] append .task-board/ to .gitignore"
+else
+	printf '\n# Доска задач проекта (tools/task-board.sh), общая для рабочих деревьев\n.task-board/\n' >>"$PROJECT_ROOT/.gitignore"
+	echo "  OK .gitignore += .task-board/"
+fi
 
 # .gitattributes: у проекта могут быть свои правила — только создать, не перезаписывать.
 step "Sync .gitattributes (only if missing)"

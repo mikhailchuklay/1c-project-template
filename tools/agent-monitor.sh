@@ -6,7 +6,12 @@
 #   state=<состояние> ...   — состояние сменилось;
 #   IDLE: ...               — файлы не менялись дольше порога (один раз до возобновления активности);
 #   ssh fail                — нет связи; монитор ждёт минуту и продолжает (обрыв ssh не завершает его).
-# Завершается с кодом 0, когда задача пришла в review, question, error или committed.
+# Завершается с кодом 0, когда задача пришла в review, question, error или committed;
+# с --exit-on-idle — с кодом 3 при первом IDLE (архитектору пора посмотреть на агента).
+#
+# Запускать фоновой командой Bash (run_in_background): она не ограничена 30 минутами,
+# как инструмент Monitor, и будит архитектора по выходу скрипта. Скрипт — из tools/ рабочей копии,
+# не копия во временной папке.
 #
 # Активность — по mtime файлов рабочего дерева и ~/tasks/<task> (без .git), а не по росту run-N.log:
 # харнес cursor с `-p --output-format json` пишет лог только в конце прогона, и «лог не растёт»
@@ -15,18 +20,22 @@
 # Только чтение: в контейнере ничего не меняет.
 #
 # Пример (фоновое ожидание после agent-run):
-#   tools/agent-monitor.sh cursor1 advance-limits-43 25 issue-43-advance-limits
+#   tools/agent-monitor.sh --exit-on-idle cursor1 advance-limits-43 25 issue-43-advance-limits
 set -uo pipefail
 
 usage() {
 	cat <<EOF
-Использование: $0 [--once] <контейнер> <task> [idle-минуты] [рабочее-дерево]
+Использование: $0 [--once | --exit-on-idle] <контейнер> <task> [idle-минуты] [рабочее-дерево]
   контейнер       суффикс контейнера: cursor1, codex1, dsh1 (контейнер \${AGENT_CONTAINER_PREFIX}<суффикс>)
   task            идентификатор задачи agent-state
   idle-минуты     порог предупреждения IDLE, по умолчанию 25
   рабочее-дерево  каталог рабочего дерева задачи: имя в ~/work или абсолютный путь в контейнере;
                   по умолчанию следить только за ~/tasks/<task>
   --once          один замер, вывод «state возраст процессы», без ожидания
+  --exit-on-idle  выйти с кодом 3 при первом IDLE (по умолчанию — предупредить и ждать дальше)
+
+Коды возврата: 0 — задача в review/question/error/committed; 3 — IDLE (с --exit-on-idle);
+1 — ssh fail при --once; 2 — ошибка аргументов.
 
 Переменные окружения:
   AGENT_SSH_HOST          ssh-алиас хоста контейнеров (по умолчанию dev-workplaces-via-services)
@@ -38,8 +47,15 @@ EOF
 }
 
 ONCE=0
-if [[ "${1:-}" == "--once" ]]; then ONCE=1; shift; fi
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then usage; exit 0; fi
+EXIT_ON_IDLE=0
+while [[ "${1:-}" == -* ]]; do
+	case "$1" in
+		--once) ONCE=1; shift ;;
+		--exit-on-idle) EXIT_ON_IDLE=1; shift ;;
+		-h|--help) usage; exit 0 ;;
+		*) echo "Неизвестный параметр: $1" >&2; usage >&2; exit 2 ;;
+	esac
+done
 if [[ $# -lt 2 ]]; then usage >&2; exit 2; fi
 
 C=$1
@@ -101,6 +117,7 @@ while true; do
 	if [[ "${age:-0}" -ge "$IDLE" ]]; then
 		if [[ $idle_warned -eq 0 ]]; then
 			echo "IDLE: no file activity ${age}m, procs $procs"
+			((EXIT_ON_IDLE)) && exit 3
 			idle_warned=1
 		fi
 	else
