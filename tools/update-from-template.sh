@@ -114,9 +114,11 @@ copy_file tools/update-from-template.ps1 && echo "  OK tools/update-from-templat
 copy_file tools/update-from-template.sh && echo "  OK tools/update-from-template.sh"
 
 # Скрипты, на которые ссылаются правила (headless-agent, designer-batch-checks), и их помощники.
-step "Sync tools/deploy-extension.sh, tools/designer-batch.sh and tools/dev-standalone"
+step "Sync tools/deploy-extension.sh, tools/designer-batch.sh, tools/check-bsl-calls.py and tools/dev-standalone"
 copy_file tools/deploy-extension.sh && echo "  OK tools/deploy-extension.sh"
 copy_file tools/designer-batch.sh && echo "  OK tools/designer-batch.sh"
+copy_file tools/check-bsl-calls.py && echo "  OK tools/check-bsl-calls.py"
+copy_file tools/lists/bsl-global-names.txt && echo "  OK tools/lists/bsl-global-names.txt"
 sync_tree tools/dev-standalone
 
 # .gitattributes: у проекта могут быть свои правила — только создать, не перезаписывать.

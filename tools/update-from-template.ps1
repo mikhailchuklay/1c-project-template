@@ -217,9 +217,11 @@ Copy-FileSync -SourceFile (Join-Path $cache 'tools\update-from-template.ps1') -D
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\update-from-template.sh') -DestFile (Join-Path $ProjectRoot 'tools\update-from-template.sh') -Label 'tools/update-from-template.sh'
 
 # Scripts the rules point at (headless-agent, designer-batch-checks) and their environment helpers.
-Write-Step "Sync tools/deploy-extension.sh, tools/designer-batch.sh and tools/dev-standalone"
+Write-Step "Sync tools/deploy-extension.sh, tools/designer-batch.sh, tools/check-bsl-calls.py and tools/dev-standalone"
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\deploy-extension.sh') -DestFile (Join-Path $ProjectRoot 'tools\deploy-extension.sh') -Label 'tools/deploy-extension.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\designer-batch.sh') -DestFile (Join-Path $ProjectRoot 'tools\designer-batch.sh') -Label 'tools/designer-batch.sh'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\check-bsl-calls.py') -DestFile (Join-Path $ProjectRoot 'tools\check-bsl-calls.py') -Label 'tools/check-bsl-calls.py'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\lists\bsl-global-names.txt') -DestFile (Join-Path $ProjectRoot 'tools\lists\bsl-global-names.txt') -Label 'tools/lists/bsl-global-names.txt'
 $ds = Copy-TreeSync -SourceDir (Join-Path $cache 'tools\dev-standalone') -DestDir (Join-Path $ProjectRoot 'tools\dev-standalone')
 Write-Host ("  dev-standalone: +{0} ~{1} skip {2}" -f $ds.Added, $ds.Updated, $ds.Skipped)
 

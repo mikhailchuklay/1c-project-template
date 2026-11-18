@@ -20,7 +20,8 @@ From the template clone into the **current project**:
 - `.dev.env.example`
 - `docs/headless-agent.md`
 - `tools/update-from-template.ps1` (the script updates itself)
-- `tools/deploy-extension.sh` and `tools/dev-standalone/**` (extension load used by the rules)
+- `tools/deploy-extension.sh`, `tools/designer-batch.sh` and `tools/dev-standalone/**` (extension load and Designer batch checks used by the rules)
+- `tools/check-bsl-calls.py` and `tools/lists/bsl-global-names.txt` (fast call check required by `headless-agent.mdc` §5)
 - `.gitattributes` — only when the project has none; an existing one is never overwritten, a difference is reported for a manual merge
 
 Executable bit: for every synced file that is `100755` in the template (shell scripts in `tools/`, `qa-testclient.sh`), the script sets `+x` in the project git index (`update-index --chmod=+x`, new files — `git add --chmod=+x`). On Windows git records copied files as `100644`, and Linux agents/containers then cannot run them. Commit the resulting mode changes together with the sync.
