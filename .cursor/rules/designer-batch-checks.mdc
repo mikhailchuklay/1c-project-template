@@ -154,6 +154,13 @@ The verdict of the change is «no new class-1 findings». It is never the bare e
 
 A full `/CheckConfig` or a full dump of a vendor configuration can run for tens of minutes. Run the wrapper in the foreground with its own `--timeout` whenever the command limit of your environment allows it. If the environment caps a single command below the expected duration, start the run in the background with its exit code written to a file, then wait in **one** bounded command (a loop with `sleep` that ends on that file or on the timeout) and read the verdict once. Repeated separate «look at the log tail» calls are the expensive pattern: for an agent, every one is a full model turn that re-sends the whole context. The same applies to people scripting the check in CI.
 
+### Heavy runs on a shared host
+
+A whole-configuration check of a vendor configuration (`--main-config`: `/CheckModules` or `/CheckConfig` without `-Extension`) runs for tens of minutes and can starve a shared agent host. On 1c-integration-api-bp (hotfix 1.48.1.1) a 40-minute `--main-config` baseline on a 4-vCPU host made it unreachable over SSH while proving a cause already established from the logs.
+
+- **A headless agent runs `--main-config` only with the architect's consent**: `agent-state question` with the purpose and a time estimate; after the answer it reruns with `DESIGNER_BATCH_MAIN_CONFIG_APPROVED=1`. The wrapper refuses it otherwise (code 2). Prefer evidence that already exists (logs, the extension-scoped run) over a new whole-configuration run.
+- **One heavy Designer operation per host.** `tools/designer-batch.sh` serialises `/CheckModules`, `/CheckConfig`, `/DumpConfigToFiles`, `/LoadConfigFromFiles` and `/UpdateDBCfg` through a host-wide `flock` (`DESIGNER_HEAVY_LOCK`, default `$AGENT_LOCKS/designer-heavy.lock`), waiting at most its own timeout. Waiting for the lock is normal; do not start the same check again while waiting.
+
 ## Extension apply and rollback
 
 Applying an extension to a base that already has one under that name is a **replacement**, and the platform keeps no undo for you. Preserve both states first — they are different things:

@@ -44,6 +44,9 @@ usage() {
   PLATFORM_PATH, INFOBASE_KIND, INFOBASE_PATH, IB_USER, IB_PASSWORD
   (запасной вариант: VRUNNER_IBCONNECTION, VRUNNER_DBUSER, VRUNNER_DBPWD)
   DESIGNER_TIMEOUT          тайм-аут по умолчанию, с
+  DESIGNER_HEAVY_LOCK       блокировка «одна тяжёлая операция на хост»
+                            (по умолчанию $AGENT_LOCKS/designer-heavy.lock при заданном AGENT_LOCKS)
+  DESIGNER_BATCH_MAIN_CONFIG_APPROVED=1  --main-config агенту после согласования архитектора
   DESIGNER_XVFB_FIRST       первый номер дисплея для поиска свободного (по умолчанию 99)
   DESIGNER_DISPLAY          готовый виртуальный экран (например, общий Xvfb агента);
                             не может совпадать с DISPLAY сеанса
@@ -221,6 +224,12 @@ case "$CMD" in
 		;;
 esac
 
+# Проверка всей типовой (--main-config) на БП идёт десятки минут и грузит общий хост агентов.
+# Агенту без интерфейса — только по согласованию архитектора (question с оценкой времени).
+if ((MAIN_CONFIG)) && [[ -n "${AGENT_HARNESS:-}" && "${DESIGNER_BATCH_MAIN_CONFIG_APPROVED:-}" != 1 ]]; then
+	refuse "--main-config у агента — только по согласованию архитектора: agent-state question с целью и оценкой времени; после ответа запуск с DESIGNER_BATCH_MAIN_CONFIG_APPROVED=1 (designer-batch-checks.mdc → Heavy runs on a shared host)."
+fi
+
 TIMEOUT="${TIMEOUT:-${DESIGNER_TIMEOUT:-600}}"
 [[ "$TIMEOUT" =~ ^[0-9]+$ && "$TIMEOUT" -gt 0 ]] || refuse "тайм-аут должен быть положительным числом секунд: $TIMEOUT"
 TMP="${TMPDIR:-/tmp}"
@@ -299,6 +308,20 @@ echo "designer-batch: $(masked "$V8" "${ARGS[@]}")"
 ((DRY_RUN)) && exit 0
 
 command -v timeout >/dev/null 2>&1 || refuse "нет утилиты timeout (coreutils)"
+
+# Одна тяжёлая операция Конфигуратора на хост: общий для контейнеров каталог блокировок
+# (AGENT_LOCKS у агентов) или DESIGNER_HEAVY_LOCK. Ждём не дольше своего тайм-аута.
+HEAVY_LOCK="${DESIGNER_HEAVY_LOCK:-${AGENT_LOCKS:+${AGENT_LOCKS}/designer-heavy.lock}}"
+case "$CMD" in
+	/checkmodules|/checkconfig|/dumpconfigtofiles|/loadconfigfromfiles|/updatedbcfg)
+		if [[ -n "$HEAVY_LOCK" ]] && command -v flock >/dev/null 2>&1; then
+			exec 9>>"$HEAVY_LOCK" || refuse "не открыть блокировку $HEAVY_LOCK"
+			if ! flock -n 9; then
+				echo "designer-batch: на хосте идёт другая тяжёлая операция Конфигуратора, жду до ${TIMEOUT}s ($HEAVY_LOCK)" >&2
+				flock -w "$TIMEOUT" 9 || { echo "designer-batch: не дождался блокировки $HEAVY_LOCK за ${TIMEOUT}s" >&2; exit 1; }
+			fi
+		fi ;;
+esac
 mkdir -p "$(dirname "$OUT_FILE")" "$(dirname "$RESULT_FILE")"
 rm -f "$RESULT_FILE"   # устаревший файл читался бы как вердикт этого запуска
 : >"$OUT_FILE"
