@@ -34,3 +34,7 @@ src/cf/lastUploadedConfigDumpInfo.xml
 
 # VSCode workspace-файл
 my-1c-project.code-workspace
+
+# Python
+__pycache__/
+*.pyc
