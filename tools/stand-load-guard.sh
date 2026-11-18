@@ -57,9 +57,10 @@ if [[ -z "$CONFIG" ]]; then
 	[[ -n "$CONFIG" ]] || { echo "Configuration.xml расширения $EXT не найден; укажите --config" >&2; exit 2; }
 fi
 [[ -f "$CONFIG" ]] || { echo "Нет файла: $CONFIG" >&2; exit 2; }
+CONFIG="$(realpath --relative-to="$ROOT" "$CONFIG")"
 
 xml_version() {
-	grep -m1 -o '<Version>[^<]*' | sed 's/<Version>//'
+	{ grep -m1 -o '<Version>[^<]*' || true; } | sed 's/<Version>//'
 }
 
 git fetch -q --tags origin
@@ -89,7 +90,7 @@ if [[ -n "$RELEASE_TAG" ]]; then
 		if [[ "$HEAD_VERSION" != "$RELEASE_VERSION" && "$lowest" == "$HEAD_VERSION" ]]; then
 			problems+=("версия $HEAD_VERSION ниже последнего релиза $RELEASE_TAG ($RELEASE_VERSION)")
 		elif [[ "$HEAD_VERSION" == "$RELEASE_VERSION" ]] &&
-			! git diff --quiet "$RELEASE_TAG" HEAD -- "$(dirname "$CONFIG")"; then
+			! git diff --quiet "$RELEASE_TAG" -- "$(dirname "$CONFIG")"; then
 			problems+=("версия $HEAD_VERSION уже выпущена в $RELEASE_TAG, а код отличается: поднимите номер от последнего релиза")
 		fi
 	fi
