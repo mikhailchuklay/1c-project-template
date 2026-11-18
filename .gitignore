@@ -38,3 +38,6 @@ my-1c-project.code-workspace
 # Python
 __pycache__/
 *.pyc
+
+# Доска задач проекта (tools/task-board.sh), общая для рабочих деревьев
+.task-board/

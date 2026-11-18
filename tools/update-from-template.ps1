@@ -223,9 +223,24 @@ Copy-FileSync -SourceFile (Join-Path $cache 'tools\designer-batch.sh') -DestFile
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\check-bsl-calls.py') -DestFile (Join-Path $ProjectRoot 'tools\check-bsl-calls.py') -Label 'tools/check-bsl-calls.py'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\stand-load-guard.sh') -DestFile (Join-Path $ProjectRoot 'tools\stand-load-guard.sh') -Label 'tools/stand-load-guard.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-monitor.sh') -DestFile (Join-Path $ProjectRoot 'tools\agent-monitor.sh') -Label 'tools/agent-monitor.sh'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\release-gate.sh') -DestFile (Join-Path $ProjectRoot 'tools\release-gate.sh') -Label 'tools/release-gate.sh'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\task-board.sh') -DestFile (Join-Path $ProjectRoot 'tools\task-board.sh') -Label 'tools/task-board.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\lists\bsl-global-names.txt') -DestFile (Join-Path $ProjectRoot 'tools\lists\bsl-global-names.txt') -Label 'tools/lists/bsl-global-names.txt'
 $ds = Copy-TreeSync -SourceDir (Join-Path $cache 'tools\dev-standalone') -DestDir (Join-Path $ProjectRoot 'tools\dev-standalone')
 Write-Host ("  dev-standalone: +{0} ~{1} skip {2}" -f $ds.Added, $ds.Updated, $ds.Skipped)
+
+# Task board (tools/task-board.sh) lives in the main checkout outside git: its path must be ignored.
+Write-Step "Ensure .gitignore ignores .task-board/"
+$giPath = Join-Path $ProjectRoot '.gitignore'
+if ((Test-Path $giPath) -and (Select-String -Path $giPath -Pattern '^/?\.task-board/?$' -Quiet)) {
+    Write-Host "  .gitignore already ignores .task-board/"
+} elseif ($DryRun) {
+    Write-Host "  [dry-run] append .task-board/ to .gitignore"
+} else {
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::AppendAllText($giPath, "`n# Project task board (tools/task-board.sh), shared by worktrees`n.task-board/`n", $utf8)
+    Write-Host "  OK .gitignore += .task-board/"
+}
 
 # .gitattributes: the project may have its own rules - create when missing, never overwrite.
 Write-Step "Sync .gitattributes (only if missing)"
