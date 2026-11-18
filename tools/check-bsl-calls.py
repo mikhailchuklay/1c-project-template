@@ -69,6 +69,11 @@ def main():
         if "CommonModules" in parts:
             name = parts[parts.index("CommonModules") + 1].lower()
             modules[name] = {m.group(1).lower(): bool(m.group(2)) for m in DEF_RE.finditer(text)}
+            # Экспортные методы глобального общего модуля (<Global>true</Global> в описании
+            # CommonModules/<Имя>.xml) вызываются без префикса — это не UNDEFINED.
+            desc = pathlib.Path(*parts[:parts.index("CommonModules") + 1]) / (parts[parts.index("CommonModules") + 1] + ".xml")
+            if desc.exists() and re.search(r"<Global>\s*true\s*</Global>", desc.read_text(encoding="utf-8-sig", errors="replace"), re.I):
+                global_names.update(n for n, exported in modules[name].items() if exported)
 
     findings = []
     for path, text in files.items():
