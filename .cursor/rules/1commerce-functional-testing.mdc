@@ -109,7 +109,7 @@ These are quirks of the `APA_MCP` / `comol/mcp_designer_tools` stack. Violating 
 - **UTF-8 + explicit Basic auth.** Send credentials as proper UTF-8 (PowerShell default CP1251 mangles Cyrillic logins → `401`); every request must carry Basic auth from `.dev.env`.
 - **Tool parameter names** come from `docs/1c-data-mcp.md` — confirm before the first call, do not guess aliases.
 
-**Helper script.** `tools/dev-standalone/Invoke-DataMcp.ps1` encapsulates all of the above — it reads `INFOBASE_PUBLISH_URL` / `IB_USER` / `IB_PASSWORD` from `.dev.env`, builds UTF-8 Basic auth, runs the MCP handshake, flattens newlines, and parses JSON / SSE responses. Use it instead of hand-rolling `Invoke-WebRequest`:
+**Helper script.** `tools/dev-standalone/Invoke-DataMcp.ps1` encapsulates all of the above — it reads the endpoint from `.dev.env` (`INFOBASE_DATA_MCP_URL`, else `INFOBASE_PUBLISH_URL`) and `IB_USER` / `IB_PASSWORD` (in an agent container the password comes from `VRUNNER_DBPWD`), builds UTF-8 Basic auth, runs the MCP handshake, flattens newlines, and parses JSON / SSE responses. Use it instead of hand-rolling `Invoke-WebRequest`:
 
 ```powershell
 tools\dev-standalone\Invoke-DataMcp.ps1 code  -Text 'Результат = Строка(ТекущаяДатаСеанса());'

@@ -12,7 +12,8 @@
       vcloggetlasterror — последняя ошибка журнала регистрации за 24 ч.
 
     Переносимость: адрес и учётные данные читаются из .dev.env проекта
-    (INFOBASE_PUBLISH_URL, IB_USER, IB_PASSWORD). Скрипт не содержит проектных
+    (INFOBASE_DATA_MCP_URL, иначе INFOBASE_PUBLISH_URL; IB_USER; IB_PASSWORD, иначе $env:VRUNNER_DBPWD).
+    Скрипт не содержит проектных
     значений — копируется в любой проект на том же ruleset/тулинге как есть.
 
     Особенности (см. .cursor/rules/1commerce-functional-testing.mdc):
@@ -37,7 +38,7 @@
     JSON-объект аргументов для Action=raw (по умолчанию '{}').
 
 .PARAMETER Url
-    Переопределить endpoint. По умолчанию: INFOBASE_PUBLISH_URL + 'hs/mcp'.
+    Переопределить endpoint. По умолчанию: INFOBASE_DATA_MCP_URL, иначе INFOBASE_PUBLISH_URL, + 'hs/mcp'.
 
 .PARAMETER User
     Переопределить логин. По умолчанию: IB_USER из .dev.env.
@@ -110,12 +111,19 @@ $dotenv = Read-DotEnv -Path $EnvFile
 
 # --- endpoint & auth -------------------------------------------------------
 if (-not $Url) {
-    $base = $dotenv['INFOBASE_PUBLISH_URL']
-    if (-not $base) { throw "INFOBASE_PUBLISH_URL не задан в $EnvFile; укажите -Url." }
-    $Url = $base.TrimEnd('/') + '/hs/mcp'
+    # Отдельная публикация 1c-data-mcp (серверная база) важнее публикации базы: на сервере это разные адреса.
+    $base = $dotenv['INFOBASE_DATA_MCP_URL']
+    if (-not $base) { $base = $dotenv['INFOBASE_PUBLISH_URL'] }
+    if (-not $base) { throw "INFOBASE_DATA_MCP_URL и INFOBASE_PUBLISH_URL не заданы в $EnvFile; укажите -Url." }
+    $base = $base.TrimEnd('/')
+    $Url = if ($base -match '/hs/mcp$') { $base } else { $base + '/hs/mcp' }
 }
 if (-not $PSBoundParameters.ContainsKey('User'))     { $User = $dotenv['IB_USER'] }
-if (-not $PSBoundParameters.ContainsKey('Password')) { $Password = $dotenv['IB_PASSWORD'] }
+if (-not $PSBoundParameters.ContainsKey('Password')) {
+    $Password = $dotenv['IB_PASSWORD']
+    # В контейнере агента пароль ИБ не лежит в .dev.env: его выставляет agent-run из ~/.secrets.
+    if (-not $Password -and $env:VRUNNER_DBPWD) { $Password = $env:VRUNNER_DBPWD }
+}
 
 $baseHeaders = @{
     'Accept'               = 'application/json, text/event-stream'

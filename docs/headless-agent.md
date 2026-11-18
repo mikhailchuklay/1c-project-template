@@ -1,6 +1,6 @@
 # Headless-агент разработчика (Cursor CLI, Codex CLI)
 
-Правило `.cursor/rules/headless-agent.mdc` описывает, как агент без интерфейса ведёт одно OpenSpec-изменение в контейнере разработки. Агента запускает человек или архитектор (Claude, другой агент) по ssh; общение идёт через файл статуса. Исполнителя выбирает `AGENT_HARNESS` контейнера: `cursor` (Cursor CLI, MCP из `.cursor/mcp.json`) или `codex` (Codex CLI, MCP из `.codex/config.toml`). Обёртки `agent-run`, `agent-state`, `agent-reply` одинаковы для обоих.
+Правило `.cursor/rules/headless-agent.mdc` описывает, как агент без интерфейса ведёт одно OpenSpec-изменение в контейнере разработки. Агента запускает человек или архитектор (Claude, другой агент) по ssh; общение идёт через файл статуса. Исполнителя выбирает `AGENT_HARNESS` контейнера: `cursor` (Cursor CLI, MCP из `.cursor/mcp.json`), `codex` (Codex CLI, MCP из `.codex/config.toml`) или `dsh` (DeepSeek Harness со слоем 1С, MCP из `.dsh/agent.env`). Обёртки `agent-run`, `agent-state`, `agent-reply` одинаковы для всех.
 
 ## Что положить в промпт запуска
 
