@@ -222,6 +222,7 @@ Copy-FileSync -SourceFile (Join-Path $cache 'tools\deploy-extension.sh') -DestFi
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\designer-batch.sh') -DestFile (Join-Path $ProjectRoot 'tools\designer-batch.sh') -Label 'tools/designer-batch.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\check-bsl-calls.py') -DestFile (Join-Path $ProjectRoot 'tools\check-bsl-calls.py') -Label 'tools/check-bsl-calls.py'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\stand-load-guard.sh') -DestFile (Join-Path $ProjectRoot 'tools\stand-load-guard.sh') -Label 'tools/stand-load-guard.sh'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-monitor.sh') -DestFile (Join-Path $ProjectRoot 'tools\agent-monitor.sh') -Label 'tools/agent-monitor.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\lists\bsl-global-names.txt') -DestFile (Join-Path $ProjectRoot 'tools\lists\bsl-global-names.txt') -Label 'tools/lists/bsl-global-names.txt'
 $ds = Copy-TreeSync -SourceDir (Join-Path $cache 'tools\dev-standalone') -DestDir (Join-Path $ProjectRoot 'tools\dev-standalone')
 Write-Host ("  dev-standalone: +{0} ~{1} skip {2}" -f $ds.Added, $ds.Updated, $ds.Skipped)
