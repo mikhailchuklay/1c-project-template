@@ -118,6 +118,7 @@ step "Sync tools/deploy-extension.sh, tools/designer-batch.sh, tools/check-bsl-c
 copy_file tools/deploy-extension.sh && echo "  OK tools/deploy-extension.sh"
 copy_file tools/designer-batch.sh && echo "  OK tools/designer-batch.sh"
 copy_file tools/check-bsl-calls.py && echo "  OK tools/check-bsl-calls.py"
+copy_file tools/stand-load-guard.sh && echo "  OK tools/stand-load-guard.sh"
 copy_file tools/lists/bsl-global-names.txt && echo "  OK tools/lists/bsl-global-names.txt"
 sync_tree tools/dev-standalone
 
