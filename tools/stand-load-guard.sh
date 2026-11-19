@@ -74,8 +74,16 @@ fi
 
 problems=()
 
-git merge-base --is-ancestor "$MAIN_REF" HEAD ||
-	problems+=("ветка не содержит актуальный $MAIN_REF ($(git rev-parse --short "$MAIN_REF")): перенесите ветку на него")
+EXT_DIR="$(dirname "$CONFIG")"
+if ! git merge-base --is-ancestor "$MAIN_REF" HEAD; then
+	# Релизный тег, после которого в main ушли только изменения вне расширения (архив OpenSpec,
+	# документация): код расширения тот же — загрузка релиза стенд не откатит (#106, 19.11.2026).
+	if git merge-base --is-ancestor HEAD "$MAIN_REF" && git diff --quiet HEAD "$MAIN_REF" -- "$EXT_DIR"; then
+		echo "Примечание: $MAIN_REF ушёл вперёд только вне $EXT_DIR — код расширения совпадает" >&2
+	else
+		problems+=("ветка не содержит актуальный $MAIN_REF ($(git rev-parse --short "$MAIN_REF")): перенесите ветку на него")
+	fi
+fi
 
 HEAD_VERSION="$(xml_version <"$CONFIG")"
 [[ -n "$HEAD_VERSION" ]] || { echo "В $CONFIG нет <Version>" >&2; exit 2; }
@@ -90,7 +98,7 @@ if [[ -n "$RELEASE_TAG" ]]; then
 		if [[ "$HEAD_VERSION" != "$RELEASE_VERSION" && "$lowest" == "$HEAD_VERSION" ]]; then
 			problems+=("версия $HEAD_VERSION ниже последнего релиза $RELEASE_TAG ($RELEASE_VERSION)")
 		elif [[ "$HEAD_VERSION" == "$RELEASE_VERSION" ]] &&
-			! git diff --quiet "$RELEASE_TAG" -- "$(dirname "$CONFIG")"; then
+			! git diff --quiet "$RELEASE_TAG" -- "$EXT_DIR"; then
 			problems+=("версия $HEAD_VERSION уже выпущена в $RELEASE_TAG, а код отличается: поднимите номер от последнего релиза")
 		fi
 	fi
