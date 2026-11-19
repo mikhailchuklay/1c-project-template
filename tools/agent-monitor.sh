@@ -6,7 +6,8 @@
 #   state=<состояние> ...   — состояние сменилось;
 #   IDLE: ...               — файлы не менялись дольше порога (один раз до возобновления активности);
 #   ssh fail                — нет связи; монитор ждёт минуту и продолжает (обрыв ssh не завершает его).
-# Завершается с кодом 0, когда задача пришла в review, question, error или committed;
+# Завершается с кодом 0, когда задача пришла в review, question, error или committed
+# (итоговое состояние при живом процессе агента до первого «working» считается хвостом прошлого прогона);
 # с --exit-on-idle — с кодом 3 при первом IDLE (архитектору пора посмотреть на агента).
 #
 # Запускать фоновой командой Bash (run_in_background): она не ограничена 30 минутами,
@@ -101,6 +102,7 @@ fi
 
 prev=""
 idle_warned=0
+seen_working=0
 while true; do
 	if ! out=$(probe) || [[ -z "$out" ]]; then
 		echo "ssh fail"
@@ -113,7 +115,12 @@ while true; do
 		prev=$st
 		idle_warned=0
 	fi
-	case "$st" in review | question | error | committed) exit 0 ;; esac
+	[[ "$st" == working ]] && seen_working=1
+	# Итоговое состояние при живом процессе агента и без увиденного «working» — хвост прошлого прогона:
+	# agent-run ещё не перевёл задачу в working (ложная «сдача» в #106 1c-integration-api-bp, 19.11.2026).
+	case "$st" in review | question | error | committed)
+		if ((seen_working)) || [[ "${procs:-0}" -eq 0 ]]; then exit 0; fi ;;
+	esac
 	if [[ "${age:-0}" -ge "$IDLE" ]]; then
 		if [[ $idle_warned -eq 0 ]]; then
 			echo "IDLE: no file activity ${age}m, procs $procs"
