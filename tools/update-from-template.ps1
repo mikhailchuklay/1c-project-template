@@ -223,6 +223,7 @@ Copy-FileSync -SourceFile (Join-Path $cache 'tools\designer-batch.sh') -DestFile
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\check-bsl-calls.py') -DestFile (Join-Path $ProjectRoot 'tools\check-bsl-calls.py') -Label 'tools/check-bsl-calls.py'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\stand-load-guard.sh') -DestFile (Join-Path $ProjectRoot 'tools\stand-load-guard.sh') -Label 'tools/stand-load-guard.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-monitor.sh') -DestFile (Join-Path $ProjectRoot 'tools\agent-monitor.sh') -Label 'tools/agent-monitor.sh'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-workspace-cleanup.sh') -DestFile (Join-Path $ProjectRoot 'tools\agent-workspace-cleanup.sh') -Label 'tools/agent-workspace-cleanup.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\release-gate.sh') -DestFile (Join-Path $ProjectRoot 'tools\release-gate.sh') -Label 'tools/release-gate.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\task-board.sh') -DestFile (Join-Path $ProjectRoot 'tools\task-board.sh') -Label 'tools/task-board.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\lists\bsl-global-names.txt') -DestFile (Join-Path $ProjectRoot 'tools\lists\bsl-global-names.txt') -Label 'tools/lists/bsl-global-names.txt'
