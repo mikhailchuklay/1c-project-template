@@ -5,7 +5,11 @@
 #   1. ветка не содержит актуальную основную ветку origin;
 #   2. ветка не содержит последний выпущенный релиз (ближайший тег основной ветки);
 #   3. версия расширения ниже версии последнего релиза;
-#   4. версия совпадает с выпущенной, а код отличается от релиза (номер уже занят).
+#   4. версия совпадает с выпущенной, а код отличается от релиза (номер уже занят);
+#   5. VRUNNER_IBCONNECTION окружения указывает не на базу INFOBASE_PATH (.dev.env или
+#      окружение): vrunner берёт подключение из VRUNNER_IBCONNECTION, и загрузка ушла бы
+#      в другую базу — обычно во временную копию, на которую agent-run настроил окружение
+#      (#100 1c-integration-api-bp, 20.11.2026: релиз «загружен», а /info стенда не изменился).
 #
 # Код возврата: 0 — можно загружать; 1 — нельзя; 2 — ошибка запуска.
 # Исключение: --allow "причина" — загрузка разрешается, причина пишется в stderr
@@ -73,6 +77,24 @@ fi
 [[ -n "$MAIN_REF" ]] || { echo "Не найдена основная ветка origin" >&2; exit 2; }
 
 problems=()
+
+# Цель загрузки: VRUNNER_IBCONNECTION (его читает vrunner) должен указывать на INFOBASE_PATH.
+ib_connection_of() {
+	local path="$1"
+	case "$path" in
+		/S*|/F*) printf '%s' "$path" ;;
+		*:*/*) printf '/S%s\\%s' "${path%%/*}" "${path#*/}" ;;
+		*) printf '/F%s' "$path" ;;
+	esac
+}
+norm_conn() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr '/' '\\' | sed 's/[\\]*$//'; }
+TARGET_PATH="${INFOBASE_PATH:-$(dev_env_value INFOBASE_PATH)}"
+if [[ -n "${VRUNNER_IBCONNECTION:-}" && -n "$TARGET_PATH" ]]; then
+	EXPECTED_CONN="$(ib_connection_of "$TARGET_PATH")"
+	if [[ "$(norm_conn "$VRUNNER_IBCONNECTION")" != "$(norm_conn "$EXPECTED_CONN")" ]]; then
+		problems+=("VRUNNER_IBCONNECTION=$VRUNNER_IBCONNECTION, а INFOBASE_PATH=$TARGET_PATH: vrunner загрузит не в стенд. Выполните export VRUNNER_IBCONNECTION='$EXPECTED_CONN' (и VRUNNER_DBUSER/VRUNNER_DBPWD стенда)")
+	fi
+fi
 
 EXT_DIR="$(dirname "$CONFIG")"
 if ! git merge-base --is-ancestor "$MAIN_REF" HEAD; then
