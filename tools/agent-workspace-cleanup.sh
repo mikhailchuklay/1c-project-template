@@ -125,7 +125,10 @@ for d in */; do
 	if [ -n "$dirty" ]; then
 		mkdir -p "$HOME/tasks/$d"
 		patch="$HOME/tasks/$d/leftover-uncommitted-$today.patch"
-		{ git -C "$d" diff HEAD; git -C "$d" ls-files --others --exclude-standard -z \
+		# Локальные файлы окружения (копии из основного клона, с ключами) в патч не попадают.
+		{ git -C "$d" diff HEAD; git -C "$d" ls-files --others --exclude-standard -z -- . \
+			':(exclude).dev.env' ':(exclude).dsh/agent.env' ':(exclude).mcp.json' \
+			':(exclude)AGENTS.local.md' ':(exclude)*.env' \
 			| xargs -0 -r -I{} git -C "$d" diff --no-index /dev/null {}; } > "$patch" 2>/dev/null
 		echo "ПАТЧ     $patch ($(du -h "$patch" | cut -f1))"
 	fi
