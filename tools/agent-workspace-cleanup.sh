@@ -99,10 +99,23 @@ for d in */; do
 	[ -d "$d/.git" ] && continue   # клон (базовый) — не трогаем никогда
 	reason=""
 	case " ${KEEP_LIST:-} " in *" $d "*) reason="--keep" ;; esac
-	[ -z "$reason" ] && [ ! -f "$d/.git" ] && reason="не git worktree (вручную)"
+	# Остаток харнеса DSH: после worktree remove он дописывает .dsh/feature-state/*.json,
+	# и каталог появляется снова. Удаляем, только если кроме этих файлов там ничего нет.
+	leftover=0
+	if [ -z "$reason" ] && [ ! -e "$d/.git" ] && [ -d "$d/.dsh/feature-state" ] \
+		&& [ -z "$(find "$d" -mindepth 1 ! -type d ! -path "$d/.dsh/feature-state/*.json" -print -quit)" ]; then
+		leftover=1
+	fi
+	[ -z "$reason" ] && [ "$leftover" = 0 ] && [ ! -f "$d/.git" ] && reason="не git worktree (вручную)"
 	[ -z "$reason" ] && printf '%s\n' "$busy_ws" | grep -qxF "$full" && reason="активная задача agent-state"
 	[ -z "$reason" ] && printf '%s\n' "$busy_ws" | grep -qxF "task:$d" && reason="активная задача agent-state"
 	[ -z "$reason" ] && printf '%s\n' "$cwds" | grep -q "^$full\(/\|$\)" && reason="работает процесс"
+	if [ -z "$reason" ] && [ "$leftover" = 1 ]; then
+		size=$(du -sh "$d" | cut -f1)
+		if [ "${APPLY:-0}" != 1 ]; then echo "УДАЛИТЬ  $d ($size) — остаток харнеса (.dsh/feature-state)"
+		else rm -rf -- "$full" && echo "УДАЛЕНО  $d ($size) — остаток харнеса"; fi
+		continue
+	fi
 	if [ -z "$reason" ]; then
 		repo=$(git -C "$d" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
 		main=${repo%/.git}
