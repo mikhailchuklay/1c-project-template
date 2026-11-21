@@ -14,10 +14,22 @@ usage() {
   --skip-agents-md          не перезаписывать AGENTS.md
   --skip-dev-env-example    не перезаписывать .dev.env.example
   --dry-run                 только показать действия
+  --check                   только сравнить commit из .rules-template-sync.json с головой ветки
+                            шаблона, ничего не менять. Код: 0 — актуально, 1 — отстаёт, 2 — ошибка
+  --report FILE             записать отчёт синхронизации для автоматики: строки
+                            «owned <путь>» (файл шаблона) и «skip <путь> <причина>» (пропуск из-за местной правки)
+
+Ветка шаблона: --ref, иначе RULES_TEMPLATE_REF из .dev.env, иначе ref из .rules-template-sync.json
+(только для --check), иначе master. Журнал изменений шаблона — CHANGELOG-TEMPLATE.md.
 EOF
 }
 
-PROJECT_ROOT=""; TEMPLATE_URL=""; REF=""; SKIP_AGENTS=0; SKIP_ENV_EXAMPLE=0; DRY_RUN=0
+# Версия протокола метаданных синхронизации (.rules-template-sync.json). Мажорная часть меняется
+# только при несовместимом изменении формата; при несовпадении мажорной версии скрипт предупреждает.
+PROTOCOL="template-sync/1.1"
+
+
+PROJECT_ROOT=""; TEMPLATE_URL=""; REF=""; SKIP_AGENTS=0; SKIP_ENV_EXAMPLE=0; DRY_RUN=0; CHECK=0; REPORT=""
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--project-root) PROJECT_ROOT="$2"; shift 2 ;;
@@ -26,6 +38,8 @@ while [[ $# -gt 0 ]]; do
 		--skip-agents-md) SKIP_AGENTS=1; shift ;;
 		--skip-dev-env-example) SKIP_ENV_EXAMPLE=1; shift ;;
 		--dry-run) DRY_RUN=1; shift ;;
+		--check) CHECK=1; shift ;;
+		--report) REPORT="$2"; shift 2 ;;
 		-h|--help) usage; exit 0 ;;
 		*) echo "Неизвестный аргумент: $1" >&2; usage >&2; exit 2 ;;
 	esac
@@ -44,12 +58,107 @@ dev_env_value() {
 		sed -E "s/[[:space:]]+$//; s/^[\"']//; s/[\"']$//"
 }
 
+STAMP="$PROJECT_ROOT/.rules-template-sync.json"
+
+# Строковое поле верхнего уровня из .rules-template-sync.json (без jq).
+stamp_value() {
+	[[ -f "$STAMP" ]] || return 0
+	sed -n -E "s/^[[:space:]]*\"$1\"[[:space:]]*:[[:space:]]*\"([^\"]*)\".*$/\1/p" "$STAMP" | head -n 1
+}
+
+# Предупреждение, если мажорная версия протокола в метаданных проекта не совпадает со скриптом.
+check_protocol() {
+	local have; have="$(stamp_value protocol)"
+	[[ -n "$have" ]] || return 0
+	local have_major="${have#template-sync/}" want_major="${PROTOCOL#template-sync/}"
+	have_major="${have_major%%.*}"; want_major="${want_major%%.*}"
+	if [[ "$have" != template-sync/* || "$have_major" != "$want_major" ]]; then
+		warn "protocol mismatch: .rules-template-sync.json has '$have', script speaks '$PROTOCOL' - read CHANGELOG-TEMPLATE.md before syncing"
+	fi
+}
+
 [[ -n "$TEMPLATE_URL" ]] || TEMPLATE_URL="$(dev_env_value RULES_TEMPLATE_URL)"
+[[ -n "$TEMPLATE_URL" ]] || TEMPLATE_URL="$(stamp_value templateUrl)"
 [[ -n "$TEMPLATE_URL" ]] || TEMPLATE_URL="https://github.com/mikhailchuklay/1c-project-template.git"
 [[ -n "$REF" ]] || REF="$(dev_env_value RULES_TEMPLATE_REF)"
+if ((CHECK)); then [[ -n "$REF" ]] || REF="$(stamp_value ref)"; fi
 [[ -n "$REF" ]] || REF="master"
 
 CACHE="${TMPDIR:-/tmp}/1c-project-template-rules"
+
+# --check: сравнить commit проекта с головой ветки шаблона. Ничего в проекте не меняет.
+# Голова — git ls-remote; история и журнал — неглубокий fetch в отдельный кэш (bare).
+run_check() {
+	trap 'echo "ERROR: --check failed (line $LINENO)" >&2; exit 2' ERR
+	if [[ ! -f "$STAMP" ]]; then
+		echo "ERROR: $STAMP not found - project was never synced; run tools/update-from-template.sh" >&2
+		exit 2
+	fi
+	check_protocol
+	local have; have="$(stamp_value commit)"
+	if [[ -z "$have" ]]; then echo "ERROR: no \"commit\" in $STAMP" >&2; exit 2; fi
+
+	local head
+	head="$(git ls-remote "$TEMPLATE_URL" "refs/heads/$REF" "refs/tags/$REF" "refs/tags/$REF^{}" 2>/dev/null |
+		awk '{ sha = $1 } $2 ~ /\^\{\}$/ { peeled = $1 } END { print (peeled != "" ? peeled : sha) }')" || true
+	if [[ -z "$head" ]]; then
+		if [[ "$REF" =~ ^[0-9a-f]{7,40}$ ]]; then
+			# Закреплённый commit: ветки нет, сравнивать не с чем, кроме самого закрепления.
+			if [[ "$have" == "${REF:0:${#have}}" || "$REF" == "${have:0:${#REF}}" ]]; then
+				echo "OK: pinned to commit $REF (RULES_TEMPLATE_REF), project @$have"; exit 0
+			fi
+			echo "BEHIND: project @$have, pinned RULES_TEMPLATE_REF=$REF - sync to the pinned commit"; exit 1
+		fi
+		echo "ERROR: ref '$REF' not found at $TEMPLATE_URL (git ls-remote)" >&2
+		exit 2
+	fi
+	if [[ "${head:0:${#have}}" == "$have" ]]; then
+		echo "OK: rules are up to date (template $REF @${head:0:7})"
+		exit 0
+	fi
+
+	local cc="${CACHE}-check"
+	if [[ ! -d "$cc/objects" ]]; then rm -rf "$cc"; git init -q --bare "$cc"; fi
+	git -C "$cc" fetch -q --depth 200 "$TEMPLATE_URL" "+$head:refs/check/head" 2>/dev/null ||
+		git -C "$cc" fetch -q --depth 200 "$TEMPLATE_URL" "+refs/heads/$REF:refs/check/head"
+	local base=""
+	base="$(git -C "$cc" rev-parse -q --verify "$have^{commit}" 2>/dev/null)" || base=""
+	if [[ -z "$base" ]]; then
+		git -C "$cc" fetch -q --unshallow "$TEMPLATE_URL" "+refs/check/head:refs/check/head" 2>/dev/null ||
+			git -C "$cc" fetch -q --deepen 2000 "$TEMPLATE_URL" "+$head:refs/check/head" 2>/dev/null || true
+		base="$(git -C "$cc" rev-parse -q --verify "$have^{commit}" 2>/dev/null)" || base=""
+	fi
+
+	local log="CHANGELOG-TEMPLATE.md" entries marked
+	if [[ -n "$base" ]]; then
+		if git -C "$cc" merge-base --is-ancestor refs/check/head "$base" 2>/dev/null; then
+			echo "OK: project @$have is at or ahead of template $REF @${head:0:7}"
+			exit 0
+		fi
+		local n; n="$(git -C "$cc" rev-list --count "$base..refs/check/head")"
+		echo "BEHIND: project @$have, template $REF @${head:0:7}: $n commit(s) behind"
+		entries="$(git -C "$cc" diff --no-color -U0 "$base" refs/check/head -- "$log" |
+			sed -n -E 's/^\+(- .*)$/\1/p')" || entries=""
+	else
+		echo "BEHIND: project @$have is not in the history of template $REF @${head:0:7} (rewritten or unknown commit)"
+		entries="$(git -C "$cc" show "refs/check/head:$log" 2>/dev/null | sed -n -E 's/^(- .*)$/\1/p')" || entries=""
+	fi
+	marked="$(printf '%s\n' "$entries" | grep -E '\[(несовместимо|безопасность)' || true)"
+	if [[ -n "$marked" ]]; then
+		echo
+		echo "Записи журнала с пометками «несовместимо»/«безопасность» ($log):"
+		printf '%s\n' "$marked"
+	fi
+	local total=0
+	[[ -z "$entries" ]] || total="$(printf '%s\n' "$entries" | grep -c . || true)"
+	echo
+	echo "Новых записей в $log: $total. Синхронизация: tools/update-from-template.sh (одним исполнителем, не из агента задачи)."
+	exit 1
+}
+
+if ((CHECK)); then run_check; fi
+
+check_protocol
 step "Template cache: $CACHE"
 step "URL: $TEMPLATE_URL  ref: $REF"
 if [[ -d "$CACHE/.git" ]]; then
@@ -68,10 +177,14 @@ PLATFORM_EXCLUDE=(1c-platform-tools 1c-platform-tools-config 1c-platform-tools-c
 	1c-platform-tools-infobase 1c-platform-tools-mcp 1c-platform-tools-run 1c-platform-tools-setversion
 	1c-platform-tools-support 1c-platform-tools-test)
 
+REPORT_LINES=()
+report() { REPORT_LINES+=("$*"); }
+
 copy_file() {
 	# $1 — путь относительно корня шаблона; $2 — надпись (по умолчанию путь)
 	local rel="$1" src="$CACHE/$1" dst="$PROJECT_ROOT/$1"
 	if [[ ! -f "$src" ]]; then warn "Skip missing: $rel"; return 1; fi
+	report "owned $rel"
 	if ((DRY_RUN)); then
 		if [[ -e "$dst" ]]; then echo "  [dry-run] Updated $rel"; else echo "  [dry-run] Added $rel"; fi
 		return 0
@@ -143,6 +256,7 @@ if [[ ! -e "$PROJECT_ROOT/.gitattributes" ]]; then
 	copy_file .gitattributes && echo "  OK .gitattributes"
 elif [[ -f "$CACHE/.gitattributes" ]] && ! cmp -s "$CACHE/.gitattributes" "$PROJECT_ROOT/.gitattributes"; then
 	warn ".gitattributes differs from the template - merge manually (template: $CACHE/.gitattributes)"
+	report "skip .gitattributes local-differs"
 else
 	echo "  .gitattributes up to date"
 fi
@@ -181,15 +295,16 @@ json_str() { local s="${1//\\/\\\\}"; s="${s//\"/\\\"}"; printf '"%s"' "$s"; }
 if ((!DRY_RUN)); then
 	{
 		printf '{\n'
-		printf '    "protocol": "template-sync/1.0",\n'
+		printf '    "protocol": %s,\n' "$(json_str "$PROTOCOL")"
 		printf '    "templateUrl": %s,\n' "$(json_str "$TEMPLATE_URL")"
 		printf '    "ref": %s,\n' "$(json_str "$REF")"
 		printf '    "commit": %s,\n' "$(json_str "$COMMIT")"
-		printf '    "syncedAt": %s,\n' "$(json_str "$(date -u +%Y-%m-%dT%H:%M:%SZ)")"
-		printf '    "projectRoot": %s\n' "$(json_str "$PROJECT_ROOT")"
+		printf '    "syncedAt": %s\n' "$(json_str "$(date -u +%Y-%m-%dT%H:%M:%SZ)")"
 		printf '}\n'
-	} >"$PROJECT_ROOT/.rules-template-sync.json"
+	} >"$STAMP"
 fi
+report "owned .rules-template-sync.json"
+if [[ -n "$REPORT" ]]; then printf '%s\n' "${REPORT_LINES[@]}" >"$REPORT"; fi
 
 step "Done (template @$COMMIT)"
 cat <<'EOF'

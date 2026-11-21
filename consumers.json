@@ -1,0 +1,10 @@
+{
+    "$comment": "Добровольная подписка проектов на автосинхронизацию правил из шаблона (.github/workflows/template-sync.yml). repository — owner/name на GitHub; branch — основная ветка проекта; autoMerge — сливать PR «/updaterules» без человека, если изменены только файлы шаблона и нет пропусков из-за местных правок; templateRef (необязательно) — закреплённая ветка или тег шаблона, по умолчанию ветка, в которую слит PR шаблона. Проект, которого нет в списке, забирает правила сам: tools/update-from-template.sh --check и /updaterules.",
+    "consumers": [
+        {
+            "repository": "mikhailchuklay/1c-integration-api-bp",
+            "branch": "main",
+            "autoMerge": true
+        }
+    ]
+}

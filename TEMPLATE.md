@@ -125,7 +125,7 @@ bash tools/dev-standalone/start.sh
 ## 7. OpenSpec и правила агента
 
 - OpenSpec: `openspec/specs/`, `openspec/changes/` — пустой skeleton готов.
-- **Обновление правил из шаблона:** `/updaterules` → `tools/update-from-template.ps1` (источник: [1c-project-template](https://github.com/mikhailchuklay/1c-project-template)). Опционально в `.dev.env`: `RULES_TEMPLATE_URL`, `RULES_TEMPLATE_REF`.
+- **Обновление правил из шаблона:** `/updaterules` → `tools/update-from-template.ps1` (источник: [1c-project-template](https://github.com/mikhailchuklay/1c-project-template)). Опционально в `.dev.env`: `RULES_TEMPLATE_URL`, `RULES_TEMPLATE_REF` (закрепление версии). Отставание: `tools/update-from-template.sh --check` (0 — актуально, 1 — отстаёт, 2 — ошибка); что изменилось и что делать проекту — [CHANGELOG-TEMPLATE.md](CHANGELOG-TEMPLATE.md); подписка на автосинхронизацию — `consumers.json`.
 - Первичная установка «голого» `comol/ai_rules_1c` через `install.ps1` — только если проект **не** из этого шаблона; для шаблонных проектов не нужна.
 
 ## 8. Git
