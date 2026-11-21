@@ -18,15 +18,15 @@
 # По умолчанию — сухой прогон (план). --apply — удалить. Печатает du -sh ~/work до и после.
 #
 # Пример:
-#   tools/agent-workspace-cleanup.sh cursor1            # план
-#   tools/agent-workspace-cleanup.sh --apply cursor1    # удалить
-#   tools/agent-workspace-cleanup.sh --apply --keep advance-offset-upd2-102 cursor1
+#   tools/agent-workspace-cleanup.sh 1                  # план
+#   tools/agent-workspace-cleanup.sh --apply 1          # удалить
+#   tools/agent-workspace-cleanup.sh --apply --keep advance-offset-upd2-102 1
 set -uo pipefail
 
 usage() {
 	cat <<EOF
 Использование: $0 [--apply] [--keep <каталог>]... <контейнер>
-  контейнер   суффикс контейнера: cursor1, codex1, dsh1 (контейнер \${AGENT_CONTAINER_PREFIX}<суффикс>)
+  контейнер   номер контейнера агента: 1, 2, 3 (контейнер dev-agent<N>) или полное имя
   --apply     удалить (по умолчанию — только план)
   --keep D    не трогать каталог ~/work/D (можно повторять)
 
@@ -34,7 +34,7 @@ usage() {
 
 Переменные окружения:
   AGENT_SSH_HOST          ssh-алиас хоста контейнеров (по умолчанию dev-workplaces-via-services)
-  AGENT_CONTAINER_PREFIX  префикс имени контейнера (по умолчанию dev-agent-)
+  AGENT_CONTAINER_PREFIX  префикс, приписываемый к аргументу как есть (по умолчанию не задан)
   AGENT_EXEC_USER         пользователь docker exec (по умолчанию dev)
 EOF
 }
@@ -56,7 +56,15 @@ for k in "${KEEP[@]}"; do
 done
 
 HOST="${AGENT_SSH_HOST:-dev-workplaces-via-services}"
-CONTAINER="${AGENT_CONTAINER_PREFIX:-dev-agent-}$1"
+# Имя контейнера: номер N -> dev-agent<N> (универсальные контейнеры с 21.11.2026), полное имя dev-agent… — как есть,
+# прежний суффикс по харнесу (cursor1) -> dev-agent-cursor1. AGENT_CONTAINER_PREFIX, если задан, просто приписывается.
+agent_container() {
+	if [[ -n "${AGENT_CONTAINER_PREFIX:-}" ]]; then printf '%s%s' "$AGENT_CONTAINER_PREFIX" "$1"
+	elif [[ "$1" == dev-agent* ]]; then printf '%s' "$1"
+	elif [[ "$1" =~ ^[0-9]+$ ]]; then printf 'dev-agent%s' "$1"
+	else printf 'dev-agent-%s' "$1"; fi
+}
+CONTAINER=$(agent_container "$1")
 EXEC_USER="${AGENT_EXEC_USER:-dev}"
 
 # Скрипт в контейнере получает параметры через окружение; аргументы проверены выше.

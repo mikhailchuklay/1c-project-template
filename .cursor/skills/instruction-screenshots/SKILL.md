@@ -13,7 +13,7 @@ The agent captures the 1C window itself, marks up the steps and hands over finis
 | Environment | Display | Notes |
 |---|---|---|
 | Developer workplace (`dev-<name>`, GNOME over RDP) | `$DISPLAY` of the session, already set in the Cursor terminal | The session must be alive: the person is connected or disconnected without logging out. Capturing shows what is on the person's screen — say before you start clicking there. |
-| Agent container (`dev-agent-*`, no desktop) | the Xvfb display of the test client, usually `:99` | Start the client with the `1c-qa-testing` skill / `qa-testclient.sh start …`; capture with `--display :99`. |
+| Agent container (`dev-agent<N>`, no desktop) | the Xvfb display of the test client, usually `:99` | Start the client with the `1c-qa-testing` skill / `qa-testclient.sh start …`; capture with `--display :99`. |
 
 Tools come with the images `onec-desktop` / `onec-agent` from `20261119-screenshots` on: `maim` (capture), `xdotool` (windows), Pillow (`python3-pil`, markup), DejaVu fonts (Cyrillic). If `shot.py capture` reports that `maim` is missing, the container runs an older image — report it, do not install packages into the container.
 

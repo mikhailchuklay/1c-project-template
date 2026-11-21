@@ -21,13 +21,13 @@
 # Только чтение: в контейнере ничего не меняет.
 #
 # Пример (фоновое ожидание после agent-run):
-#   tools/agent-monitor.sh --exit-on-idle cursor1 advance-limits-43 25 issue-43-advance-limits
+#   tools/agent-monitor.sh --exit-on-idle 1 advance-limits-43 25 issue-43-advance-limits
 set -uo pipefail
 
 usage() {
 	cat <<EOF
 Использование: $0 [--once | --exit-on-idle] <контейнер> <task> [idle-минуты] [рабочее-дерево]
-  контейнер       суффикс контейнера: cursor1, codex1, dsh1 (контейнер \${AGENT_CONTAINER_PREFIX}<суффикс>)
+  контейнер       номер контейнера агента: 1, 2, 3 (контейнер dev-agent<N>) или полное имя
   task            идентификатор задачи agent-state
   idle-минуты     порог предупреждения IDLE, по умолчанию 25
   рабочее-дерево  каталог рабочего дерева задачи: имя в ~/work или абсолютный путь в контейнере;
@@ -40,7 +40,7 @@ usage() {
 
 Переменные окружения:
   AGENT_SSH_HOST          ssh-алиас хоста контейнеров (по умолчанию dev-workplaces-via-services)
-  AGENT_CONTAINER_PREFIX  префикс имени контейнера (по умолчанию dev-agent-)
+  AGENT_CONTAINER_PREFIX  префикс, приписываемый к аргументу как есть (по умолчанию не задан)
   AGENT_EXEC_USER         пользователь docker exec (по умолчанию dev)
   AGENT_MONITOR_INTERVAL  пауза между замерами, секунд (по умолчанию 60)
   AGENT_MONITOR_WINDOW    окно поиска свежих файлов, минут (по умолчанию 600)
@@ -64,7 +64,15 @@ T=$2
 IDLE=${3:-25}
 W=${4:-}
 SSH_HOST=${AGENT_SSH_HOST:-dev-workplaces-via-services}
-PREFIX=${AGENT_CONTAINER_PREFIX:-dev-agent-}
+# Имя контейнера: номер N -> dev-agent<N> (универсальные контейнеры с 21.11.2026), полное имя dev-agent… — как есть,
+# прежний суффикс по харнесу (cursor1) -> dev-agent-cursor1. AGENT_CONTAINER_PREFIX, если задан, просто приписывается.
+agent_container() {
+	if [[ -n "${AGENT_CONTAINER_PREFIX:-}" ]]; then printf '%s%s' "$AGENT_CONTAINER_PREFIX" "$1"
+	elif [[ "$1" == dev-agent* ]]; then printf '%s' "$1"
+	elif [[ "$1" =~ ^[0-9]+$ ]]; then printf 'dev-agent%s' "$1"
+	else printf 'dev-agent-%s' "$1"; fi
+}
+CONTAINER=$(agent_container "$C")
 EXEC_USER=${AGENT_EXEC_USER:-dev}
 INTERVAL=${AGENT_MONITOR_INTERVAL:-60}
 WINDOW=${AGENT_MONITOR_WINDOW:-600}
@@ -91,7 +99,7 @@ echo "${st:-?} $age $p"
 probe() {
 	# shellcheck disable=SC2029  # имена контейнера и пользователя раскрываются локально намеренно
 	ssh -o ConnectTimeout=20 -o BatchMode=yes "$SSH_HOST" \
-		"docker exec -i -u $EXEC_USER $PREFIX$C bash -s -- $(printf '%q ' "$T" "$W" "$WINDOW")" <<<"$REMOTE" 2>/dev/null
+		"docker exec -i -u $EXEC_USER $CONTAINER bash -s -- $(printf '%q ' "$T" "$W" "$WINDOW")" <<<"$REMOTE" 2>/dev/null
 }
 
 if [[ $ONCE -eq 1 ]]; then
