@@ -23,7 +23,7 @@ usage() {
 
   list [--all] [--json]          очередь (без закрытых, --all — все) и занятость стендов
   set <issue> поле=значение…     создать/изменить задачу; поля:
-                                 title priority architect executor harness stand ib state
+                                 title priority architect executor harness model stand ib state
                                  pr release tokens cost_usd note
                                  (state: queued|working|question|review|accepted|released|closed)
   inc <issue> <счётчик> [N] [--note текст]
@@ -58,7 +58,7 @@ import sys
 import tempfile
 
 PATH = os.environ["TASK_BOARD_FILE"]
-TASK_FIELDS = {"title", "priority", "architect", "executor", "harness", "stand", "ib", "state",
+TASK_FIELDS = {"title", "priority", "architect", "executor", "harness", "model", "stand", "ib", "state",
                "pr", "release", "tokens", "cost_usd", "note"}
 STATES = {"queued", "working", "question", "review", "accepted", "released", "closed"}
 COUNTERS = {"review_rounds", "agent_runs", "hotfixes"}
@@ -237,7 +237,7 @@ def cmd_release(args):
 
 def fmt_task(t):
     return (f"#{t['issue']:<5} p{t.get('priority', '-')!s:<3} {t.get('state', ''):<9} "
-            f"исп={t.get('executor', '—')}/{t.get('harness', '—')} стенд={t.get('stand', '—')} "
+            f"исп={t.get('executor', '—')}/{t.get('harness', '—')}{('/' + t['model']) if t.get('model') else ''} стенд={t.get('stand', '—')} "
             f"арх={t.get('architect', '—')} ревью={t.get('review_rounds', 0)} прогоны={t.get('agent_runs', 0)} "
             f"хотфиксы={t.get('hotfixes', 0)}  {t.get('title', '')}")
 
@@ -279,7 +279,7 @@ def cmd_card(args):
         print(json.dumps(t, ensure_ascii=False, indent=2))
         return
     h = hours(t)
-    rows = [("Исполнитель", f"{t.get('executor', '—')} ({t.get('harness', '—')})"),
+    rows = [("Исполнитель", f"{t.get('executor', '—')} ({t.get('harness', '—')}{', ' + t['model'] if t.get('model') else ''})"),
             ("Архитектор-сессия", t.get("architect", "—")), ("Стенд / база", f"{t.get('stand', '—')} / {t.get('ib', '—')}"),
             ("Круги ревью", t.get("review_rounds", 0)), ("Прогоны агента", t.get("agent_runs", 0)),
             ("Время, ч", "—" if h is None else h), ("Токены агента", t.get("tokens", "нет данных")),
@@ -308,6 +308,8 @@ def cmd_scorecard(args):
         if not stamp or dt.datetime.fromisoformat(stamp) < since:
             continue
         key = t.get("harness") or t.get("executor") or "—"
+        if t.get("model"):
+            key = f"{key} / {t['model']}"
         g = groups.setdefault(key, {"tasks": 0, "released": 0, "review_rounds": 0, "agent_runs": 0,
                                     "hotfixes": 0, "hours": 0.0, "tokens": 0, "cost_usd": 0.0, "cost_known": 0})
         g["tasks"] += 1
@@ -320,8 +322,8 @@ def cmd_scorecard(args):
         if isinstance(t.get("cost_usd"), (int, float)):
             g["cost_usd"] += t["cost_usd"]
             g["cost_known"] += 1
-    print(f"Сводка по харнесам за {days} дн. (с {since:%Y-%m-%d})\n")
-    print("| Харнес | Задач | Выпущено | Ревью/задачу | Прогонов/задачу | Хотфиксов | Часов/задачу | Токены | $ |")
+    print(f"Сводка по харнесам и моделям за {days} дн. (с {since:%Y-%m-%d})\n")
+    print("| Харнес / модель | Задач | Выпущено | Ревью/задачу | Прогонов/задачу | Хотфиксов | Часов/задачу | Токены | $ |")
     print("|---|---|---|---|---|---|---|---|---|")
     for key, g in sorted(groups.items()):
         n = g["tasks"]
