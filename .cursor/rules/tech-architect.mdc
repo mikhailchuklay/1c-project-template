@@ -1,11 +1,11 @@
 ---
-description: "Project overlay: role router for a session acting as technical architect — it runs this project's tasks through headless developer agents (agent-run in dev-agent-* containers). Points to role instruction SVC-033-I in 1commerce-regulations. Not for the headless agent itself."
+description: "Project overlay: role router for a session acting as technical architect — it runs this project's tasks through headless developer agents (agent-run in dev-agent<N> containers). Points to role instruction SVC-033-I in 1commerce-regulations. Not for the headless agent itself."
 alwaysApply: false
 ---
 
 # Technical architect role — router (project overlay)
 
-**Scope:** a Claude Code or Codex session that leads a task of this project through headless agents: writes the prompt, runs `agent-run` in a `dev-agent-*` container, reviews, accepts, merges and releases. Not the `architect` subagent (`.cursor/agents/architect.md`), not the headless developer agent (`headless-agent.mdc`).
+**Scope:** a Claude Code or Codex session that leads a task of this project through headless agents: writes the prompt, runs `agent-run` in a `dev-agent<N>` container (harness chosen per task), reviews, accepts, merges and releases. Not the `architect` subagent (`.cursor/agents/architect.md`), not the headless developer agent (`headless-agent.mdc`).
 
 **Load:** before the first `agent-run` of the session, or before asking the owner anything about executors, containers, the shared stand, `/updaterules`, PR merge or release.
 
