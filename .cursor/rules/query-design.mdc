@@ -33,6 +33,15 @@ Router for query work: load it first, then only the companions the table selects
 - **`СрезПервых` / `СрезПоследних` exist only for periodic information registers** (`InformationRegisterPeriodicity` other than `Nonperiodical`); a non-periodic register is read as a plain table. Check the periodicity in the metadata card before writing the slice.
 - **Resource fields of a virtual table are derived names** — `КоличествоОстаток`, `СуммаОборот`, `КоличествоНачальныйОстаток`, `КоличествоПриход` / `КоличествоРасход` — not the resource name itself. Take them from the register's metadata card (`get_metadata_details` / `get_object_dossier`, the virtual tables and their fields when the card lists them); never guess the suffix.
 
+## Strings of unlimited length
+
+An attribute typed `Строка` without a length (comments, multi-line text fields; `<v8:Length>0</v8:Length>` in the XML) cannot take part in a comparison, `СГРУППИРОВАТЬ ПО`, `УПОРЯДОЧИТЬ ПО`, `РАЗЛИЧНЫЕ` or a join condition: the query fails («Нельзя сравнивать поля неограниченной длины и поля несовместимых типов»). Check the type first and cut the value:
+
+- emptiness — `ПОДСТРОКА(Док.Комментарий, 1, 1) <> ""`, never `Док.Комментарий <> ""`;
+- comparison, grouping, ordering — `ВЫРАЗИТЬ(Док.Комментарий КАК СТРОКА(200))` or `ПОДСТРОКА(Док.Комментарий, 1, 200)`.
+
+A failed `vcexecutequery` / `vcvalidatequery` on such a field is this rule, not a server fault: fix the expression instead of retrying variants.
+
 ## Load order
 
 `query-design.md` → `standards(name="dev-standards-architecture") §3 → "Queries"` (hard rules) → `.cursor/skills/1c-metadata-manage/docs/query-writing.md` **or** `.cursor/skills/1c-metadata-manage/docs/query-optimization.md` (how-to) → `standards(name="anti-patterns")` (only when reviewing / fixing).

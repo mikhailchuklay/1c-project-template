@@ -5,7 +5,7 @@ alwaysApply: false
 
 # Model profile — Grok 4.7 (project overlay)
 
-**Load:** `AGENT_MODEL=grok47`, or you know you run as Grok 4.7 in Cursor; once per session, before the first non-trivial task. Contract — `.cursor/rules/model-adaptation.mdc`: a profile tunes initiative and communication only; every `AGENTS.md` gate, the validator chain, `CONFUSION` and the evidence one-liners stay as written.
+**Load:** `AGENT_MODEL=grok47`, or you know you run as Grok 4.7 in Cursor; once per session, before the first non-trivial task. A new command in the same chat (`/opsx:propose` → «идём дальше» → apply) is the same session: do not read this profile again. Contract — `.cursor/rules/model-adaptation.mdc`: a profile tunes initiative and communication only; every `AGENTS.md` gate, the validator chain, `CONFUSION` and the evidence one-liners stay as written.
 
 **Source of the deltas.** xAI publishes no per-model prompting guide comparable to the Anthropic or OpenAI pages, so this profile is empirical: it is distilled from the owner's Cursor sessions on Grok 4.7 in this template's projects (05–08.11.2026, six sessions, about 120 user messages). In those sessions roughly half of the user's messages were «что дальше?», «делай», «доделай». The model works accurately and reads tools well; what it does worse than the Claude 5 / GPT-6 generation is **finishing**: it treats every report, every finished background task and every open question as the end of its turn. Everything below targets that.
 
