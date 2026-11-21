@@ -26,6 +26,16 @@
 
 .PARAMETER DryRun
     Report actions without writing.
+
+.PARAMETER Check
+    Only compare "commit" in .rules-template-sync.json with the head of the template ref; change nothing.
+    Exit code: 0 - up to date, 1 - behind (commit count and CHANGELOG-TEMPLATE.md entries marked
+    [несовместимо]/[безопасность] are printed), 2 - error. Ref: -Ref, else RULES_TEMPLATE_REF,
+    else "ref" from .rules-template-sync.json, else master.
+
+.PARAMETER Report
+    Write a sync report for automation: lines "owned <path>" (template-owned file) and
+    "skip <path> <reason>" (skipped because of a local edit).
 #>
 [CmdletBinding()]
 param(
@@ -34,10 +44,17 @@ param(
     [string]$Ref = '',
     [switch]$SkipAgentsMd,
     [switch]$SkipDevEnvExample,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$Check,
+    [string]$Report = ''
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Protocol of the sync stamp (.rules-template-sync.json). The major part changes only on an
+# incompatible format change; a major mismatch produces a warning.
+$Protocol = 'template-sync/1.1'
+$script:ReportLines = New-Object System.Collections.Generic.List[string]
 
 function Write-Step([string]$Message) {
     Write-Host "==> $Message" -ForegroundColor Cyan
@@ -78,6 +95,9 @@ function Copy-TreeSync {
         $dst = Join-Path $DestDir $rel
         $dstParent = Split-Path $dst -Parent
         $action = if (Test-Path $dst) { 'Updated' } else { 'Added' }
+        if ($script:ReportPrefixRoot) {
+            $script:ReportLines.Add('owned ' + ($dst.Substring($script:ReportPrefixRoot.Length).TrimStart('\', '/') -replace '\\', '/'))
+        }
         if ($DryRun) {
             Write-Host "  [dry-run] $action $rel"
             $stats[$action]++
@@ -98,6 +118,7 @@ function Copy-FileSync {
         Write-Warning "Skip missing: $Label"
         return
     }
+    $script:ReportLines.Add("owned $Label")
     if ($DryRun) {
         Write-Host "  [dry-run] Write $Label"
         return
@@ -115,9 +136,29 @@ if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
 }
 $ProjectRoot = (Resolve-Path $ProjectRoot).Path
 $devEnv = Join-Path $ProjectRoot '.dev.env'
+$stampPath = Join-Path $ProjectRoot '.rules-template-sync.json'
+$script:ReportPrefixRoot = $ProjectRoot
+
+$stampData = $null
+if (Test-Path $stampPath) {
+    try { $stampData = Get-Content -Raw -Encoding UTF8 $stampPath | ConvertFrom-Json } catch { $stampData = $null }
+}
+
+function Test-ProtocolMajor {
+    if (-not $stampData -or -not $stampData.protocol) { return }
+    $have = [string]$stampData.protocol
+    $haveMajor = (($have -replace '^template-sync/', '') -split '\.')[0]
+    $wantMajor = (($Protocol -replace '^template-sync/', '') -split '\.')[0]
+    if (-not $have.StartsWith('template-sync/') -or $haveMajor -ne $wantMajor) {
+        Write-Warning "protocol mismatch: .rules-template-sync.json has '$have', script speaks '$Protocol' - read CHANGELOG-TEMPLATE.md before syncing"
+    }
+}
 
 if ([string]::IsNullOrWhiteSpace($TemplateUrl)) {
     $TemplateUrl = Read-DevEnvValue -Path $devEnv -Key 'RULES_TEMPLATE_URL'
+}
+if ([string]::IsNullOrWhiteSpace($TemplateUrl) -and $stampData -and $stampData.templateUrl) {
+    $TemplateUrl = [string]$stampData.templateUrl
 }
 if ([string]::IsNullOrWhiteSpace($TemplateUrl)) {
     $TemplateUrl = 'https://github.com/mikhailchuklay/1c-project-template.git'
@@ -125,11 +166,94 @@ if ([string]::IsNullOrWhiteSpace($TemplateUrl)) {
 if ([string]::IsNullOrWhiteSpace($Ref)) {
     $Ref = Read-DevEnvValue -Path $devEnv -Key 'RULES_TEMPLATE_REF'
 }
+if ($Check -and [string]::IsNullOrWhiteSpace($Ref) -and $stampData -and $stampData.ref) {
+    $Ref = [string]$stampData.ref
+}
 if ([string]::IsNullOrWhiteSpace($Ref)) {
     $Ref = 'master'
 }
 
-$cache = Join-Path $env:TEMP '1c-project-template-rules'
+$tempRoot = if ($env:TEMP) { $env:TEMP } elseif ($env:TMPDIR) { $env:TMPDIR } else { [IO.Path]::GetTempPath() }
+$cache = Join-Path $tempRoot '1c-project-template-rules'
+
+# -Check: compare the project's commit with the template ref head; never writes into the project.
+# Head via git ls-remote; history and changelog via a shallow fetch into a separate bare cache.
+function Invoke-TemplateCheck {
+    $ErrorActionPreference = 'Continue'
+    if (-not $stampData) {
+        [Console]::Error.WriteLine("ERROR: $stampPath not found or unreadable - run tools/update-from-template.ps1")
+        exit 2
+    }
+    Test-ProtocolMajor
+    $have = [string]$stampData.commit
+    if ([string]::IsNullOrWhiteSpace($have)) {
+        [Console]::Error.WriteLine("ERROR: no ""commit"" in $stampPath"); exit 2
+    }
+    $lines = @(git ls-remote $TemplateUrl "refs/heads/$Ref" "refs/tags/$Ref" "refs/tags/$Ref^{}" 2>$null)
+    $head = ''
+    foreach ($l in $lines) {
+        $f = $l -split "`t"
+        if ($f.Count -lt 2) { continue }
+        if ($f[1].EndsWith('^{}')) { $head = $f[0]; break }
+        $head = $f[0]
+    }
+    if (-not $head) {
+        if ($Ref -match '^[0-9a-f]{7,40}$') {
+            if ($Ref.StartsWith($have) -or $have.StartsWith($Ref)) {
+                Write-Host "OK: pinned to commit $Ref (RULES_TEMPLATE_REF), project @$have"; exit 0
+            }
+            Write-Host "BEHIND: project @$have, pinned RULES_TEMPLATE_REF=$Ref - sync to the pinned commit"; exit 1
+        }
+        [Console]::Error.WriteLine("ERROR: ref '$Ref' not found at $TemplateUrl (git ls-remote)"); exit 2
+    }
+    $short = $head.Substring(0, 7)
+    if ($head.StartsWith($have)) {
+        Write-Host "OK: rules are up to date (template $Ref @$short)"; exit 0
+    }
+    $cc = "$cache-check"
+    if (-not (Test-Path (Join-Path $cc 'objects'))) {
+        if (Test-Path $cc) { Remove-Item -Recurse -Force $cc }
+        git init -q --bare $cc 2>&1 | Out-Null
+    }
+    git -C $cc fetch -q --depth 200 $TemplateUrl "+${head}:refs/check/head" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        git -C $cc fetch -q --depth 200 $TemplateUrl "+refs/heads/${Ref}:refs/check/head" 2>$null
+        if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine("ERROR: git fetch of $Ref failed"); exit 2 }
+    }
+    $base = git -C $cc rev-parse -q --verify "$have^{commit}" 2>$null
+    if (-not $base) {
+        git -C $cc fetch -q --unshallow $TemplateUrl "+refs/check/head:refs/check/head" 2>$null
+        if ($LASTEXITCODE -ne 0) { git -C $cc fetch -q --deepen 2000 $TemplateUrl "+${head}:refs/check/head" 2>$null }
+        $base = git -C $cc rev-parse -q --verify "$have^{commit}" 2>$null
+    }
+    $log = 'CHANGELOG-TEMPLATE.md'
+    if ($base) {
+        git -C $cc merge-base --is-ancestor refs/check/head $base 2>$null
+        if ($LASTEXITCODE -eq 0) { Write-Host "OK: project @$have is at or ahead of template $Ref @$short"; exit 0 }
+        $n = git -C $cc rev-list --count "$base..refs/check/head"
+        Write-Host "BEHIND: project @$have, template $Ref @${short}: $n commit(s) behind"
+        $entries = @(git -C $cc diff --no-color -U0 $base refs/check/head -- $log 2>$null |
+            Where-Object { $_ -match '^\+- ' } | ForEach-Object { $_.Substring(1) })
+    } else {
+        Write-Host "BEHIND: project @$have is not in the history of template $Ref @$short (rewritten or unknown commit)"
+        $entries = @(git -C $cc show "refs/check/head:$log" 2>$null | Where-Object { $_ -match '^- ' })
+    }
+    $marked = @($entries | Where-Object { $_ -match '\[(несовместимо|безопасность)' })
+    if ($marked.Count -gt 0) {
+        Write-Host ''
+        Write-Host "Записи журнала с пометками «несовместимо»/«безопасность» (${log}):"
+        $marked | ForEach-Object { Write-Host $_ }
+    }
+    Write-Host ''
+    Write-Host ("Новых записей в {0}: {1}. Синхронизация: tools/update-from-template.ps1 (одним исполнителем, не из агента задачи)." -f $log, $entries.Count)
+    exit 1
+}
+
+if ($Check) {
+    try { Invoke-TemplateCheck } catch { [Console]::Error.WriteLine("ERROR: -Check failed: $_"); exit 2 }
+}
+
+Test-ProtocolMajor
 Write-Step "Template cache: $cache"
 Write-Step "URL: $TemplateUrl  ref: $Ref"
 
@@ -251,6 +375,7 @@ if (-not (Test-Path $gaDst)) {
     Copy-FileSync -SourceFile $gaSrc -DestFile $gaDst -Label '.gitattributes'
 } elseif ((Test-Path $gaSrc) -and ((Get-FileHash $gaSrc).Hash -ne (Get-FileHash $gaDst).Hash)) {
     Write-Warning ".gitattributes differs from the template - merge manually (template: $gaSrc)"
+    $script:ReportLines.Add('skip .gitattributes local-differs')
 } else {
     Write-Host "  .gitattributes up to date"
 }
@@ -310,19 +435,22 @@ if ($inRepo -ne 'true') {
     Write-Host ("  executable bit set: {0}" -f $fixed)
 }
 
-# Lightweight stamp (does not replace .ai-rules.json protocol from install.ps1)
-$stampPath = Join-Path $ProjectRoot '.rules-template-sync.json'
+# Lightweight stamp (does not replace .ai-rules.json protocol from install.ps1).
+# No absolute project path: the stamp is committed and must not leak a local/temp directory.
 $commit = (git -C $cache rev-parse --short HEAD)
-$stamp = @{
-    protocol        = 'template-sync/1.0'
+$stamp = [ordered]@{
+    protocol        = $Protocol
     templateUrl     = $TemplateUrl
     ref             = $Ref
     commit          = $commit
-    syncedAt        = (Get-Date).ToUniversalTime().ToString('o')
-    projectRoot     = $ProjectRoot
+    syncedAt        = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 } | ConvertTo-Json
 if (-not $DryRun) {
     [IO.File]::WriteAllText($stampPath, $stamp, [Text.UTF8Encoding]::new($false))
+}
+$script:ReportLines.Add('owned .rules-template-sync.json')
+if ($Report) {
+    [IO.File]::WriteAllLines($Report, $script:ReportLines, [Text.UTF8Encoding]::new($false))
 }
 
 Write-Step "Done (template @$commit)"

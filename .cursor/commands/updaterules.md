@@ -26,7 +26,13 @@ From the template clone into the **current project**:
 
 Executable bit: for every synced file that is `100755` in the template (shell scripts in `tools/`, `qa-testclient.sh`), the script sets `+x` in the project git index (`update-index --chmod=+x`, new files — `git add --chmod=+x`). On Windows git records copied files as `100644`, and Linux agents/containers then cannot run them. Commit the resulting mode changes together with the sync.
 
-Stamp file written: `.rules-template-sync.json` (commit / URL / time).
+Stamp file written: `.rules-template-sync.json` (protocol `template-sync/1.x`, URL, ref, commit, time; no local paths). A major protocol mismatch between the stamp and the script prints a warning.
+
+## Check only (`--check`)
+
+`bash tools/update-from-template.sh --check` (PowerShell: `-Check`) changes nothing: it compares `commit` in `.rules-template-sync.json` with the head of the template ref (`--ref`, else `RULES_TEMPLATE_REF`, else `ref` from the stamp, else `master`) via `git ls-remote` and a shallow fetch into a cache. Exit code 0 — up to date; 1 — behind (commit count and the `CHANGELOG-TEMPLATE.md` entries marked `[несовместимо]`/`[безопасность]` since the project's version); 2 — error. When and who syncs: `docs/headless-agent.md`, section «Обновление правил из шаблона» — feature-task agents never run the sync themselves.
+
+`--report FILE` (`-Report`) writes `owned <path>` for every template-owned file and `skip <path> <reason>` for a local edit left in place; the template's auto-sync (`consumers.json`, `.github/workflows/template-sync.yml`) merges only when every changed path is owned and nothing was skipped.
 
 ## What is preserved
 
@@ -71,7 +77,7 @@ On Linux / macOS use the POSIX twin (or `pwsh -NoLogo -NonInteractive -File tool
     [ -d "$tmp/.git" ] && git -C "$tmp" pull --ff-only || git clone --depth 1 https://github.com/mikhailchuklay/1c-project-template.git "$tmp"
     mkdir -p tools && cp "$tmp/tools/update-from-template.sh" tools/
 }
-bash tools/update-from-template.sh            # --dry-run, --skip-agents-md, --skip-dev-env-example
+bash tools/update-from-template.sh            # --check, --dry-run, --skip-agents-md, --skip-dev-env-example, --report FILE
 ```
 
 Dry-run:

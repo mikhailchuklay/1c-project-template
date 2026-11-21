@@ -17,7 +17,7 @@
 | `fix-1c-platform-tools-vrunner-cmd.ps1` | Workaround quoting vrunner на Windows |
 | `init-project-structure.ps1` | Каталоги vanessa-bootstrap (`project-structure.json`) |
 | `update-from-template.ps1` | Синхронизация rules/skills/agents/commands из git-шаблона (`/updaterules`) |
-| `update-from-template.sh` | То же для Linux/macOS без pwsh |
+| `update-from-template.sh` | То же для Linux/macOS без pwsh; `--check` — отставание от шаблона (0/1/2), журнал — `CHANGELOG-TEMPLATE.md` |
 | `export-project-template.ps1` | Сборка/экспорт чистого шаблона из проектного репозитория (для мейнтейнеров) |
 | `lists/` | Опциональные проектные списки partial-load |
 

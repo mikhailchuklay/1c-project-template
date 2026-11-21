@@ -1,0 +1,29 @@
+# Автосинхронизация правил в проектах, добровольно подписанных в consumers.json.
+# Проекты вне реестра забирают правила сами (tools/update-from-template.sh --check, /updaterules).
+# Токен — секрет TEMPLATE_SYNC_TOKEN (заводит владелец шаблона); без него — предупреждение, не сбой.
+name: template-sync
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync subscribed projects
+        env:
+          TEMPLATE_SYNC_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN }}
+          TEMPLATE_URL: https://github.com/${{ github.repository }}.git
+          TEMPLATE_REF: ${{ github.ref_name }}
+        run: bash .github/scripts/sync-consumers.sh
