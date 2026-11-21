@@ -64,3 +64,5 @@ powershell -NoProfile -File "skills/1c-repository-manage/tools/1c-repo-ops/scrip
 ## Reporting
 
 Any task that ran repository operations names them in the final answer in one line: `Repository tooling: repo-ops <operations>` (e.g. `Repository tooling: repo-ops lock, commit`). A task that mutated repository-bound objects without a matching `lock` → `commit` trail must explain why (e.g. commit deferred at the user's request — with the lock still held and reported).
+
+A successful `commit` is a Jira milestone: then follow `.cursor/skills/jira-trail/SKILL.md`.
