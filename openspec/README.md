@@ -96,6 +96,14 @@ npm install -g @fission-ai/openspec@latest
 openspec update      # refresh slash commands and SKILLs to the current CLI version
 ```
 
+**OpenSpec 2.x: do not run `openspec update` in a project of this template.**
+Since 2.0 it moves the skills to `.agents/skills/` and deletes the `/opsx:*`
+commands this template still ships, and since 2.1 it may switch them to a
+global install. The CLI itself (`list`, `new change`, `instructions`,
+`status`, `validate`, `archive`) works with the bundled files unchanged.
+Workplace and agent containers of the dev contour ship a pinned CLI
+(`/usr/local/bin/openspec`), so `npx` is not needed there.
+
 This is purely optional. After a subsequent `1c-rules` update, the bundled
 snapshot's version takes over again (unless you've marked the affected files
 as user-modified, in which case `1c-rules` preserves your edits).
