@@ -9,6 +9,7 @@
 #   - его держит активная задача: запись блокировки agent-state в состоянии working/question/review,
 #     или agent-status.json задачи в этом состоянии ссылается на каталог;
 #   - в нём или под ним работает процесс (cwd);
+#   - он подготовлен меньше суток назад под задачу, которую ещё не запускали (нет ~/tasks/<каталог>/agent-status.json);
 #   - его ветка не влита в origin/main и не запушена (иначе коммиты потеряются);
 #   - он назван в --keep.
 # Незакоммиченные изменения перед удалением сохраняются патчем:
@@ -118,6 +119,13 @@ for d in */; do
 	[ -z "$reason" ] && printf '%s\n' "$busy_ws" | grep -qxF "$full" && reason="активная задача agent-state"
 	[ -z "$reason" ] && printf '%s\n' "$busy_ws" | grep -qxF "task:$d" && reason="активная задача agent-state"
 	[ -z "$reason" ] && printf '%s\n' "$cwds" | grep -q "^$full\(/\|$\)" && reason="работает процесс"
+	# Дерево подготовлено под задачу, которую ещё не запустили: agent-status.json нет, а worktree создан
+	# меньше суток назад. Его ветка часто уже запушена (спецификация) и выглядит «влитой» (22.11.2026, #156:
+	# план чуть не удалил свежее дерево payment-status-155 соседнего архитектора).
+	if [ -z "$reason" ] && [ -f "$d/.git" ] && [ ! -f "$HOME/tasks/$d/agent-status.json" ] \
+		&& [ -n "$(find "$d/.git" -maxdepth 0 -mmin -1440 -print 2>/dev/null)" ]; then
+		reason="подготовлено меньше суток назад, задача не запускалась (agent-status.json нет)"
+	fi
 	if [ -z "$reason" ] && [ "$leftover" = 1 ]; then
 		size=$(du -sh "$d" | cut -f1)
 		if [ "${APPLY:-0}" != 1 ]; then echo "УДАЛИТЬ  $d ($size) — остаток харнеса (.dsh/feature-state)"
