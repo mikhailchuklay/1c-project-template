@@ -1,0 +1,18 @@
+---
+description: "Jira trail trigger — at a work milestone open the jira-trail skill (internal comment, worklog after the user's yes, attachments)"
+alwaysApply: true
+---
+
+# Jira trail — milestones
+
+Applies only when the team's `jira` MCP tools are in the session; otherwise ignore this rule.
+
+At each milestone of work on a Jira issue, once per milestone, follow `.cursor/skills/jira-trail/SKILL.md`:
+
+1. changes placed into the configuration repository;
+2. a fix verified on the DEV infobase;
+3. an answer, analysis or consultation delivered;
+4. the PROD infobase updated;
+5. an OpenSpec stage finished.
+
+The skill posts an internal comment, proposes a worklog with client-readable text (written only after the user's yes) and offers to attach key artifacts. The headless agent writes no worklogs.

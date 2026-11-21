@@ -204,3 +204,5 @@ Loads the **effective snapshot**: main configuration + every extension from `EXT
 If the task also requests refreshing the source directory after the update, first complete all required apply stages, then follow `/loadfrom1cbase` with the same targets and appropriate scopes. Do not overwrite local changes or perform an unconditional full return dump. Without a requested refresh, no extra dump is required; report any baseline not maintained by the selected load tool before the next incremental export.
 
 Briefly report the infobase, main configuration / extension, source directory, load scope (full / selected files / Git diff), tool, checks, apply result and any directory refresh separately. Include retry attempts, fixes and dynamic update / restructuring from the log. In full-snapshot mode, list every pass. A successful load with failed apply, or successful apply with failed return export, remains a partially completed workflow; list errors explicitly.
+
+A successful update of the PROD infobase is a Jira milestone: after the report follow `.cursor/skills/jira-trail/SKILL.md`.

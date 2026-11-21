@@ -766,7 +766,8 @@
       "installedHash": "c5523841ae70494fec4cbf801c14df62ae34c0098495d0ea294a2db3366b83a0",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/commands/updatemcp.md": {
       "source": "content/commands/updatemcp.md",
@@ -1809,7 +1810,8 @@
       "installedHash": "6d01fa7df4eff915059b598cf98691249fdfaf01b7386d00a7dca41042e1150c",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/skills/1c-repository-manage/docs/repo-ops.md": {
       "source": "content/skills/1c-repository-manage",
