@@ -21,7 +21,7 @@ Apply senior-level 1C/BSL expertise within the active role's scope and permissio
 Load `.cursor/rules/verification-policy.mdc` for triage and gates; task paths are independent of `/sdlc` QA profiles.
 
 1. **Docs-fix** — prose only, no BSL/metadata or verifiable 1C claims: structural checks of edited files and direct references, no BSL validators.
-2. **Spec-authoring** — OpenSpec with concrete 1C facts: confirm them via MCP first (`.cursor/rules/sdd-integrations.mdc`).
+2. **Spec-authoring** — OpenSpec with concrete 1C facts: confirm them via MCP first (`.cursor/rules/sdd-propose.mdc`).
 3. **Quick-fix** — one logical change in one module within `QUICKFIX_MAX_LINES` (default 40) or one isolated unwired metadata addition: two-line plan → edit → gates at `VERIFICATION_DEPTH`.
 4. **Full-cycle** — everything else or material doubt: steps 1–5 to Definition of Done; review and behavioural confirmation unless explicitly waived. UI criteria follow `UI_TESTING`.
 
@@ -111,7 +111,7 @@ Only a user-requested `/evolve` writes `LLM-RULES.md`. Friction → `rule-fricti
 
 # Additional rules (load on demand)
 
-Load `.cursor/rules/<name>.mdc` on its trigger only; routers pull companions and domain standards.
+Load `.cursor/rules/<name>.mdc` on its trigger only; routers pull companions and domain standards. A rule, skill or model profile already read in this session is not re-read when the phase, command or turn changes (propose → apply, `/opsx:*` → `/opsx:*`); re-read only after context compaction dropped it or the file changed. Long rules carry a `Contents` table — read the needed section by its line, not the file head.
 
 - settings, platform/ИБ, UI-test policy → `dev-standards-env`
 - typical-code changes, metadata naming → `dev-standards-change-markers`
@@ -131,4 +131,4 @@ Load `.cursor/rules/<name>.mdc` on its trigger only; routers pull companions and
 
 # Spec-driven development workspace
 
-`openspec/specs/` is current behaviour, `openspec/changes/` holds change artifacts; before OpenSpec work load `.cursor/rules/sdd-integrations.mdc` (owns full-cycle DoD and apply completion).
+`openspec/specs/` is current behaviour, `openspec/changes/` holds change artifacts; before OpenSpec work load `.cursor/rules/sdd-integrations.mdc` (core: phase routing, full-cycle DoD contract) and only the phase file it names — `sdd-propose.mdc` or `sdd-apply.mdc`; a rule already in context is not re-read.

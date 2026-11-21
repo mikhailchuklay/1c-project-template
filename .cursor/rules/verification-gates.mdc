@@ -5,6 +5,21 @@ alwaysApply: false
 
 # Verification Gates — BSL, Impact, and Metadata
 
+> **Contents.** Read only the section the task needs (`Read` with offset/limit from the line below); the lines are long, so a fixed-size head read covers just the first sections. After editing this file: `python3 tools/check-rule-toc.py --fix`.
+>
+> | Line | Section | Read when |
+> |---|---|---|
+> | 29 | Gate execution and evidence reuse | any gate: when evidence can be reused |
+> | 47 | Hard gates — run on every full-cycle change | list of mandatory gates |
+> | 53 | Gate 1 — Syntax (`syntaxcheck`) | after writing BSL |
+> | 63 | Gate 2 — Logic & performance (`check_1c_code`) | after writing BSL |
+> | 70 | Gate 3 — Style & ITS compliance (`review_1c_code`) | after writing BSL |
+> | 77 | Graceful degradation for Gates 1–3 — when a validator is not exposed | a validator MCP is missing |
+> | 94 | Gate 3a — Live-IB smoke check (conditional, `1c-data-mcp`) | checking results in a dev/test infobase |
+> | 116 | Gate 4 — Impact analysis (only when public surface changed) | changed an export method or metadata used elsewhere |
+> | 144 | Gate 5 — Metadata XML validation (only when XML was edited) | after editing metadata XML |
+> | 156 | Gate 6 — Platform batch check (only when the change reaches an infobase) | before loading into an infobase |
+
 **When to load this file:** before validating or declaring a BSL / metadata change done. Determine depth and promotion triggers first via `verification-policy.md`.
 
 Delivery-only soft gates and the final report contract live in `verification-delivery.md`.

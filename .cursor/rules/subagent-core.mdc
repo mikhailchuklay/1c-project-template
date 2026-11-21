@@ -91,5 +91,5 @@ Severity of findings: `critical` (blocks delivery) / `major` (must be addressed 
 ### Shell and SDD
 
 - Agents whose frontmatter lists `Shell` follow the `powershell-windows` skill for every shell command.
-- If the project has an `openspec/` workspace — `.cursor/rules/sdd-integrations.mdc` (MCP evidence for 1C facts, `Subagent → OpenSpec artifact mapping`, traceability updates after implementation).
+- If the project has an `openspec/` workspace — `.cursor/rules/sdd-integrations.mdc` (`Subagent → OpenSpec artifact mapping`, phase routing) plus the phase file: `sdd-propose.mdc` (MCP evidence for 1C facts) or `sdd-apply.mdc` (traceability updates after implementation).
 

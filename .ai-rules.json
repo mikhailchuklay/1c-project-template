@@ -96,7 +96,8 @@
       "installedHash": "bd91548fca5f4c0eade27d284073d908de36070c374a0348061a09e8f8540f5d",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/rules/edt-workflow.mdc": {
       "source": "content/rules/edt-workflow.md",
@@ -206,7 +207,8 @@
       "installedHash": "9ee36dfb94c7b56ebad3b7255f95cdd320c3ff3e424663fdadb3e3fad1136ef3",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/rules/memory-setup.mdc": {
       "source": "content/rules/memory-setup.md",
@@ -305,14 +307,16 @@
       "installedHash": "2312379eb5f110d575ee3dfc0015d7ee3875dcfb02b0845fd777d576915c930f",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/rules/query-design.mdc": {
       "source": "content/rules/query-design.md",
       "installedHash": "34edee32947dbab80ad6c391c1a256202a9736354a83c23ea080232393969ee0",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/rules/registers-design.mdc": {
       "source": "content/rules/registers-design.md",
@@ -334,14 +338,16 @@
       "installedHash": "7464df0aba563ac676b50ea0b7421a828af114363c07e3ea73463ac108aa2212",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/rules/subagent-pipeline.mdc": {
       "source": "content/rules/subagent-pipeline.md",
       "installedHash": "dff2df8191bed4a747389ec58ec3179cfc0482ad61c90584d36c13b169fa5b15",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/rules/subagents.mdc": {
       "source": "content/rules/subagents.md",
@@ -449,7 +455,8 @@
       "installedHash": "4c8c88b834912a336c535c3ea275b48ef93ffc6a835e473e10b57518329409fb",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/agents/doc-writer.md": {
       "source": "content/agents/doc-writer.md",
@@ -1759,7 +1766,8 @@
       "installedHash": "7689df9a46958132e937e2fb8a243c71d82d23bf6cef9adbeafdc5bb450f6082",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/skills/1c-qa-testing/docs/context-sources.md": {
       "source": "content/skills/1c-qa-testing",
@@ -1857,7 +1865,8 @@
       "installedHash": "08a2c9e511f1c669a6ac87a4cd189d20fa7964b57c14d1f535f9340bee88b580",
       "owners": [
         "cursor"
-      ]
+      ],
+      "userModified": true
     },
     ".cursor/skills/caveman/SKILL.md": {
       "source": "content/skills/caveman",

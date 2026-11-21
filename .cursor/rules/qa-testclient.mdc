@@ -102,6 +102,8 @@ qa-testclient.sh stop [--timeout 30]
 
 ## Visible or hidden window
 
+**Who signs in.** Acceptance scenarios run under `QA_TEST_USER` from `.dev.env` (`--user` / `-User`), not under the administrator. Empty: ask once in the apply preflight round or run under `IB_USER` and record the limitation; never search roles, templates and access groups by queries to find a user (`dev-standards-env.md → QA_TEST_USER`).
+
 `MCP_QA_CLIENT_VISIBLE` in `.dev.env` sets the window of a client the agent starts (canon: `dev-standards-env.md`). Default: visible. Only `false`, `0`, `no` or `off` hides it; missing, empty or invalid values mean visible. `/uitests visible|hidden` switches it. Read it before every launch; never change it to suit the agent.
 
 - **Visible:** `start` without `-Hidden` (Windows); `qa-testclient.sh start --display "$DISPLAY"` of the person's session (Linux, L2); `platform`: `qa_start(hidden_desktop=False)`.

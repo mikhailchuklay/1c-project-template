@@ -5,6 +5,26 @@ alwaysApply: false
 
 # Development Standards — Environment and Process Parameters
 
+> **Contents.** Read only the section the task needs (`Read` with offset/limit from the line below); the lines are long, so a fixed-size head read covers just the first sections. After editing this file: `python3 tools/check-rule-toc.py --fix`.
+>
+> | Line | Section | Read when |
+> |---|---|---|
+> | 32 | 1. Project Parameters (.dev.env) | any `.dev.env` question |
+> | 42 | Global principle — no field is globally mandatory | a field is empty — ask or default? |
+> | 51 | Code-generation parameters | writing code or metadata (naming, extension, placement) |
+> | 62 | Advisory parameters — `PREFIX`, `COMPANY`, `DEVELOPER` | object prefix, modification markers |
+> | 71 | Infobase / deployment parameters | connecting to, loading or updating an infobase |
+> | 104 | `INFOBASE_ROLE` — what the agent may do to the project infobase | before any write to the infobase |
+> | 117 | `REPOSITORY_PATH` — configuration repository binding | configuration repository lock / commit |
+> | 121 | `SUPPORT_GUARD` — editing a typical configuration on vendor support | changing a typical (vendor) object |
+> | 133 | `NEW_OBJECT_POSITION` — placement of a new object in `Configuration.xml` | adding a new metadata object |
+> | 151 | `UI_TESTING` — UI-testing mode | UI checks: allowed, mandatory, off |
+> | 168 | `USE_EDT` — project uses 1C:EDT | EDT projects |
+> | 179 | Tool policy | choosing tools by `TOOL_*` |
+> | 205 | Subagent model parameters | delegating to subagents, model routing |
+> | 242 | Process-tuning parameters | verification depth, orchestration mode, triage |
+> | 295 | Support-channel parameters | reporting a defect of the rules (`SUPPORT_*`) |
+
 **When to load this file:** when selecting tool policy (`TOOL_*`) or when the task depends on project parameters, infobase/deployment, EDT (`USE_EDT`), UI testing, subagent/model routing, triage/debugging, verification depth, metadata preview, communication style or support settings. Read only the relevant section; no code-style-only lookup.
 
 Section number 1 is a stable anchor for `§1` references.
@@ -69,6 +89,7 @@ Used by `/loadfrom1cbase`, `/update1cbase`, `/getconfigfiles`, `/deploy-and-test
 | `{RESULT_PATH}` | `/DumpResult` file of every Designer batch launch — the numeric verdict (`0` = success) read next to the exit code and the `/Out` log (`designer-batch-checks.md → The verdict is three signals`) | Defaulted | Empty = `$env:TEMP\1cv8.result` (Windows) / `$TMPDIR/1cv8.result` (POSIX). Deleted before each launch; a missing file after a launch is a failed launch — **never ask** |
 | `{INFOBASE_PUBLISH_URL}` | Web-publish URL of the test infobase for web-client UI tests | **Highly desirable** for web UI testing | Empty = the web route is skipped; ask only for a requested UI test that has no other route |
 | `{UI_TESTING}` | UI-testing mode: `essential` \| `auto` \| `manual` \| `off` | Defaulted | Empty = `essential`; invalid = `manual` (see below) |
+| `{QA_TEST_USER}` | Infobase user for UI acceptance scenarios in the test client: named, not an administrator, with the rights the change under test needs | Highly desirable | Empty = do not hunt for a suitable user with infobase queries (roles, templates, access groups): ask once in the apply preflight round, or run under `IB_USER` and record the limitation in the acceptance report |
 | `{MCP_QA_CLIENT_VISIBLE}` | Window of a 1C test client the agent starts for QA MCP checks | Defaulted | Empty / missing / invalid = visible; `false`, `0`, `no`, `off` = hidden desktop |
 | `{IBCMD_CONFIG}` | Path to standalone-server `config.yml` for `ibcmd`-based ops | Defaulted | Empty = fallback to Designer (per `.dev.env.example`) |
 | `{PLATFORM_ARGS}` / `{IBCMD_ARGS}` | Extra launch arguments (comma-separated) appended to every `1cv8.exe` / `ibcmd` run by the `1c-metadata-manage` `db-*` / `epf-*` tools | Defaulted | Empty = no extra arguments. **Never ask.** Arguments the tool owns itself (`/F`, `/S`, `/N`, `/P`, `/UpdateDBCfg`, `--db-path`, …) are rejected by the scripts — pass those as regular parameters |

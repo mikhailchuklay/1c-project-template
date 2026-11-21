@@ -5,6 +5,19 @@ alwaysApply: false
 
 # MCP-first search discipline
 
+> **Contents.** Read only the section the task needs (`Read` with offset/limit from the line below); the lines are long, so a fixed-size head read covers just the first sections. After editing this file: `python3 tools/check-rule-toc.py --fix`.
+>
+> | Line | Section | Read when |
+> |---|---|---|
+> | 33 | Hard rule | before any code, metadata or usage search |
+> | 54 | Full-file `Read` — fragment first | about to Read a large module |
+> | 68 | Quick first-pick table | which MCP tool answers this question |
+> | 100 | Configurations with extensions | project with extensions (`src/cfe`) |
+> | 106 | EDT workspaces | EDT project |
+> | 112 | When `Grep` / `Glob` / `Read` are legitimately the right tool | skipping MCP on purpose |
+> | 129 | Response gate | writing the "what was tried" note |
+> | 139 | Success criteria | self-check after the search |
+
 For any 1C **project-source search** (code, metadata, usages, call chains, structure, forms, layouts, **and locating the source files themselves**) — MCP project-index tools come **first**. Native discovery tools — `Grep` / `rg`, `Glob` / file search by pattern (`**/*.bsl`, `**/*.xml`), directory listing, semantic codebase search, sequential `Read`-scanning of modules — are the **last resort**, gated by an explicit justification note.
 
 **What counts as search.** Any action whose goal is to *locate* code, metadata, or files you do not yet have an exact path or qualified name for — including "getting oriented" sweeps at the start of a task (globbing the source tree, listing directories, reading modules one after another to see what is there). All of it falls under the hard rule below. Reading a specific file **already located via MCP** — to edit it, or to see a found fragment in full context — is normal work, not search, and needs no justification.

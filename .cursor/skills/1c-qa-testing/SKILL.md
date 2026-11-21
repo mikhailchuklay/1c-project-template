@@ -16,6 +16,7 @@ All of these hold:
 - `TOOL_QA` is not `off` (`.cursor/rules/mcp-policy.mdc → Tool availability`). The server exists only inside a Linux workplace `dev-<login>` on dev-workplaces (`http://qa:8020/mcp`, paired container `qa-<login>`); on Windows `auto` resolves to `off` and this route does not apply (`ui-testing-tools.md → Route order`).
 - The `qa_*` / `ui_*` tools are exposed in this session and `qa_status` answers. A config entry or `/healthz` proves nothing.
 - The target is an authorized dev/test infobase (`INFOBASE_ROLE`), the one in `.dev.env`.
+- The scenario runs under `QA_TEST_USER` (named, non-admin, with the rights the change needs). Empty: ask once in the apply preflight round or run under `IB_USER` and record the limitation; do not search users, templates and access groups with infobase queries.
 
 Otherwise use the web fallback of `ui-testing-tools.md`, or report the check unrun with the reason. `TOOL_QA=required` with the server missing blocks the check; the web client does not replace it.
 
