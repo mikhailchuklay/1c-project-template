@@ -17,16 +17,34 @@ dev_env_project_root() {
 	fi
 }
 
+# .dev.env читается как текст, а не через source: source съедает «\» (сервер\база → серверbase),
+# режет некавыченные значения с пробелами и исполняет $(…). Формат: KEY=value, KEY="value",
+# KEY='value', необязательный «export », комментарии «#» в начале строки и « #» после
+# некавыченного значения. Значение берётся буквально, без подстановок; переменная экспортируется.
+dev_env_parse() {
+	local line key val
+	while IFS= read -r line || [[ -n "$line" ]]; do
+		line="${line%$'\r'}"
+		[[ "$line" =~ ^[[:space:]]*(export[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]] || continue
+		key="${BASH_REMATCH[2]}"
+		val="${BASH_REMATCH[3]}"
+		if [[ "$val" =~ ^\"(.*)\"[[:space:]]*(#.*)?$ ]] || [[ "$val" =~ ^\'(.*)\'[[:space:]]*(#.*)?$ ]]; then
+			val="${BASH_REMATCH[1]}"
+		else
+			val="${val%%[[:space:]]#*}"
+			val="${val%"${val##*[![:space:]]}"}"
+		fi
+		printf -v "$key" '%s' "$val"
+		export "${key?}"
+	done <"$1"
+}
+
 dev_env_load() {
 	local project_root="$1"
 	local f
 	for f in "$project_root/.dev.env" "$project_root/.dev.env.example"; do
 		if [[ -f "$f" ]]; then
-			# shellcheck disable=SC1090
-			set -a
-			# shellcheck disable=SC1091
-			source "$f"
-			set +a
+			dev_env_parse "$f"
 			return 0
 		fi
 	done
