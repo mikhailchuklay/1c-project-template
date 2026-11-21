@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Linux thin-client launcher. JSON stdout; WM_DELETE_WINDOW only (never signal 1C).
-# Dependencies: python3, python3-xlib, Xvfb, xdotool, xdpyinfo, ss, import or xwd.
+# Dependencies: python3, python3-xlib, Xvfb, xdotool, xdpyinfo, ss; capture: import, maim or Pillow (PNG), else xwd.
 # Example: start --version 8.3.27.2130 --connect '/S"onec-dev-server:2541\testbase"'
 # An Xvfb started here stays running for reuse; stop closes only the 1C window.
 exec python3 - "$@" <<'PY'
@@ -69,11 +69,21 @@ def main():
         if not state or not alive():
             raise RuntimeError('no tracked live test client')
         out = pathlib.Path(a.out) if a.out else folder/'capture.png'
+        # PNG first: an .xwd forces the agent to hand-parse the X dump before it can look at the screen.
+        if out.suffix.lower() != '.png':
+            out = out.with_suffix('.png')
         if shutil.which('import'):
             result = run('import', '-window', 'root', str(out), env=env)
+        elif shutil.which('maim'):
+            result = run('maim', str(out), env=env)
         else:
-            out = out.with_suffix('.xwd')
-            result = run('xwd', '-root', '-silent', '-out', str(out), env=env)
+            try:
+                from PIL import ImageGrab
+                ImageGrab.grab(xdisplay=env['DISPLAY']).save(str(out))
+                result = subprocess.CompletedProcess([], 0)
+            except Exception:
+                out = out.with_suffix('.xwd')
+                result = run('xwd', '-root', '-silent', '-out', str(out), env=env)
         if result.returncode:
             raise RuntimeError('screen capture failed')
         return dict(ok=True, action=a.action, path=str(out), display=env['DISPLAY'])

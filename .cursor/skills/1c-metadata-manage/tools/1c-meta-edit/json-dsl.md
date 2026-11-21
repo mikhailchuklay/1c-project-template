@@ -3,7 +3,13 @@
 Для сложных и комбинированных операций используйте JSON-файл вместо inline-режима.
 
 ```powershell
+# Windows
 powershell.exe -NoProfile -File skills/1c-metadata-manage/tools/1c-meta-edit/scripts/meta-edit.ps1 -DefinitionFile "<json>" -ObjectPath "<path>"
+```
+```bash
+# Linux / macOS: Python-порт (нужен python3-lxml) или тот же .ps1 через PowerShell 7
+python3 skills/1c-metadata-manage/tools/1c-meta-edit/scripts/meta-edit.py -DefinitionFile "<json>" -ObjectPath "<path>"
+pwsh -NoProfile -File skills/1c-metadata-manage/tools/1c-meta-edit/scripts/meta-edit.ps1 -DefinitionFile "<json>" -ObjectPath "<path>"
 ```
 
 ## add — добавить элементы
@@ -30,6 +36,42 @@ powershell.exe -NoProfile -File skills/1c-metadata-manage/tools/1c-meta-edit/scr
 Реквизиты можно задавать shorthand-строками: `"Сумма: Число(15,2) | req, index"`.
 
 Adding `forms` or `templates` (including accepted aliases) is refused with exit `2` before any mutation of the whole definition. Removing them (`remove.forms`, `remove.templates`) is refused with exit `1`, nothing written. Use the dedicated form or template tools; see [child-operations.md](child-operations.md).
+
+### Ключи реквизита в объектной форме
+
+Все ключи, которые читает редактор у реквизита (`add.attributes[]`, реквизиты ТЧ); остальные молча игнорируются:
+
+| Ключ | Значение | По умолчанию |
+|---|---|---|
+| `name` | имя реквизита | обязателен |
+| `type` | тип: `Date` (дата без времени), `DateTime`, `Time`, `Строка(200)`, `Строка` (неограниченная), `Число(15,2)`, `Булево`, `CatalogRef.X`; список — составной тип | — |
+| `synonym` | синоним (одна строка, язык `ru`) | имя, разбитое по заглавным буквам |
+| `comment` | комментарий | пусто |
+| `fillChecking` | `ShowError` / `DontCheck` | `DontCheck`; флаг `req` даёт `ShowError` |
+| `indexing` | `Index` / `IndexWithAdditionalOrder` / `DontIndex` | `DontIndex`; флаги `index`, `indexadditional` |
+| `flags` | список: `req`, `index`, `indexadditional` | пусто |
+| `after` / `before` | имя соседнего реквизита для вставки | в конец |
+
+Пример: две даты без времени и смена синонима существующего реквизита (в том числе заимствованного объекта расширения).
+
+```json
+{
+  "add": {
+    "attributes": [
+      { "name": "Расш1К_НачалоРаботПлан", "type": "Date", "synonym": "Начало работ (план)" },
+      { "name": "Расш1К_ОкончаниеРаботПлан", "type": "Date", "synonym": "Окончание работ (план)",
+        "after": "Расш1К_НачалоРаботПлан" }
+    ]
+  },
+  "modify": {
+    "attributes": {
+      "Расш1К_ПланируемыйГрафикРабот": { "synonym": "Комментарий к графику" }
+    }
+  }
+}
+```
+
+Проверку заполнения дат по условию (например, только при регистрации документа) делайте кодом в `ОбработкаПроверкиЗаполнения` / `ПередЗаписью`, а `fillChecking` оставляйте `DontCheck`: свойство метаданных проверяет всегда.
 
 ## remove — удалить элементы
 
