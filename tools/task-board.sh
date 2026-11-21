@@ -14,7 +14,8 @@
 # Заменяет согласование стенда сообщениями между сессиями: перед запуском агента и загрузкой
 # на стенд — `list`, затем `claim`; после — `release`.
 #
-# Переменные: TASK_BOARD_FILE — другой путь к файлу доски (для проверки на копии).
+# Переменные: TASK_BOARD_FILE — другой путь к файлу доски (для проверки на копии);
+#   AGENT_SSH_HOST (по умолчанию dev-workplaces-via-services), AGENT_EXEC_USER (dev) — для команды usage.
 set -euo pipefail
 
 usage() {
@@ -32,6 +33,10 @@ usage() {
                                  занять стенд или временную копию; занят другим — код 1
   release <стенд> --holder <кто> [--drop]
                                  освободить; --drop — удалить запись (копия удалена)
+  usage <issue> <контейнер> <задача> [--file путь]
+                                 забрать расход агента (usage из agent-status.json задачи в контейнере:
+                                 номер N -> dev-agent<N>) в tokens/cost_usd/api_equiv_usd; задач у issue
+                                 может быть несколько — суммируются; --file — локальный agent-status.json
   card <issue> [--markdown]      карточка задачи (markdown — для комментария в issue)
   scorecard [--days N]           сводка по исполнителям/харнесам за N дней (по умолчанию 7)
   path                           путь к файлу доски
@@ -55,11 +60,12 @@ import fcntl
 import json
 import os
 import sys
+import subprocess
 import tempfile
 
 PATH = os.environ["TASK_BOARD_FILE"]
 TASK_FIELDS = {"title", "priority", "architect", "executor", "harness", "model", "stand", "ib", "state",
-               "pr", "release", "tokens", "cost_usd", "note"}
+               "pr", "release", "tokens", "cost_usd", "api_equiv_usd", "note"}
 STATES = {"queued", "working", "question", "review", "accepted", "released", "closed"}
 COUNTERS = {"review_rounds", "agent_runs", "hotfixes"}
 
@@ -167,11 +173,11 @@ def cmd_set(args):
                     t[stamp] = now()
             if key in ("tokens", "priority"):
                 val = int(val) if val.lstrip("-").isdigit() else val
-            elif key == "cost_usd":
+            elif key in ("cost_usd", "api_equiv_usd"):
                 try:
                     val = float(val)
                 except ValueError:
-                    die("cost_usd — число")
+                    die(f"{key} — число")
             if key == "note":
                 t.setdefault("log", []).append({"at": now(), "note": val})
             else:
@@ -283,7 +289,8 @@ def cmd_card(args):
             ("Архитектор-сессия", t.get("architect", "—")), ("Стенд / база", f"{t.get('stand', '—')} / {t.get('ib', '—')}"),
             ("Круги ревью", t.get("review_rounds", 0)), ("Прогоны агента", t.get("agent_runs", 0)),
             ("Время, ч", "—" if h is None else h), ("Токены агента", t.get("tokens", "нет данных")),
-            ("Стоимость агента, $", t.get("cost_usd", "нет данных")), ("Хотфиксы после релиза", t.get("hotfixes", 0)),
+            ("Стоимость агента, $", t.get("cost_usd", "нет данных")),
+            ("Эквивалент по прайсу API, $", t.get("api_equiv_usd", "нет данных")), ("Хотфиксы после релиза", t.get("hotfixes", 0)),
             ("PR", t.get("pr", "—")), ("Релиз", t.get("release", "—"))]
     print(f"**Карточка задачи #{t['issue']}** {t.get('title', '')}\n")
     print("| Показатель | Значение |\n|---|---|")
@@ -311,7 +318,8 @@ def cmd_scorecard(args):
         if t.get("model"):
             key = f"{key} / {t['model']}"
         g = groups.setdefault(key, {"tasks": 0, "released": 0, "review_rounds": 0, "agent_runs": 0,
-                                    "hotfixes": 0, "hours": 0.0, "tokens": 0, "cost_usd": 0.0, "cost_known": 0})
+                                    "hotfixes": 0, "hours": 0.0, "tokens": 0, "cost_usd": 0.0, "cost_known": 0,
+                                    "equiv": 0.0, "equiv_known": 0})
         g["tasks"] += 1
         g["released"] += t.get("state") in ("released", "closed")
         for c in COUNTERS:
@@ -322,22 +330,72 @@ def cmd_scorecard(args):
         if isinstance(t.get("cost_usd"), (int, float)):
             g["cost_usd"] += t["cost_usd"]
             g["cost_known"] += 1
+        if isinstance(t.get("api_equiv_usd"), (int, float)):
+            g["equiv"] += t["api_equiv_usd"]
+            g["equiv_known"] += 1
     print(f"Сводка по харнесам и моделям за {days} дн. (с {since:%Y-%m-%d})\n")
-    print("| Харнес / модель | Задач | Выпущено | Ревью/задачу | Прогонов/задачу | Хотфиксов | Часов/задачу | Токены | $ |")
-    print("|---|---|---|---|---|---|---|---|---|")
+    print("| Харнес / модель | Задач | Выпущено | Ревью/задачу | Прогонов/задачу | Хотфиксов | Часов/задачу | Токены | $ | $ экв. API |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
     for key, g in sorted(groups.items()):
         n = g["tasks"]
         cost = f"{g['cost_usd']:.2f}" if g["cost_known"] else "нет данных"
+        equiv = f"{g['equiv']:.2f}" if g["equiv_known"] else "нет данных"
         print(f"| {key} | {n} | {g['released']} | {g['review_rounds'] / n:.1f} | {g['agent_runs'] / n:.1f} | "
-              f"{g['hotfixes']} | {g['hours'] / n:.1f} | {g['tokens'] or 'нет данных'} | {cost} |")
+              f"{g['hotfixes']} | {g['hours'] / n:.1f} | {g['tokens'] or 'нет данных'} | {cost} | {equiv} |")
     if not groups:
-        print("| — | 0 | | | | | | | |")
+        print("| — | 0 | | | | | | | | |")
+
+
+def container_name(c):
+    if c.startswith("dev-agent"):
+        return c
+    return f"dev-agent{c}" if c.isdigit() else f"dev-agent-{c}"
+
+
+def cmd_usage(args):
+    opts, rest = parse_opts(args)
+    if len(rest) != 3:
+        die("usage <issue> <контейнер> <задача> [--file путь]")
+    issue, cont, task = rest
+    if opts.get("file"):
+        raw = open(opts["file"], encoding="utf-8").read()
+    else:
+        host = os.environ.get("AGENT_SSH_HOST", "dev-workplaces-via-services")
+        user = os.environ.get("AGENT_EXEC_USER", "dev")
+        path = f"/home/{user}/tasks/{task}/agent-status.json"
+        r = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15", host,
+                            f"docker exec -u {user} {container_name(cont)} cat {path}"],
+                           capture_output=True, text=True, timeout=60)
+        if r.returncode != 0:
+            die(f"Не прочитан {path} в {container_name(cont)}: {r.stderr.strip()[:200]}", 1)
+        raw = r.stdout
+    u = json.loads(raw).get("usage")
+    if not isinstance(u, dict):
+        die(f"В статусе задачи {task} нет usage (прогоны до образа с учётом токенов не считаются)", 1)
+    with Board(True) as data:
+        t = task_of(data, issue, create=False)
+        t.setdefault("usage_by_task", {})[task] = {
+            k: u.get(k) for k in ("input", "output", "cache_read", "cache_write", "cost_usd",
+                                  "api_equiv_usd", "cost_incomplete")}
+        tok, cost, equiv, incomplete = 0, 0.0, 0.0, False
+        for v in t["usage_by_task"].values():
+            tok += sum(int(v.get(k) or 0) for k in ("input", "output", "cache_read", "cache_write"))
+            cost += float(v.get("cost_usd") or 0)
+            equiv += float(v.get("api_equiv_usd") or 0)
+            incomplete = incomplete or bool(v.get("cost_incomplete"))
+        t["tokens"], t["cost_usd"], t["api_equiv_usd"] = tok, round(cost, 4), round(equiv, 4)
+        t["cost_incomplete"] = incomplete
+        t["updated_at"] = now()
+        t.setdefault("log", []).append({"at": now(), "event": "usage",
+                                        "note": f"{task}: {tok} токенов, ${cost:.2f} (экв. API ${equiv:.2f})"})
+    print(f"#{issue}: {tok} токенов, ${cost:.4f}, эквивалент API ${equiv:.4f}"
+          + (" (цена неполная)" if incomplete else ""))
 
 
 def main(argv):
     cmd, args = argv[0], argv[1:]
     handlers = {"list": cmd_list, "set": cmd_set, "inc": cmd_inc, "claim": cmd_claim,
-                "release": cmd_release, "card": cmd_card, "scorecard": cmd_scorecard}
+                "release": cmd_release, "card": cmd_card, "scorecard": cmd_scorecard, "usage": cmd_usage}
     if cmd == "path":
         print(PATH)
         return
