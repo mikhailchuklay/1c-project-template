@@ -12,6 +12,7 @@
 | `load-objlist-config.sh` | Частичная загрузка `src/cf` через ibcmd |
 | `load-objlist-extensions.sh` | Частичная загрузка `src/cfe/*` через ibcmd |
 | `deploy-extension.sh` | stop → import → apply → restart для CFE |
+| `ordinary-form.py` | Обычная форма `Ext/Form.bin` без MCP индекса: `unpack` в рабочий каталог (`payload/`, `decoded/`, манифест) и `build --verify` с проверкой записей (`match`); контракт `ordinary-form/1` навыка `v8unpack-cf`, нужен пакет `v8unpack`; тесты — `tools/tests/test_ordinary_form.py` |
 | `designer-batch.sh` | Пакетный Конфигуратор на Linux: свой виртуальный экран, флаги, тайм-аут, вердикт по трём сигналам (`designer-batch-checks.mdc`) |
 | `thick-client-check.sh` | Толстый клиент, обычные формы: сценарий печати, отчётов и снимков на своём Xvfb (`docs/headless-agent.md`) |
 | `mcp-platform-tools-launcher.sh` | MCP Platform Tools на Linux (локальный Cursor и Cursor Remote) |

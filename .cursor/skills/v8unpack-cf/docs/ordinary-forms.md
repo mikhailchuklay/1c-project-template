@@ -9,7 +9,7 @@ it is, via `<FormType>Ordinary</FormType>`.
 Find them with `**/Forms/*/Ext/Form.bin`. A form whose `Form.xml` appears to be
 "missing" is almost always an ordinary form, not a broken export.
 
-### The MCP contract — `ordinary-form/1`
+### The contract — `ordinary-form/1`
 
 The same two tools, with the same arguments and the same result payload, are
 published by **`1c-code-metadata-mcp`** and **`1c-graph-metadata-mcp`**. Learn them
@@ -56,6 +56,30 @@ codes: `dependency_missing`, `path_invalid`, `path_not_found`, `not_a_file`,
 `payload_missing`, `derived_edit_detected`, `output_exists`, `unpack_failed`,
 `build_failed`, `verify_failed`.
 
+### No MCP — the local script `tools/ordinary-form.py`
+
+When the project has no code-index MCP with these tools (a «только хранилище»
+project without an index, UT 10.3 and other configurations whose forms are almost
+all ordinary), or the server cannot see the file (the export lives in the agent
+container, not in the indexed sources), use the local script. It implements the same
+contract on the `v8unpack` package installed in the agent image: the same workspace,
+manifest, result fields, error codes and verification.
+
+| MCP call | Local call |
+|---|---|
+| `unpack_ordinary_form(form_path, workspace_path, overwrite, include, max_chars)` | `python3 tools/ordinary-form.py unpack "<Form.bin>" "<workspace>" [--overwrite] [--include summary\|structure\|module\|all] [--max-chars N]` |
+| `build_ordinary_form(workspace_path, output_path, overwrite, verify=true)` | `python3 tools/ordinary-form.py build "<workspace>" "<Form.bin>" [--overwrite] [--verify]` (`--verify` is the default; `--no-verify` exists only for diagnostics) |
+
+The result is the same JSON, printed to stdout (`"tool"` names the MCP tool it
+mirrors). Exit code 0 — `status="ok"` and, for a verified build,
+`verification.status == "match"`; 1 — a refusal (`error_code`, `hint`) or a
+mismatch; 2 — bad arguments. The script builds into a temporary file next to the
+output and replaces the output **only after** the re-read matched — a mismatch leaves
+the original `Form.bin` untouched. Without `v8unpack` it answers
+`error_code="dependency_missing"`; that is a blocker to report, not a reason to
+parse the container by hand. The manifest records `tool: "tools/ordinary-form.py"`;
+a workspace written by either route builds with either route.
+
 ### The workspace
 
 ```text
@@ -92,12 +116,52 @@ build_ordinary_form(
     overwrite=$true)
 ```
 
+Without the MCP tools the same three steps run locally (in the agent container):
+
+```bash
+python3 tools/ordinary-form.py unpack "src/cf/Catalogs/Товары/Forms/Форма/Ext/Form.bin" "$TMPDIR/Форма"
+# edit "$TMPDIR/Форма/payload/module" or payload/form — keep the UTF-8 BOM and CRLF
+python3 tools/ordinary-form.py build "$TMPDIR/Форма" "src/cf/Catalogs/Товары/Forms/Форма/Ext/Form.bin" --overwrite --verify
+```
+
+Keep the workspace outside the sources (a temporary directory or `out/`), never in
+`src/`.
+
 Check `verification.status == "match"`. Then load the export into the infobase the
 normal way (`/update1cbase`) — this skill writes a file, it does not touch an
 infobase.
 
+`match` proves the container lost nothing; it does not prove the change is right or
+that the form opens. What the agent may change itself and what goes as a manual
+package, and the thick-client check after it: [the table below](#what-the-agent-edits-itself-what-goes-as-a-package).
+
 Paths with spaces or Cyrillic go in double quotes, always. In PowerShell prefer
 single-quoted literals (`'C:\src\...\Form.bin'`) when the path contains `$`.
+
+### What the agent edits itself, what goes as a package
+
+A rebuild with `verification.status == "match"` proves the container lost nothing —
+not that the change means what was intended. For the ordinary forms of a modern
+configuration `v8unpack` yields no named element tree (147 of 147 with an empty
+`*.elem.json`, see [Limitations](../SKILL.md#limitations)): layout, «Данные» bindings,
+events and edge bindings are positional arrays in `payload/form`. So the agent's own
+write access is limited to what can be proven without a name:
+
+| Change | Who | Condition |
+|---|---|---|
+| Form module code (`payload/module`, read as `decoded/module.bsl`) | Agent | Rebuild with `match`, `changed_entries == ["module"]`, module gates of `verification-gates.mdc` |
+| Elements created programmatically in the module (`ПриОткрытии` / `ПередОткрытием`) with handlers attached by `УстановитьДействие` | Agent | As for the module; plus the thick-client check below |
+| A property of an **existing** element — text, visibility, enabled | Agent | Only when the value is found in `payload/form` exactly once and unambiguously belongs to that element (e.g. a unique caption string); rebuild with `match`; the thick-client check with a screenshot is mandatory |
+| A new element in the layout | Package | `1c-change-package` (manual), applied in the Configurator form editor |
+| Data («Данные») and event bindings in the layout | Package | Same |
+| Re-layout, edge bindings (привязки краёв), moving elements | Package | Same |
+
+Thick-client check: after loading, the form is opened with the skill
+`1c-thick-client-test` / `tools/thick-client-check.sh` and a screenshot is attached.
+Where the project does not have it yet, the check is «не проверено» with that reason,
+under Risks, never reported as passed — and a layout property edit is then a package,
+not an agent edit. After a person applied a package, the agent checks the form the
+same way.
 
 ### Warnings — read before the first call
 
@@ -113,7 +177,7 @@ single-quoted literals (`'C:\src\...\Form.bin'`) when the path contains `$`.
   deflated stream is «Ошибка формата потока» and the thick client exits (observed on
   8.3.27.2074, in Designer and in Enterprise alike — a 728 KB form packed to 114 KB
   never opened again until it was repacked plain). Designer writes them plain.
-  `build_ordinary_form` writes every entry plain whatever the manifest's `deflated`
+  `build_ordinary_form` and `tools/ordinary-form.py build` write every entry plain whatever the manifest's `deflated`
   flag says (the flag records how the *source* stored the entry; a deflated source
   is reported in `warnings` on unpack and in `notes` on build). Do not "optimise"
   a `Form.bin` with any repacking tool's `-deflate` / `-pack` — the size it saves is
@@ -136,6 +200,12 @@ single-quoted literals (`'C:\src\...\Form.bin'`) when the path contains `$`.
   populated tree only for **managed** forms (see [Limitations](../SKILL.md#limitations)).
 - **On Windows use `--processes 1`** for the CLI unless parallel processing has
   been validated for the artifact at hand. The MCP tools spawn no processes at all.
+- **Entries are written with `nested=True` semantics, never through
+  `Container.build(nested=False)`.** In `v8unpack` the `nested` flag of
+  `Container.build` means "store entries as is": `nested=False` Deflates every entry
+  (and in 1.2.6 crashes with `struct.error`). `tools/ordinary-form.py` writes the
+  records itself in the source order (`Container.build` would sort them by name) and
+  keeps an entry that is itself a container whole.
 - **Nothing is overwritten silently.** An existing workspace needs
   `overwrite=true`; an existing output file needs `overwrite=true`; a non-empty
   directory the tool did not write is refused outright, `overwrite` or not.
@@ -145,6 +215,7 @@ single-quoted literals (`'C:\src\...\Form.bin'`) when the path contains `$`.
 | Situation | Route |
 |---|---|
 | One ordinary form, sources already on disk | `unpack_ordinary_form` / `build_ordinary_form` |
+| The same, no code-index MCP or the server cannot see the file | `tools/ordinary-form.py unpack` / `build --verify` |
 | Every form of a `.cf` / `.cfe` / `.epf` at once | CLI `-E`, then the per-form files it writes |
 | The infobase is available and you want XML sources | `/getconfigfiles` — not this skill |
 | A managed form (`Ext/Form.xml`) | `1c-metadata-manage` skill — not this skill |
