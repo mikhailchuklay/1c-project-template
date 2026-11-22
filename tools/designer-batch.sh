@@ -222,6 +222,20 @@ fi
 ROOT="$(dev_env_project_root "$0")"
 dev_env_load "$ROOT" || true
 
+# Один запуск поверх .dev.env. Ставит обёртка thick-client-check: сборка EPF
+# идёт той же платформой и в ту же базу, что и предприятие.
+if [[ -n "${DESIGNER_PLATFORM_PATH:-}" ]]; then
+	PLATFORM_PATH="$DESIGNER_PLATFORM_PATH"
+fi
+if [[ -n "${DESIGNER_INFOBASE_PATH:-}" ]]; then
+	INFOBASE_KIND="${DESIGNER_INFOBASE_KIND:-server}"
+	INFOBASE_PATH="$DESIGNER_INFOBASE_PATH"
+fi
+if [[ "${DESIGNER_IB_USER_SET:-}" == "1" ]]; then
+	IB_USER="${DESIGNER_IB_USER:-}"
+	IB_PASSWORD="${DESIGNER_IB_PASSWORD:-}"
+fi
+
 # Без -Extension проверки идут только по основной конфигурации: модули расширения
 # не компилируются, а лог всё равно пишет «ошибок не обнаружено».
 case "$CMD" in
@@ -269,8 +283,13 @@ elif [[ -n "${VRUNNER_IBCONNECTION:-}" ]]; then
 else
 	refuse "не задан INFOBASE_PATH (.dev.env) и нет VRUNNER_IBCONNECTION"
 fi
-USER_NAME="${IB_USER:-${VRUNNER_DBUSER:-}}"
-PASSWORD="${IB_PASSWORD:-${VRUNNER_DBPWD:-}}"
+if [[ "${DESIGNER_IB_USER_SET:-}" == "1" ]]; then
+	USER_NAME="${IB_USER}"
+	PASSWORD="${IB_PASSWORD:-}"
+else
+	USER_NAME="${IB_USER:-${VRUNNER_DBUSER:-}}"
+	PASSWORD="${IB_PASSWORD:-${VRUNNER_DBPWD:-}}"
+fi
 
 ARGS=(DESIGNER "${CONN[@]}")
 [[ -n "$USER_NAME" ]] && ARGS+=(/N "$USER_NAME")

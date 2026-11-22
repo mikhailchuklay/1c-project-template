@@ -1,0 +1,23 @@
+{
+  "steps": [
+    {
+      "action": "print",
+      "metadata": "Документ.РеализацияТоваровУслуг",
+      "number": "ТК000000003",
+      "invoice": true,
+      "layout": "СчетФактура283",
+      "method": "Печать",
+      "args": [{"source": "layout"}, 1, {"source": "collector"}],
+      "expect_text": ["ТК000000003"]
+    },
+    {
+      "action": "print",
+      "metadata": "Документ.РеализацияТоваровУслуг",
+      "number": "РТЦУТД00004",
+      "layout": "ТОРГ12",
+      "method": "Печать",
+      "args": [{"source": "layout"}, 1, {"source": "collector"}],
+      "expect_text": ["РТЦУТД00004"]
+    }
+  ]
+}

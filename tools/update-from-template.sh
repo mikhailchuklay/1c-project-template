@@ -230,6 +230,7 @@ copy_file tools/update-from-template.sh && echo "  OK tools/update-from-template
 step "Sync tools/deploy-extension.sh, tools/designer-batch.sh, tools/check-bsl-calls.py and tools/dev-standalone"
 copy_file tools/deploy-extension.sh && echo "  OK tools/deploy-extension.sh"
 copy_file tools/designer-batch.sh && echo "  OK tools/designer-batch.sh"
+copy_file tools/thick-client-check.sh && echo "  OK tools/thick-client-check.sh"
 copy_file tools/check-bsl-calls.py && echo "  OK tools/check-bsl-calls.py"
 copy_file tools/stand-load-guard.sh && echo "  OK tools/stand-load-guard.sh"
 copy_file tools/agent-monitor.sh && echo "  OK tools/agent-monitor.sh"
