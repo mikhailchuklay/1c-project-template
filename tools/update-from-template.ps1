@@ -346,6 +346,7 @@ Copy-FileSync -SourceFile (Join-Path $cache 'tools\deploy-extension.sh') -DestFi
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\designer-batch.sh') -DestFile (Join-Path $ProjectRoot 'tools\designer-batch.sh') -Label 'tools/designer-batch.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\thick-client-check.sh') -DestFile (Join-Path $ProjectRoot 'tools\thick-client-check.sh') -Label 'tools/thick-client-check.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\check-bsl-calls.py') -DestFile (Join-Path $ProjectRoot 'tools\check-bsl-calls.py') -Label 'tools/check-bsl-calls.py'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\ordinary-form.py') -DestFile (Join-Path $ProjectRoot 'tools\ordinary-form.py') -Label 'tools/ordinary-form.py'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\stand-load-guard.sh') -DestFile (Join-Path $ProjectRoot 'tools\stand-load-guard.sh') -Label 'tools/stand-load-guard.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-monitor.sh') -DestFile (Join-Path $ProjectRoot 'tools\agent-monitor.sh') -Label 'tools/agent-monitor.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-workspace-cleanup.sh') -DestFile (Join-Path $ProjectRoot 'tools\agent-workspace-cleanup.sh') -Label 'tools/agent-workspace-cleanup.sh'

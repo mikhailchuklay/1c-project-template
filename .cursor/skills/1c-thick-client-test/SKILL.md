@@ -19,7 +19,7 @@ Managed application and managed forms are the QA test client (`1c-qa`), not this
 ## When not to use
 
 - Managed forms, the thin client, the web client: `1c-qa` and `ui-testing-tools.mdc`.
-- Reading or writing `Form.bin`: `v8unpack-cf` and `1c-form-inspect`. `unpack_ordinary_form` / `build_ordinary_form` exist on the code-index MCP at mcp.1commerce.ru. A project without that index (ep-trade) does not have them, and the container server likely does not see those files.
+- Reading or writing `Form.bin`: `v8unpack-cf` and `1c-form-inspect`. `unpack_ordinary_form` / `build_ordinary_form` exist on the code-index MCP at mcp.1commerce.ru; a project without that index (ep-trade), or a file the server cannot see, uses the local `tools/ordinary-form.py unpack` / `build --verify` (same contract). What the agent may change in an ordinary form itself and what goes as a package: `v8unpack-cf/docs/ordinary-forms.md` → *What the agent edits itself, what goes as a package*; this skill is the check after either.
 
 ## Run
 

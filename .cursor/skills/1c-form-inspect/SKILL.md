@@ -34,7 +34,7 @@ Graph form tools use names, not `form_ref`. Keep the returned base `project_id` 
 
 ## Ordinary forms
 
-`Forms/<Имя>/Ext/Form.bin` is a binary container: none of the XML routes see it. Read it with `unpack_ordinary_form(form_path, workspace_path)` and write it back with `build_ordinary_form(workspace_path, output_path, verify=true)` — the contract, workspace layout and the `verification.status == "match"` criterion are in `.cursor/skills/v8unpack-cf/SKILL.md → Ordinary forms`. Never edit `Form.bin` directly.
+`Forms/<Имя>/Ext/Form.bin` is a binary container: none of the XML routes see it. Read it with `unpack_ordinary_form(form_path, workspace_path)` and write it back with `build_ordinary_form(workspace_path, output_path, verify=true)` — the contract, workspace layout and the `verification.status == "match"` criterion are in `.cursor/skills/v8unpack-cf/SKILL.md → Ordinary forms`. No code-index MCP for the project, or the server cannot see the file (it is in the agent container) → the same pair locally: `python3 tools/ordinary-form.py unpack "<Form.bin>" "<workspace>"`, then read `decoded/module.bsl` and `decoded/form.json`; write back with `python3 tools/ordinary-form.py build "<workspace>" "<Form.bin>" --overwrite --verify`. Never edit `Form.bin` directly.
 
 ## After the change
 

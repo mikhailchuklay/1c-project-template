@@ -68,7 +68,9 @@ Do not include in the delivery summary:
 - thanks, apologies, introductions, conclusions;
 - markdown sections added "for structure" with no content.
 
-**Package instead of an edit.** When a person must apply the change (vendor lock kept, ordinary form, repository lock held by someone else, MCP-only sources) or the user asks for a diff / review, the deliverable is the package of `.cursor/skills/1c-change-package/SKILL.md`.
+**Package instead of an edit.** When a person must apply the change (vendor lock kept, repository lock held by someone else, MCP-only sources, an ordinary-form layout change per the table below) or the user asks for a diff / review, the deliverable is the package of `.cursor/skills/1c-change-package/SKILL.md`.
+
+**Ordinary form (`Ext/Form.bin`).** Split by the table in `.cursor/skills/v8unpack-cf/docs/ordinary-forms.md` → *What the agent edits itself, what goes as a package*. The agent edits itself, through an `ordinary-form/1` workspace and a rebuild with `verification.status == "match"` (MCP `build_ordinary_form`, or `tools/ordinary-form.py build --verify` without that MCP): the form module; elements created programmatically in the module with their handlers; a text / visibility / enabled property of an existing element only when its value is found in the layout exactly once and unambiguously, followed by a thick-client check with a screenshot (`1c-thick-client-test` / `tools/thick-client-check.sh`; not yet in the project → that property edit is a package). New layout elements, data and event bindings in the layout, re-layout and edge bindings stay a manual package (`1c-change-package`); after a person applies it, the agent checks the form in the thick client. A thick-client check that could not run is «не проверено» with the reason, under Risks. Why: `match` proves the container lost nothing, not the meaning of the change — the layout of an ordinary form is positional, `v8unpack` gives it no element names, so only changes provable without a name are the agent's; the module is ordinary BSL and the gates cover it.
 
 ## Anti-patterns
 

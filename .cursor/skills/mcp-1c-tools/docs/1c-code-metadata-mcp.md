@@ -93,6 +93,12 @@ differs byte for byte (write timestamps). `binary_identical: false` with
 directly and never read it as XML.** A standalone `Form.bin` names no element: its
 brace tree is positional, so do not invent element names or types from it.
 
+**No code-index MCP, or the server cannot see the file** (a project without an
+index, or an export inside the agent container) — the same contract runs locally:
+`tools/ordinary-form.py unpack` / `build --verify` on the `v8unpack` package of the
+agent image, same workspace and result JSON
+(`.cursor/skills/v8unpack-cf/docs/ordinary-forms.md` → *No MCP — the local script*).
+
 ## XSD schemas & validation
 
 | Tool | Parameters | Purpose | When to use |

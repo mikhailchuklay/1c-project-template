@@ -22,6 +22,7 @@ From the template clone into the **current project**:
 - `tools/update-from-template.ps1` (the script updates itself)
 - `tools/deploy-extension.sh`, `tools/designer-batch.sh`, `tools/stand-load-guard.sh`, `tools/agent-monitor.sh` and `tools/dev-standalone/**` (extension load, Designer batch checks and the architect's agent monitor used by the rules)
 - `tools/check-bsl-calls.py` and `tools/lists/bsl-global-names.txt` (fast call check required by `headless-agent.mdc` §5)
+- `tools/ordinary-form.py` (local `Form.bin` unpack / verified build for projects without a code-index MCP, `v8unpack-cf` skill)
 - `.gitattributes` — only when the project has none; an existing one is never overwritten, a difference is reported for a manual merge
 
 Executable bit: for every synced file that is `100755` in the template (shell scripts in `tools/`, `qa-testclient.sh`), the script sets `+x` in the project git index (`update-index --chmod=+x`, new files — `git add --chmod=+x`). On Windows git records copied files as `100644`, and Linux agents/containers then cannot run them. Commit the resulting mode changes together with the sync.

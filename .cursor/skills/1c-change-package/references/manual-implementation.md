@@ -17,7 +17,7 @@ A self-contained instruction a person follows in the Configurator without the ch
 - **Attributes / metadata:** one table row per new or changed attribute, tabular section, dimension or resource — owner, action, name, synonym, type with qualifiers (length, digits / fraction, composite types, date parts), fill checking, default / fill value, purpose and where it is used. A current value you did not read is `unverified` together with the Configurator place where the person checks it.
 - **Form elements:** name, kind, parent group, data path (`Объект.<Имя>` / `Запись.<Имя>` — never a same-named form attribute, `.cursor/rules/form-module.mdc → Form Data`), title, position among siblings, event handlers. Handlers go in the module part of the package with their directives.
 - **Order matters:** metadata first, then form attributes and elements, then modules — a step never uses something a later step creates.
-- An ordinary (binary) form is described the same way; say explicitly that it is edited in the form editor, not as `Form.xml`.
+- An ordinary (binary) form: the package carries the layout part — new elements, data and event bindings, re-layout, edge bindings (the table in `.cursor/skills/v8unpack-cf/docs/ordinary-forms.md` → *What the agent edits itself, what goes as a package*). Describe it the same way and say explicitly that it is edited in the Configurator form editor, not as `Form.xml`. A module part the agent already delivered is referenced, not repeated. After the person applied it, the agent checks the form in the thick client.
 
 ## Template
 
@@ -29,7 +29,7 @@ A self-contained instruction a person follows in the Configurator without the ch
 - Задача: …
 - Конфигурация / расширение: …
 - Платформа: …
-- Почему вручную: … (объект на замке / обычная форма / объект захвачен в хранилище пользователем … / доступ только через MCP / запрос пользователя)
+- Почему вручную: … (объект на замке / обычная форма: правка макета — новые элементы, привязки, компоновка / объект захвачен в хранилище пользователем … / доступ только через MCP / запрос пользователя)
 - Источник текущего кода: … (файл / инструмент MCP), отпечаток: …, прочитано: …
 - Статус: пакет, изменения не внесены
 

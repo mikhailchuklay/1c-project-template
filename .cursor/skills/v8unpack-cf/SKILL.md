@@ -1,6 +1,6 @@
 ---
 name: v8unpack-cf
-description: "Read and write 1C binaries without the platform: an ordinary form `Ext/Form.bin` via the `unpack_ordinary_form` / `build_ordinary_form` MCP tools, a whole CF / CFE / EPF via the `v8unpack` CLI. Use for `Form.bin`, обычные формы, or a binary with no infobase / Designer / `ibcmd`."
+description: "Read and write 1C binaries without the platform: an ordinary form `Ext/Form.bin` via the `unpack_ordinary_form` / `build_ordinary_form` MCP tools or, without a code-index MCP, the local `tools/ordinary-form.py`; a whole CF / CFE / EPF via the `v8unpack` CLI. Use for `Form.bin`, обычные формы, or a binary with no infobase / Designer / `ibcmd`."
 ---
 
 # v8unpack-cf — read and write 1C binary artifacts
@@ -9,7 +9,7 @@ Two workflows live here, and they are not variants of one thing:
 
 | You have | Route | Section |
 |---|---|---|
-| One **ordinary form** — `.../Forms/<Форма>/Ext/Form.bin` | MCP tools `unpack_ordinary_form` / `build_ordinary_form` | *Ordinary forms — `Form.bin`* |
+| One **ordinary form** — `.../Forms/<Форма>/Ext/Form.bin` | MCP tools `unpack_ordinary_form` / `build_ordinary_form`; no such MCP for the project, or the server cannot see the file → local `tools/ordinary-form.py unpack` / `build --verify` (same contract) | *Ordinary forms — `Form.bin`* |
 | A whole **CF / CFE / EPF** binary | `v8unpack` CLI (`-E` / `-B`) | *Whole binaries — CF / CFE / EPF* |
 
 Use either when the 1C:Enterprise platform is not at hand. When the configuration
@@ -21,13 +21,22 @@ lives in an infobase, extract it through the platform instead — see the
 - `v8unpack` Python package — `pip install "v8unpack>=1.2.6,<2"`. Verify with
   `python -m v8unpack --help`.
 - Both MCP servers declare it in their own requirements, so the tools work in a
-  built image. When it is missing they answer `status="error"`,
+  built image. The agent image `onec-agent` ships it too, for `tools/ordinary-form.py`. When it is missing they answer `status="error"`,
   `error_code="dependency_missing"` with the install line in `hint` — that is the
   answer, not a crash.
 
 ## Ordinary forms — `Form.bin`
 
-Before any ordinary-form tool call or payload edit, read [ordinary-forms.md](docs/ordinary-forms.md): exact MCP contract, workspace, workflow and warnings. Never edit `Form.bin` directly or deflate its entries. Edit `payload/`, preserve the manifest, and require logical payload verification before delivery.
+Before any ordinary-form tool call or payload edit, read [ordinary-forms.md](docs/ordinary-forms.md): exact contract, workspace, workflow and warnings.
+
+Pick the route by what the project has, not by habit:
+
+- **The project's code-index MCP publishes `unpack_ordinary_form` / `build_ordinary_form` and the server sees the file** → the MCP tools.
+- **No such MCP** (no code index for the project — e.g. a «только хранилище» project on an old configuration whose forms are almost all ordinary), **or the server cannot see the file** (it lives in the agent container, not in the indexed export) → the local script, same contract and workspace:
+  `python3 tools/ordinary-form.py unpack "<Form.bin>" "<workspace>"` and
+  `python3 tools/ordinary-form.py build "<workspace>" "<Form.bin>" --overwrite --verify`.
+  It prints the same JSON result; exit code 0 only on `verification.status == "match"`.
+  A missing `v8unpack` is `error_code="dependency_missing"` — report it, do not hand-parse the container. Never edit `Form.bin` directly or deflate its entries. Edit `payload/`, preserve the manifest, and require logical payload verification before delivery.
 
 ## Whole binaries — CF / CFE / EPF
 
@@ -55,8 +64,8 @@ Of ordinary forms specifically — measured on a real extraction (`1C-Gitter`
 - **`v8unpack` 1.2.6 cannot write a container with compressed entries through
   `Container.build(nested=False)`** — it raises `struct.error`, because
   `Document.compress` returns no table-of-contents offset. Irrelevant for a
-  `Form.bin`: its entries must be plain anyway (see [ordinary-form warnings](docs/ordinary-forms.md#warnings--read-before-the-first-call)), and the MCP codec
-  writes them plain with verbatim (`nested=True`) container records. Relevant only
+  `Form.bin`: its entries must be plain anyway (see [ordinary-form warnings](docs/ordinary-forms.md#warnings--read-before-the-first-call)), and the MCP codec and
+  `tools/ordinary-form.py` write them plain with verbatim (`nested=True`) container records. Relevant only
   if you drive the library directly for a whole CF / CFE / EPF.
 - **A `.cf` rebuilt with `-B` from a current configuration is not the
   configuration** — see [whole-binary build](docs/whole-binaries.md#build--b). Observed metadata degradation on
@@ -75,4 +84,6 @@ Of ordinary forms specifically — measured on a real extraction (`1C-Gitter`
 - `forms.md` — the router for managed-form work. It sends ordinary forms here.
 - `mcp-1c-tools` — the MCP catalog. `unpack_ordinary_form` / `build_ordinary_form`
   are listed there under both `1c-code-metadata-mcp` and `1c-graph-metadata-mcp`;
-  [ordinary-forms.md](docs/ordinary-forms.md) is the contract they share.
+  [ordinary-forms.md](docs/ordinary-forms.md) is the contract they share with `tools/ordinary-form.py`.
+- `verification-delivery.mdc` → *Ordinary form* — what the agent edits itself and what stays a
+  manual package: the table in [ordinary-forms.md](docs/ordinary-forms.md#what-the-agent-edits-itself-what-goes-as-a-package).
