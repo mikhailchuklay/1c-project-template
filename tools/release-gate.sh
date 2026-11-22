@@ -80,6 +80,9 @@ usage() {
   --build-cf           после помещения в хранилище: /DumpCfg основной конфигурации базы
                        в out/<проект>-<sha>.cf и sha256
   --cf PATH            не собирать .cf, а взять готовый файл (sha256 считается по нему)
+  --accepted FILE      новые замечания CheckModules/CheckConfig, которые архитектор принял
+                       (строка /Out как в отчёте гейта, без «(стр,кол)»; «#…» — комментарий);
+                       файл даёт архитектор в промпте или ответе, путь и sha256 идут в отчёт
 
 Переменные (.dev.env или окружение):
   EXTENSION_NAME, EXTENSIONS_PATH   расширение и каталог исходников (src/cfe по умолчанию)
@@ -112,6 +115,7 @@ IMPORT_CC=""
 BASELINE_DIR_ARG=""
 BUILD_CF=0
 CF_GIVEN=""
+ACCEPTED=""
 need() { [[ $# -ge 2 && -n "$2" ]] || { echo "$1: нужно значение" >&2; exit 2; }; }
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -133,6 +137,7 @@ while [[ $# -gt 0 ]]; do
 		--baseline-dir) need "$@"; BASELINE_DIR_ARG="$(realpath -m "$2")"; shift 2 ;;
 		--build-cf) BUILD_CF=1; shift ;;
 		--cf) need "$@"; CF_GIVEN="$(realpath -m "$2")"; BUILD_CF=1; shift 2 ;;
+		--accepted) need "$@"; ACCEPTED="$(realpath -m "$2")"; shift 2 ;;
 		-h|--help) usage; exit 0 ;;
 		*) echo "Неизвестный аргумент: $1" >&2; usage >&2; exit 2 ;;
 	esac
@@ -162,7 +167,7 @@ case "$MODE" in
 	*) echo "--mode: extension или main-config, а не «$MODE»" >&2; exit 2 ;;
 esac
 if [[ "$MODE" == extension ]]; then
-	for opt in "$BASE_REV" "$FILES_ARG" "$FILES_FROM" "$PATCH_GIVEN" "$IMPORT_CM" "$BASELINE_DIR_ARG" "$CF_GIVEN"; do
+	for opt in "$BASE_REV" "$FILES_ARG" "$FILES_FROM" "$PATCH_GIVEN" "$IMPORT_CM" "$BASELINE_DIR_ARG" "$CF_GIVEN" "$ACCEPTED"; do
 		[[ -z "$opt" ]] || { echo "--base/--files/--patch/--baseline*/--cf — ключи режима main-config" >&2; exit 2; }
 	done
 	((BASELINE_RUN == 0 && BUILD_CF == 0)) || { echo "--baseline и --build-cf — ключи режима main-config" >&2; exit 2; }
@@ -223,7 +228,7 @@ PY
 # ---------------------------------------------------------------------------
 COMPARE_PY=$(cat <<'PY'
 import collections, json, os, re, sys
-name, rc, wrapper, out, baseline_dir, base_sha, command = sys.argv[1:8]
+name, rc, wrapper, out, baseline_dir, base_sha, command, accepted_path = sys.argv[1:9]
 rc = int(rc)
 
 def read(path):
@@ -278,12 +283,23 @@ if gone:
     print("Ушли (не ошибка):")
     for line in list(gone.elements())[:30]:
         print(f"  - {line}")
+accepted = set()
+if accepted_path:
+    for raw in read(accepted_path).splitlines():
+        if raw.strip() and not raw.lstrip().startswith("#"):
+            accepted.add(re.sub(r"\(\d+,\d+\)", "()", re.sub(r"\s+", " ", raw).strip()))
+taken = collections.Counter({k: v for k, v in new.items() if k in accepted})
+new -= taken
+if taken:
+    print(f"Новые, принятые архитектором ({accepted_path}):")
+    for line in list(taken.elements())[:200]:
+        print(f"  = {line}")
 if new:
     print("НОВЫЕ относительно базовой линии:")
     for line in list(new.elements())[:200]:
         print(f"  + {line}")
     sys.exit(1)
-print("Новых замечаний относительно базовой линии нет")
+print("Новых непринятых замечаний относительно базовой линии нет")
 PY
 )
 
@@ -441,6 +457,7 @@ run_main_config() {
 		((BASELINE_RUN)) && BASE_REV=HEAD || { echo "--base: базовый коммит «было» обязателен в режиме main-config" >&2; exit 2; }
 	fi
 	BASE_SHA="$(git rev-parse -q --verify "$BASE_REV^{commit}")" || { echo "--base $BASE_REV: нет такого коммита" >&2; exit 2; }
+	[[ -z "$ACCEPTED" || -s "$ACCEPTED" ]] || { echo "--accepted: нет файла или он пуст: $ACCEPTED" >&2; exit 2; }
 
 	CM=(/CheckModules "${MODES[@]}")
 	CC=(/CheckConfig -ConfigLogIntegrity -IncorrectReferences "${MODES[@]}" -UnreferenceProcedures)
@@ -626,7 +643,7 @@ PY
 		rc=$?
 		cat "$wrap"
 		echo "--- сравнение с базовой линией"
-		python3 -I -c "$COMPARE_PY" "$name" "$rc" "$wrap" "$out" "$BASELINE_DIR" "$BASE_SHA" "$shown"
+		python3 -I -c "$COMPARE_PY" "$name" "$rc" "$wrap" "$out" "$BASELINE_DIR" "$BASE_SHA" "$shown" "$ACCEPTED"
 	}
 
 	echo "release-gate: $BRANCH $HEAD_SHA, основная конфигурация $SRC (хранилище ${REPO:-—}), база $BASE_SHA"
@@ -690,7 +707,8 @@ PY
 
 	export R_SRC="$SRC" R_VERSION="$VERSION" R_BASE_SHA="$BASE_SHA" R_MODES="$MODES_RAW" R_BASELINE_DIR="$BASELINE_DIR" \
 		R_REPO="$REPO" R_FILES="$(printf '%s\n' "${FILES[@]}")" R_PATCH="$PATCH" R_PATCH_SHA="$PATCH_SHA" \
-		R_CF="$( ((BUILD_CF)) && echo "$CF")" R_CF_SHA="$CF_SHA" R_BASELINE_RUN=0
+		R_CF="$( ((BUILD_CF)) && echo "$CF")" R_CF_SHA="$CF_SHA" R_BASELINE_RUN=0 \
+		R_ACCEPTED="$ACCEPTED" R_ACCEPTED_SHA="$( [[ -n "$ACCEPTED" ]] && sha256sum "$ACCEPTED" | cut -d' ' -f1)"
 }
 
 if [[ "$MODE" == extension ]]; then run_extension; else run_main_config; fi
@@ -735,6 +753,8 @@ if e["MODE"] == "main-config":
         "patch_sha256": g("R_PATCH_SHA"),
         "cf_path": g("R_CF"),
         "cf_sha256": g("R_CF_SHA"),
+        "accepted_findings": g("R_ACCEPTED"),
+        "accepted_findings_sha256": g("R_ACCEPTED_SHA"),
     })
 report.update({
     "started_at": e["STARTED"],
@@ -763,6 +783,8 @@ with open(sys.argv[3], "w", encoding="utf-8") as f:
         f.write(f"Сборка: {report['cfe_path']}\nsha256: {report['cfe_sha256'] or '—'}\n\n")
     elif not report.get("baseline_run"):
         f.write(f"Файлы задачи: {', '.join(report['files_scope']) or '—'}\n")
+        if report["accepted_findings"]:
+            f.write(f"Принятые замечания: {report['accepted_findings']} (sha256 {report['accepted_findings_sha256']})\n")
         f.write(f"Патч: {report['patch_path']}\nsha256 патча: {report['patch_sha256'] or '—'}\n")
         f.write(f"Сборка: {report['cf_path'] or '— (до помещения в хранилище; --build-cf после фиксации)'}\nsha256: {report['cf_sha256'] or '—'}\n\n")
     else:
