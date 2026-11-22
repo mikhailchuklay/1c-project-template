@@ -13,6 +13,7 @@
 | `load-objlist-extensions.sh` | Частичная загрузка `src/cfe/*` через ibcmd |
 | `deploy-extension.sh` | stop → import → apply → restart для CFE |
 | `designer-batch.sh` | Пакетный Конфигуратор на Linux: свой виртуальный экран, флаги, тайм-аут, вердикт по трём сигналам (`designer-batch-checks.mdc`) |
+| `thick-client-check.sh` | Толстый клиент, обычные формы: сценарий печати, отчётов и снимков на своём Xvfb (`docs/headless-agent.md`) |
 | `mcp-platform-tools-launcher.sh` | MCP Platform Tools на Linux (локальный Cursor и Cursor Remote) |
 | `fix-1c-platform-tools-vrunner-cmd.ps1` | Workaround quoting vrunner на Windows |
 | `init-project-structure.ps1` | Каталоги vanessa-bootstrap (`project-structure.json`) |

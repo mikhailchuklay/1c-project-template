@@ -1,0 +1,45 @@
+{
+  "steps": [
+    {
+      "action": "print",
+      "metadata": "Документ.РеализацияТоваровУслуг",
+      "number": "00-000001",
+      "date": "2026-01-15",
+      "layout": "ТОРГ12",
+      "expect_text": ["00-000001", "Итого"]
+    },
+    {
+      "action": "print",
+      "metadata": "Документ.РеализацияТоваровУслуг",
+      "number": "00-000001",
+      "layout": "СчетФактура",
+      "invoice": true,
+      "expect_text": ["00-000001"]
+    },
+    {
+      "action": "report",
+      "metadata": "Отчет.ВедомостьТоваров",
+      "date_from": "2026-10-01",
+      "date_to": "2026-10-31"
+    },
+    {
+      "action": "open_form",
+      "kind": "object",
+      "metadata": "Документ.РеализацияТоваровУслуг",
+      "number": "00-000001",
+      "form": "ФормаДокумента"
+    },
+    {
+      "action": "open_form",
+      "kind": "report",
+      "metadata": "Отчет.ВедомостьТоваров",
+      "generate": true,
+      "date_from": "2026-10-01",
+      "date_to": "2026-10-31"
+    },
+    {
+      "action": "open_form",
+      "kind": "main"
+    }
+  ]
+}
