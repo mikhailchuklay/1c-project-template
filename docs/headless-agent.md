@@ -248,6 +248,7 @@ QA MCP и тест-клиент ведут управляемые формы. О
 
 ```bash
 tools/thick-client-check.sh scenario --params tools/thick-client-check/example-scenario.json
+tools/thick-client-check.sh --infobase onec-dev-server:2541/другая-база scenario --params путь/к/сценарию.json
 tools/thick-client-check.sh snapshot --metadata Документ.РеализацияТоваровУслуг --number 00-000001
 tools/thick-client-check.sh --dry-run scenario --params путь/к/сценарию.json
 tools/thick-client-check.sh --self-test

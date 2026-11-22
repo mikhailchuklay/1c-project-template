@@ -43,6 +43,8 @@ usage() {
   --generate             snapshot: сформировать отчёт на открытой форме
   --date-from ГГГГ-ММ-ДД snapshot: начало периода
   --date-to ГГГГ-ММ-ДД   snapshot: конец периода
+  --infobase СЕРВЕР:ПОРТ/БАЗА
+                         подменить базу из .dev.env на этот серверный адрес
   --dry-run              показать команду (пароль скрыт) и не запускать
   --self-test            проверить разбор сценария, белый список, маску пароля и XWD
   -h, --help             эта справка
@@ -150,6 +152,7 @@ SNAP_FORM=""
 SNAP_GENERATE=0
 SNAP_FROM=""
 SNAP_TO=""
+INFOBASE_OVERRIDE=""
 DISMISS=("${DEFAULT_DISMISS[@]}")
 
 while [[ $# -gt 0 ]]; do
@@ -165,6 +168,7 @@ while [[ $# -gt 0 ]]; do
 		--date-from) SNAP_FROM="${2:?--date-from требует значение}"; shift 2 ;;
 		--date-to) SNAP_TO="${2:?--date-to требует значение}"; shift 2 ;;
 		--generate) SNAP_GENERATE=1; shift ;;
+		--infobase) INFOBASE_OVERRIDE="${2:?--infobase требует сервер:порт/база}"; shift 2 ;;
 		--dry-run) DRY_RUN=1; shift ;;
 		--self-test) self_test; exit $? ;;
 		-h|--help) usage; exit 0 ;;
@@ -182,6 +186,11 @@ fi
 ROOT="$(dev_env_project_root "$0")"
 if ! dev_env_load "$ROOT"; then
 	refuse "нет .dev.env в $ROOT — подключение к базе не из чего собрать"
+fi
+
+if [[ -n "$INFOBASE_OVERRIDE" ]]; then
+	INFOBASE_KIND=server
+	INFOBASE_PATH="$INFOBASE_OVERRIDE"
 fi
 
 TIMEOUT="${TIMEOUT:-900}"
