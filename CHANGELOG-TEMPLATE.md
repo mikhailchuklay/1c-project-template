@@ -13,6 +13,7 @@
 
 ## 2026-11-22
 
+- Слот слияния блокирует любые слияния в `main`, включая PR без смены версии: перед слиянием — `tools/task-board.sh version list` (`docs/headless-agent.md`). Проекту: синхронизироваться.
 - Порядок исполнителей при исчерпании лимитов: Cursor основная → Cursor `auto` → dsh (сложное, платно) → codex (только с разрешения владельца); именные модели Cursor делят пул с основной; тариф Cursor не меняется (`docs/headless-agent.md`). Проекту: синхронизироваться.
 - `tools/release-gate.sh` (отчёт `gate_version` 3): необязательный шаг `thick-client:<файл>` (`--thick-client-scenarios` или `RELEASE_GATE_THICK_CLIENT_SCENARIOS`, оба режима, после сборки и `demo:*`) вызывает `tools/thick-client-check.sh`. В записи шага, если он выполнился, — `scenario`, `scenario_sha256`, `thick_client_report`, `thick_client_report_sha256`, `thick_client_verdict`, `wrapper_rc`, `reason` (через `<имя>.extra.json`; остальные шаги без этих полей); в корне — `thick_client_scenarios`. Проекту: синхронизироваться; сценарии обычных форм задать в промпте или в `.dev.env`, чтобы доказательства шли через гейт. (#99)
 - Запасная модель Cursor: при исчерпании лимита основной модели агент работает на `auto` (решение владельца), продолжение хода через `agent-reply --model auto`, отметка в ретро (`docs/headless-agent.md` → «Запасная модель Cursor при исчерпании лимита»). Проекту: синхронизироваться.
