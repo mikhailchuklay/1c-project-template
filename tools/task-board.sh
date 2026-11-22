@@ -37,11 +37,19 @@ usage() {
                                  забрать расход агента (usage из agent-status.json задачи в контейнере:
                                  номер N -> dev-agent<N>) в tokens/cost_usd/api_equiv_usd; задач у issue
                                  может быть несколько — суммируются; --file — локальный agent-status.json
+  version reserve <issue> [--patch] [--from X.Y.Z.W] [--ttl часы]
+                                 слот слияния и номер выпуска: следующий от последнего тега в origin
+                                 (MINOR, --patch — PATCH; --from — хотфикс от указанного выпуска).
+                                 Слот один на репозиторий: держит другая задача — код 1 и кто держит.
+                                 Повтор той же задачей возвращает её номер. Слот снимается сам, когда
+                                 тег с номером появился в origin или истёк срок (по умолчанию 3 ч)
+  version release <issue>        отдать слот (слияние отменено или отложено)
+  version list                   кто держит слот
   card <issue> [--markdown]      карточка задачи (markdown — для комментария в issue)
   scorecard [--days N]           сводка по исполнителям/харнесам за N дней (по умолчанию 7)
   path                           путь к файлу доски
 
-Коды возврата: 0 — успех; 1 — отказ (стенд занят, нет задачи); 2 — ошибка аргументов.
+Коды возврата: 0 — успех; 1 — отказ (стенд или слот слияния занят, нет задачи); 2 — ошибка аргументов.
 EOF
 }
 
@@ -59,6 +67,7 @@ import datetime as dt
 import fcntl
 import json
 import os
+import re
 import sys
 import subprocess
 import tempfile
@@ -392,10 +401,100 @@ def cmd_usage(args):
           + (" (цена неполная)" if incomplete else ""))
 
 
+VERSION_RE = re.compile(r"(\d+(?:\.\d+){1,3})$")
+
+
+def remote_versions():
+    """Номера выпусков по тегам origin (последняя числовая часть имени тега)."""
+    try:
+        out = subprocess.run(["git", "ls-remote", "--tags", "--refs", "origin"], capture_output=True,
+                             text=True, timeout=60, check=True).stdout
+    except (subprocess.SubprocessError, OSError) as e:
+        die(f"Не удалось прочитать теги origin: {e}", 1)
+    found = set()
+    for line in out.splitlines():
+        m = VERSION_RE.search(line.rsplit("/", 1)[-1])
+        if m:
+            found.add(m.group(1))
+    return found
+
+
+def vkey(v):
+    parts = [int(x) for x in v.split(".")]
+    return parts + [0] * (4 - len(parts))
+
+
+def bump(v, patch):
+    p = vkey(v)
+    if patch:
+        p[2] += 1
+    else:
+        p[1] += 1
+        p[2] = 0
+    p[3] = 0
+    return ".".join(map(str, p))
+
+
+def cmd_version(args):
+    if not args or args[0] not in ("reserve", "release", "list"):
+        die("version reserve|release|list (tools/task-board.sh --help)")
+    sub, args = args[0], args[1:]
+    opts, rest = parse_opts(args, flags=("patch",))
+    tags = remote_versions() if sub != "release" else set()
+    with Board(sub != "list") as data:
+        slot = data.get("merge_slot")
+        if slot:
+            expired = dt.datetime.fromisoformat(slot["expires_at"]) <= dt.datetime.now().astimezone()
+            if slot["version"] in tags or expired:
+                why = "тег выпущен" if slot["version"] in tags else "срок истёк"
+                print(f"Слот #{slot['issue']} ({slot['version']}) снят: {why}")
+                data.setdefault("merge_slot_log", []).append(dict(slot, closed_at=now(), closed=why))
+                data["merge_slot"] = slot = None
+        if sub == "list":
+            print(f"Слот слияния: #{slot['issue']} {slot['version']} до {slot['expires_at']}" if slot
+                  else "Слот слияния свободен")
+            return
+        if not rest:
+            die(f"version {sub} <issue>")
+        issue = rest[0].lstrip("#")
+        if sub == "release":
+            if not slot or slot["issue"] != issue:
+                die(f"#{issue} не держит слот слияния", 1)
+            data.setdefault("merge_slot_log", []).append(dict(slot, closed_at=now(), closed="отдан"))
+            data["merge_slot"] = None
+            print(f"#{issue}: слот отдан")
+            return
+        if slot and slot["issue"] != issue:
+            die(f"Слот слияния держит #{slot['issue']} ({slot['version']}) до {slot['expires_at']}: "
+                "дождись его тега или договорись с его архитектором", 1)
+        if slot:
+            print(slot["version"])
+            return
+        base = opts.get("from")
+        if base:
+            if base not in tags:
+                die(f"Выпуска {base} нет среди тегов origin", 1)
+        elif not tags:
+            die("В origin нет тегов выпусков: номер задай вручную", 1)
+        else:
+            base = max(tags, key=vkey)
+        ver = bump(base, bool(opts.get("patch")))
+        if ver in tags:
+            die(f"Номер {ver} уже занят тегом в origin", 1)
+        ttl = float(opts.get("ttl", 3))
+        expires = (dt.datetime.now().astimezone() + dt.timedelta(hours=ttl)).isoformat(timespec="seconds")
+        data["merge_slot"] = {"issue": issue, "version": ver, "base": base, "at": now(), "expires_at": expires}
+        if issue in data["tasks"]:
+            data["tasks"][issue].setdefault("log", []).append({"at": now(), "event": "version",
+                                                               "note": f"слот слияния, номер {ver}"})
+        print(ver)
+
+
 def main(argv):
     cmd, args = argv[0], argv[1:]
     handlers = {"list": cmd_list, "set": cmd_set, "inc": cmd_inc, "claim": cmd_claim,
-                "release": cmd_release, "card": cmd_card, "scorecard": cmd_scorecard, "usage": cmd_usage}
+                "release": cmd_release, "card": cmd_card, "scorecard": cmd_scorecard, "usage": cmd_usage,
+                "version": cmd_version}
     if cmd == "path":
         print(PATH)
         return
