@@ -1,6 +1,6 @@
 # Отчёт `out/thick-client-check.json`
 
-Контракт стабилен: шаг гейта `thick-client:<сценарий>` в этот PR не входит, поля ниже он сможет читать без другого формата.
+Контракт стабилен: шаг гейта `thick-client:<сценарий>` (`tools/release-gate.sh --thick-client-scenarios`, иначе `RELEASE_GATE_THICK_CLIENT_SCENARIOS`) читает поля ниже.
 
 Коды процесса обёртки: `0` все шаги PASS, `1` FAIL или тайм-аут, `2` отказ запуска, `3` нет Xvfb.
 

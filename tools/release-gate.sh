@@ -14,7 +14,10 @@
 #   check-can-apply   /CheckCanApplyConfigurationExtensions -Extension <имя> через designer-batch.sh;
 #   build-cfe         /DumpCfg <файл> -Extension <имя> через designer-batch.sh (или --cfe готовый файл);
 #   sha256            контрольная сумма собранного .cfe;
-#   demo:<база>       (только с --demo-bases) проверка на демо-базах актуальных версий БП.
+#   demo:<база>       (только с --demo-bases) проверка на демо-базах актуальных версий БП;
+#   thick-client:<файл>
+#                     (с --thick-client-scenarios или RELEASE_GATE_THICK_CLIENT_SCENARIOS)
+#                     обычные формы через tools/thick-client-check.sh, после demo:*.
 #
 # main-config — правка основной конфигурации в проекте «только хранилище 1С» (EXTENSION_NAME пуст,
 # REPOSITORY_PATH задан; или явно --mode main-config). Типовая на поддержке несёт сотни своих
@@ -29,16 +32,20 @@
 #                     с параметрами хранилища (designer-batch.sh --repository) + vrunner infobase update;
 #   check-modules     /CheckModules <режимы из RELEASE_GATE_CHECK_MODES>: новых ошибок к базовой линии нет;
 #   check-config      /CheckConfig … <те же режимы>: новых замечаний к базовой линии нет;
-#   build-cf, sha256  (только с --build-cf или --cf, после помещения в хранилище) .cf базы и его sha256.
+#   build-cf, sha256  (только с --build-cf или --cf, после помещения в хранилище) .cf базы и его sha256;
+#   thick-client:<файл>
+#                     тот же необязательный шаг, что в режиме extension: обычные формы бывают в обоих.
 #
 # Отчёт: out/release-gate.json (машиночитаемый) и out/release-gate.txt; логи шагов — out/release-gate/.
 # В отчёте: SHA HEAD, sha256 сборки, по каждому шагу команда, код возврата, хвост лога, итог PASS/FAIL.
+# У шага thick-client:* ещё путь и sha256 сценария и отчёта, verdict, код обёртки и причина;
+# в корне — thick_client_scenarios. Формат записи шага расширен дополнительными полями: gate_version 3.
 # Код возврата: 0 — PASS; 1 — FAIL; 2 — ошибка запуска.
 #
 # Архитектор шаги не перезапускает, а сверяет отчёт (docs/headless-agent.md, «Приёмка по существу»).
 set -uo pipefail
 
-GATE_VERSION=2
+GATE_VERSION=3
 
 usage() {
 	cat <<'EOF'
@@ -55,6 +62,13 @@ usage() {
   --timeout SEC        тайм-аут каждого запуска Конфигуратора
                        (по умолчанию 1800; в main-config — 21600: проверка всей типовой)
   --keep-going         выполнять тяжёлые шаги, даже если упали быстрые
+  --thick-client-scenarios LIST
+                       через запятую: JSON-сценарии шага thick-client:<имя файла>
+                       (tools/thick-client-check.sh; каталог отчёта свой на сценарий).
+                       Разрешён в режимах extension и main-config. Важнее переменной
+                       RELEASE_GATE_THICK_CLIENT_SCENARIOS. Нет файла, файл не читается
+                       или два сценария с одним именем файла — код 2.
+                       --timeout гейта на обёртку не передаётся
   -h, --help           эта справка
 
 Режим extension:
@@ -94,6 +108,9 @@ usage() {
   RELEASE_GATE_DEMO_CMD             шаблон команды проверки на демо-базе; подстановки
                                     {base} и {cfe}; задаёт проект, а не агент. Пока в Devbox
                                     нет инструментов обновления демо-баз, шаг выключен.
+  RELEASE_GATE_THICK_CLIENT_SCENARIOS
+                                    сценарии шага thick-client:<файл> через запятую,
+                                    если ключ --thick-client-scenarios не задан
 
 Шаги и их командные строки фиксированы; другой набор проверок — правка этого скрипта PR'ом.
 EOF
@@ -116,7 +133,37 @@ BASELINE_DIR_ARG=""
 BUILD_CF=0
 CF_GIVEN=""
 ACCEPTED=""
+THICK_FLAG_SET=0
+THICK_SCENARIOS=()
 need() { [[ $# -ge 2 && -n "$2" ]] || { echo "$1: нужно значение" >&2; exit 2; }; }
+# Путь сценария — realpath -m (как у остальных файловых ключей). Нет файла, не читается
+# или совпало имя файла — код 2 до любых шагов: иначе у шагов совпадут имена и каталоги.
+append_thick_scenario() {
+	local p="$1" base seen
+	p="$(realpath -m "$p")"
+	if [[ ! -f "$p" || ! -r "$p" ]]; then
+		echo "Сценарий толстого клиента: нет файла или он не читается: $p" >&2
+		exit 2
+	fi
+	base="$(basename "$p")"
+	for seen in "${THICK_SCENARIOS[@]+"${THICK_SCENARIOS[@]}"}"; do
+		if [[ "$(basename "$seen")" == "$base" ]]; then
+			echo "Два сценария с одинаковым именем файла «$base»: шаги и каталоги отчётов совпадут" >&2
+			exit 2
+		fi
+	done
+	THICK_SCENARIOS+=("$p")
+}
+thick_scenarios_from_list() {
+	local raw="$1" p
+	local -a parts=()
+	IFS=',' read -r -a parts <<<"$raw"
+	for p in "${parts[@]}"; do
+		p="${p#"${p%%[![:space:]]*}"}"
+		p="${p%"${p##*[![:space:]]}"}"
+		[[ -n "$p" ]] && append_thick_scenario "$p"
+	done
+}
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--mode) need "$@"; MODE="$2"; shift 2 ;;
@@ -126,6 +173,7 @@ while [[ $# -gt 0 ]]; do
 		--demo-bases) need "$@"; DEMO_BASES="$2"; shift 2 ;;
 		--timeout) need "$@"; TIMEOUT="$2"; shift 2 ;;
 		--keep-going) KEEP_GOING=1; shift ;;
+		--thick-client-scenarios) need "$@"; THICK_FLAG_SET=1; thick_scenarios_from_list "$2"; shift 2 ;;
 		--base) need "$@"; BASE_REV="$2"; shift 2 ;;
 		--files) need "$@"; FILES_ARG="$2"; shift 2 ;;
 		--files-from) need "$@"; FILES_FROM="$(realpath -m "$2")"; shift 2 ;;
@@ -156,6 +204,11 @@ dev_env_value() {
 
 EXT="${EXTENSION_NAME:-$(dev_env_value EXTENSION_NAME)}"
 REPO="${REPOSITORY_PATH:-$(dev_env_value REPOSITORY_PATH)}"
+# Ключ уже разобран выше (пути от cwd запуска). Переменная — только если ключа не было.
+if ((THICK_FLAG_SET == 0)); then
+	thick_raw="${RELEASE_GATE_THICK_CLIENT_SCENARIOS:-$(dev_env_value RELEASE_GATE_THICK_CLIENT_SCENARIOS)}"
+	[[ -z "$thick_raw" ]] || thick_scenarios_from_list "$thick_raw"
+fi
 if [[ -z "$MODE" ]]; then
 	if [[ -n "${EXT// /}" ]]; then MODE=extension
 	elif [[ -n "${REPO// /}" ]]; then MODE=main-config
@@ -195,9 +248,15 @@ REPORT_TXT="$OUT/release-gate.txt"
 STEPS="$LOGS/steps.jsonl"
 
 # run_step <имя> <тяжёлый 0|1> <команда для отчёта> -- <команда> [аргументы…]
+# Команда шага может записать $LOGS/<имя, где : / \ и пробел заменены на _>.extra.json —
+# объект с дополнительными полями. run_step вливает их в запись steps.jsonl.
+# Общие поля (name, command, rc, status, log, duration_s, tail) не перезаписываются.
+# Шаг без такого файла остаётся в прежнем формате.
 run_step() {
 	local name="$1" heavy="$2" shown="$3"; shift 4
-	local log="$LOGS/${name//[:\/ ]/_}.log" rc status t0 t1
+	local safe="${name//[:\/ ]/_}"
+	local log="$LOGS/${safe}.log" extra="$LOGS/${safe}.extra.json" rc status t0 t1
+	rm -f "$extra"
 	if ((heavy && FAILED_FAST && !KEEP_GOING)); then
 		echo "пропущен: упал быстрый шаг (--keep-going — выполнить всё равно)" >"$log"
 		rc=-1; status=SKIPPED; t0=$(date +%s); t1=$t0
@@ -209,16 +268,122 @@ run_step() {
 		if ((rc == 0)); then status=PASS; else status=FAIL; ((heavy)) || FAILED_FAST=1; fi
 	fi
 	printf '%-16s %-7s rc=%-3s %ss  %s\n' "$name" "$status" "$rc" "$((t1 - t0))" "$shown"
-	python3 -I - "$name" "$shown" "$rc" "$status" "$log" "$((t1 - t0))" >>"$STEPS" <<'PY'
-import json, sys
-name, cmd, rc, status, log, dur = sys.argv[1:7]
+	python3 -I - "$name" "$shown" "$rc" "$status" "$log" "$((t1 - t0))" "$extra" >>"$STEPS" <<'PY'
+import json, os, sys
+name, cmd, rc, status, log, dur, extra_path = sys.argv[1:8]
 try:
     lines = open(log, encoding="utf-8", errors="replace").read().splitlines()
 except OSError:
     lines = []
-print(json.dumps({"name": name, "command": cmd, "rc": int(rc), "status": status,
-                  "log": log, "duration_s": int(dur), "tail": lines[-30:]}, ensure_ascii=False))
+rec = {"name": name, "command": cmd, "rc": int(rc), "status": status,
+       "log": log, "duration_s": int(dur), "tail": lines[-30:]}
+if extra_path and os.path.isfile(extra_path):
+    try:
+        extra = json.load(open(extra_path, encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeError):
+        extra = None
+    if isinstance(extra, dict):
+        for key, value in extra.items():
+            if key not in rec:
+                rec[key] = value
+print(json.dumps(rec, ensure_ascii=False))
 PY
+}
+
+# thick-client:<имя файла>. Тяжёлый шаг: свой каталог отчёта, таймаут обёртки — её собственный.
+# --timeout гейта сюда не передаётся (это таймаут Конфигуратора).
+step_thick_client() {
+	local scenario="$1" filebase stem out_rel dir report step_name extra wrapper_rc=0
+	filebase="$(basename "$scenario")"
+	stem="${filebase%.json}"
+	[[ "$filebase" == *.json && -n "$stem" ]] || stem="$filebase"
+	out_rel="out/release-gate/thick-client/$stem"
+	dir="$ROOT/$out_rel"
+	report="$dir/thick-client-check.json"
+	step_name="thick-client:$filebase"
+	extra="$LOGS/${step_name//[:\/ ]/_}.extra.json"
+	rm -rf "$dir"
+	mkdir -p "$dir"
+	"$TOOLS/thick-client-check.sh" scenario --params "$scenario" --out-dir "$out_rel" || wrapper_rc=$?
+	python3 -I - "$scenario" "$report" "$extra" "$wrapper_rc" <<'PY'
+import hashlib, json, os, sys
+scenario, report, extra_path, wrapper_rc_s = sys.argv[1:5]
+wrapper_rc = int(wrapper_rc_s)
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+scenario_sha = sha256_file(scenario)
+report_exists = os.path.isfile(report)
+report_sha = sha256_file(report) if report_exists else ""
+verdict = ""
+report_readable = False
+if report_exists:
+    try:
+        data = json.load(open(report, encoding="utf-8-sig"))
+        report_readable = isinstance(data, dict)
+        raw = data.get("verdict") if report_readable else None
+        verdict = raw if isinstance(raw, str) else ""
+    except (OSError, json.JSONDecodeError, UnicodeError, AttributeError):
+        verdict = ""
+        report_readable = False
+reason = ""
+ok = False
+if wrapper_rc == 0:
+    if report_exists and report_readable and verdict == "PASS":
+        ok = True
+    elif not report_exists:
+        reason = "код 0, но отчёт thick-client-check.json отсутствует"
+    elif not report_readable:
+        reason = "код 0, но отчёт не читается"
+    else:
+        shown = verdict if verdict else "пусто"
+        reason = "код 0, но отчёт verdict=%s" % shown
+elif wrapper_rc == 1:
+    reason = "FAIL"
+elif wrapper_rc == 2:
+    reason = "отказ запуска"
+elif wrapper_rc == 3:
+    reason = "нет Xvfb"
+else:
+    reason = "код %s" % wrapper_rc
+extra = {
+    "scenario": os.path.abspath(scenario),
+    "scenario_sha256": scenario_sha,
+    "thick_client_report": os.path.abspath(report) if report_exists else "",
+    "thick_client_report_sha256": report_sha,
+    "thick_client_verdict": verdict,
+    "wrapper_rc": wrapper_rc,
+    "reason": "" if ok else reason,
+}
+with open(extra_path, "w", encoding="utf-8") as handle:
+    json.dump(extra, handle, ensure_ascii=False)
+    handle.write("\n")
+if not ok:
+    print(reason)
+sys.exit(0 if ok else 1)
+PY
+}
+
+run_thick_client_steps() {
+	local scenario filebase stem shown
+	if ((${#THICK_SCENARIOS[@]})); then
+		R_THICK_SCENARIOS="$(printf '%s\n' "${THICK_SCENARIOS[@]}")"
+	else
+		R_THICK_SCENARIOS=""
+	fi
+	export R_THICK_SCENARIOS
+	for scenario in "${THICK_SCENARIOS[@]+"${THICK_SCENARIOS[@]}"}"; do
+		filebase="$(basename "$scenario")"
+		stem="${filebase%.json}"
+		[[ "$filebase" == *.json && -n "$stem" ]] || stem="$filebase"
+		shown="tools/thick-client-check.sh scenario --params $(printf '%q' "$scenario") --out-dir $(printf '%q' "out/release-gate/thick-client/$stem")"
+		run_step "thick-client:$filebase" 1 "$shown" -- step_thick_client "$scenario"
+	done
 }
 
 # ---------------------------------------------------------------------------
@@ -317,7 +482,7 @@ run_extension() {
 	CONFIG="$EXT_DIR/Configuration.xml"
 	DEMO_CMD="${RELEASE_GATE_DEMO_CMD:-$(dev_env_value RELEASE_GATE_DEMO_CMD)}"
 
-	rm -f "$LOGS"/*.log "$LOGS"/*.result "$STEPS" "$REPORT_JSON" "$REPORT_TXT"
+	rm -f "$LOGS"/*.log "$LOGS"/*.result "$LOGS"/*.extra.json "$STEPS" "$REPORT_JSON" "$REPORT_TXT"
 	: >"$STEPS"
 	VERSION="$(xml_version <"$CONFIG")"
 
@@ -427,6 +592,8 @@ run_extension() {
 		done
 	fi
 
+	run_thick_client_steps
+
 	export R_EXT="$EXT" R_VERSION="$VERSION" R_MAIN_REF="$MAIN_REF" R_MAIN_SHA="$MAIN_SHA" \
 		R_RELEASE_TAG="$RELEASE_TAG" R_RELEASE_VERSION="$RELEASE_VERSION" R_CFE="$CFE" R_CFE_SHA="$CFE_SHA" \
 		R_DEMO_BASES="$DEMO_BASES"
@@ -513,7 +680,7 @@ PY
 		rm -f "$BASELINE_DIR"/*
 		REPORT_JSON="$BASELINE_DIR/baseline.json"
 		REPORT_TXT="$BASELINE_DIR/baseline.txt"
-		rm -f "$LOGS"/*.log "$LOGS"/*.result "$STEPS"
+		rm -f "$LOGS"/*.log "$LOGS"/*.result "$LOGS"/*.extra.json "$STEPS"
 		: >"$STEPS"
 		step_base_state() {
 			if git diff --quiet "$BASE_SHA" HEAD -- "$SRC"; then
@@ -542,7 +709,7 @@ PY
 		return
 	fi
 
-	rm -f "$LOGS"/*.log "$LOGS"/*.result "$STEPS" "$REPORT_JSON" "$REPORT_TXT"
+	rm -f "$LOGS"/*.log "$LOGS"/*.result "$LOGS"/*.extra.json "$STEPS" "$REPORT_JSON" "$REPORT_TXT"
 	: >"$STEPS"
 	FILES=()
 	if [[ -n "$FILES_ARG" ]]; then
@@ -705,6 +872,8 @@ PY
 		[[ -s "$CF" ]] && CF_SHA="$(sha256sum "$CF" | cut -d' ' -f1)"
 	fi
 
+	run_thick_client_steps
+
 	export R_SRC="$SRC" R_VERSION="$VERSION" R_BASE_SHA="$BASE_SHA" R_MODES="$MODES_RAW" R_BASELINE_DIR="$BASELINE_DIR" \
 		R_REPO="$REPO" R_FILES="$(printf '%s\n' "${FILES[@]}")" R_PATCH="$PATCH" R_PATCH_SHA="$PATCH_SHA" \
 		R_CF="$( ((BUILD_CF)) && echo "$CF")" R_CF_SHA="$CF_SHA" R_BASELINE_RUN=0 \
@@ -736,6 +905,7 @@ report = {
     "cfe_path": g("R_CFE"),
     "cfe_sha256": g("R_CFE_SHA"),
     "demo_bases": [b.strip() for b in g("R_DEMO_BASES").split(",") if b.strip()],
+    "thick_client_scenarios": [p for p in g("R_THICK_SCENARIOS").splitlines() if p],
 }
 if e["MODE"] == "main-config":
     meta_path = os.path.join(g("R_BASELINE_DIR"), "meta.json")
@@ -791,6 +961,10 @@ with open(sys.argv[3], "w", encoding="utf-8") as f:
         f.write("\n")
     for s in steps:
         f.write(f"[{s['status']}] {s['name']} rc={s['rc']} {s['duration_s']}s\n  $ {s['command']}\n")
+        if s["name"].startswith("thick-client:"):
+            f.write(f"  отчёт: {s.get('thick_client_report') or '—'}\n")
+            f.write(f"  verdict: {s.get('thick_client_verdict') or '—'}\n")
+            f.write(f"  sha256: {s.get('thick_client_report_sha256') or '—'}\n")
         if s["status"] != "PASS":
             f.write("".join(f"  | {l}\n" for l in s["tail"][-15:]))
 PY
