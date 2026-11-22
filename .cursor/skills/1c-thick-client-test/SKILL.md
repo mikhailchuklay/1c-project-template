@@ -6,7 +6,7 @@ argument-hint: "<scenario.json>"
 
 # 1c-thick-client-test — ordinary forms in the thick client
 
-The thin wrapper is `tools/thick-client-check.sh`. Sources of the executor live in `scripts/` of this skill. The wrapper reads `.dev.env` and the scenario only. It starts its own Xvfb and `1cv8 ENTERPRISE /RunModeOrdinaryApplication`. Do not build a `1cv8` command line yourself.
+The entry point is `tools/thick-client-check.sh`. Sources of the executor live in `scripts/` of this skill. The wrapper reads `.dev.env` and the scenario only. It starts its own Xvfb and `1cv8 ENTERPRISE /RunModeOrdinaryApplication`. Do not build a `1cv8` command line yourself.
 
 Managed application and managed forms are the QA test client (`1c-qa`), not this skill. The test client (`1cv8c /TestClient`) does not see ordinary forms.
 
@@ -43,14 +43,14 @@ The report is `out/thick-client-check.json` and `.txt`. Evidence to hand over: t
 
 ## Security dialog
 
-`/DisableStartupDialogs` is not passed: the dangerous-actions dialog defaults to No and would silently refuse `/Execute`. The wrapper may confirm «Защита от опасных действий» or «Предупреждение безопасности» only when all of these hold: the dialog appears while the phase is still `startup` (before the executor opens); the process is launching only the `.epf` under `out/thick-client-check/cache/` whose sha256 was recorded before start; a screenshot of the dialog is stored and listed in the report. The click targets a window whose title is the button «Да» or «Yes» when such a window exists. 1C draws that button inside the dialog, not as its own X window, so the usual result is a click in the left part of the dialog. The alternative is for an administrator to turn the protection off for the test user. Other unknown modals are not confirmed: they are snapshotted and the process is stopped.
+`/DisableStartupDialogs` is not passed: the dangerous-actions dialog defaults to No and would silently refuse `/Execute`. The wrapper may confirm «Защита от опасных действий» or «Предупреждение безопасности» only when all of these hold: the dialog appears while the phase is still `startup` (before the executor opens); the process is launching only the `.epf` under `out/thick-client-check/cache/` whose sha256 was recorded before start; a screenshot of the dialog is stored and listed in the report. The click targets a window whose title is the button «Да» or «Yes» when such a window exists. 1C draws that button inside the dialog, not as its own X window, so the usual result is a click in the left part of the dialog. The alternative is for an administrator to turn the protection off for the test user. «Легальность получения обновлений» is not confirmed by default: that click states the updates are legal on behalf of the infobase owner. A project that has made this decision passes `--dismiss-title "Легальность получения обновлений|click-left"` and records it in `AGENTS.local.md`. Other unknown modals are not confirmed: they are snapshotted and the process is stopped.
 
 ## Compatibility
 
 | Family | Print / reports / invoice | Checked |
 |---|---|---|
 | УТ 10.3 | Print via export `Печать` with `args` `collector` (the configuration appends the spreadsheet to the array). Invoice of a subordinate `СчетФактураВыданный` the same way. Reports `ВедомостьТоварыНаСкладах`, `ВедомостьВзаиморасчетыСКонтрагентами` via `СформироватьОтчет` / form `ОбновитьОтчет`. ТОРГ-12 fails in the configuration expression when `ОтпускРазрешил` is empty and `Справочник.ОтветственныеЛицаОрганизаций` has no rows | Checked on `ep-trade-agent3`, platform 8.3.27.2130, compatibility 8.3.3, 2026-11-22. The builder `ПечатьСчетаФактуры1137` is not export and cannot be called. Same ТОРГ-12 error on the 8.3.2 copy (copy removed) |
-| УПП 1.3 | Same method path when the document has export `Печать` | EPF of format 2.8 built on `bm-upp-tcc-check`, platform 8.3.14.1779, 2026-11-22 (formats 2.9 and 2.10 are rejected: «Неизвестная версия формата»). Enterprise stopped on the dialog «Ошибка при получении значения атрибута контекста (ОсновнаяРоль)», process exit 1, `/Out` empty. Print, report and the document form — не проверено |
+| УПП 1.3 | Same method path when the document has export `Печать` | Запуск упирается в `ОбщийМодуль.ПользователиСервер.Модуль(248)`: `ОсновнаяРоль = Метаданные.ОсновнаяРоль` — «Недопустимо использование свойства "ОсновнаяРоль"». База `bm-upp-tcc-check`, платформа 8.3.14.1779, 2026-11-22. EPF формата 2.8 собрался (2.9 и 2.10 отвергнуты). Печать и отчёты — не проверено |
 | БП 2.0 | — | не проверено |
 | КА 1.1 | — | не проверено |
 | Other configurations | Name the export method in the scenario | не проверено |

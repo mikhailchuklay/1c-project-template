@@ -65,7 +65,6 @@ EOF
 DEFAULT_DISMISS=(
 	"Предупреждение безопасности|confirm-safe"
 	"Защита от опасных действий|confirm-safe"
-	"Легальность получения обновлений|click-left"
 	"Завершить работу|return"
 )
 
@@ -124,6 +123,10 @@ self_test() {
 	fi
 	if [[ "$(dismiss_action "Завершить работу с программой?")" != "return" ]]; then
 		echo "self-test: белый список не узнал завершение работы" >&2
+		fails=1
+	fi
+	if dismiss_action "Легальность получения обновлений" >/dev/null; then
+		echo "self-test: легальность обновлений закрывается без решения проекта" >&2
 		fails=1
 	fi
 	if dismiss_action "Реализация товаров и услуг" >/dev/null; then
