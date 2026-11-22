@@ -188,7 +188,7 @@
 | Загрузка основной конфигурации в базу, подключённую к хранилищу | `tools/designer-batch.sh --load --repository -- /LoadConfigFromFiles <src> -listFile <список>` — только захваченные объекты; гейт `release-gate.sh --load` в режиме `main-config` собирает список сам | полный `vrunner cf load` платформа отклоняет («Загрузка невозможна: текущая конфигурация помещена в хранилище»), а `cf load` не передаёт параметры хранилища |
 | Кластер и сеансы: список, завершение своих | `rac` или Devbox MCP (`infobase_sessions`, `infobase_session_terminate`) | `vrunner cluster session list` и MCP `session_list` падают в irac («Значение не является значением объектного типа»), без `VRUNNER_RAS` идут на `localhost:1545`; `rac` работает |
 | Пакетные проверки Конфигуратора (`/CheckModules`, `/CheckConfig`, `/CheckCanApplyConfigurationExtensions`) | `tools/release-gate.sh` (зафиксированные командные строки через `designer-batch.sh`) | — |
-| Режим Предприятия: обычные формы, печать, отчёты в толстом клиенте | `tools/thick-client-check.sh` (появляется отдельным PR шаблона; пока его нет в проекте — «не проверено» с причиной) | `vrunner run` не отключает логику начала работы БСП и зависает на модальных окнах (vanessa-runner#378) |
+| Режим Предприятия: обычные формы, печать, отчёты в толстом клиенте | навык `1c-thick-client-test`, обёртка `tools/thick-client-check.sh` | `vrunner run` не отключает логику начала работы БСП и зависает на модальных окнах (vanessa-runner#378) |
 | Управляемые формы | QA MCP `1c-qa` (`ui-testing-tools.mdc`) | — |
 
 ### Загрузка расширения только через Конфигуратор
@@ -236,19 +236,21 @@ tools/designer-batch.sh --timeout 1800 -- /DumpConfigToFiles "$DUMP_DIR"
 
 Обёртка берёт платформу, базу и пользователя из `.dev.env` (запасной вариант — `VRUNNER_*`), запускает Конфигуратор на своём виртуальном экране (`xvfb-run -a`, иначе свой `Xvfb`; первый номер — `DESIGNER_XVFB_FIRST`, по умолчанию 99), снимает `WAYLAND_DISPLAY`, по тайм-ауту (`--timeout`, `DESIGNER_TIMEOUT`, по умолчанию 600 с) гасит только свою группу процессов. Вердикт — по трём сигналам: код возврата, `/DumpResult`, текст `/Out`. Коды: 0 — успех, 1 — не прошло или тайм-аут, 2 — запуск отклонён, 3 — нет виртуального экрана. Отклоняются: больше одной пакетной команды, ключи подключения и вывода в аргументах, запрещённые операции (`/EraseData`, `-AllExtensions`, `/DeleteCfg` без имени, `-disableSupport`, `/IBCheckAndRepair`), частичная выгрузка без полной в том же каталоге. `--dry-run` показывает команду со скрытым паролем, `--self-test` проверяет разбор лога.
 
-## Обычные формы: `tools/thick-client-check.sh`
+## Обычные формы: навык `1c-thick-client-test`
+
+Формат сценария, контракт отчёта и ограничения — в `.cursor/skills/1c-thick-client-test/`. Точка входа — `tools/thick-client-check.sh`.
 
 QA MCP и тест-клиент ведут управляемые формы. Обычное приложение, обычные формы, клиентский код `#Если Клиент` и `#Если ТолстыйКлиентОбычноеПриложение`, печать и формирование отчётов проверяет толстый клиент `1cv8` через `tools/thick-client-check.sh`. Управляемые формы по-прежнему идут через `1c-qa`.
 
-Обёртка поднимает свой `Xvfb` (`-nolisten tcp`, номер с 120, унаследованный `DISPLAY` не используется), запускает `ENTERPRISE /RunModeOrdinaryApplication` с подключением из `.dev.env` (`INFOBASE_KIND`, `INFOBASE_PATH`, `PLATFORM_PATH`, `IB_USER`, `IB_PASSWORD`, запасной путь — `VRUNNER_*`), флагами `/DisableStartupMessages /Out` и общим `--timeout` (по умолчанию 900 с). `/DisableStartupDialogs` не передаётся: у диалога защиты от опасных действий кнопка по умолчанию — «Нет», и ключ молча запрещает `/Execute`. Такие окна закрывает наблюдатель. По тайм-ауту снимаются только своя группа процессов и свой Xvfb. На Windows скрипт отказывает: нужен Linux. Сборка `.epf` — `tools/designer-batch.sh /LoadExternalDataProcessorOrReportFromFiles`, кэш по sha256 исходников в `out/thick-client-check/cache/`. `Form.bin` обычной формы собирает `host.py` (контейнер без индекса кода); `v8unpack` для этого не нужен.
+Обёртка поднимает свой `Xvfb` (`-nolisten tcp`, номер с 120, унаследованный `DISPLAY` не используется), запускает `ENTERPRISE /RunModeOrdinaryApplication` с подключением из `.dev.env` (`INFOBASE_KIND`, `INFOBASE_PATH`, `PLATFORM_PATH`, `IB_USER`, `IB_PASSWORD`, запасной путь — `VRUNNER_*`), флагами `/DisableStartupMessages /Out` и общим `--timeout` (по умолчанию 900 с). `/DisableStartupDialogs` не передаётся: у диалога защиты от опасных действий кнопка по умолчанию — «Нет», и ключ молча запрещает `/Execute`. Такие окна закрывает наблюдатель. По тайм-ауту снимаются только своя группа процессов и свой Xvfb. На Windows скрипт отказывает: нужен Linux. Сборка `.epf` — `tools/designer-batch.sh /LoadExternalDataProcessorOrReportFromFiles` той же платформой и в ту же базу, что и прогон (`--platform`, `--infobase`, `--ib-user`; пустой `--ib-user` — без `/N`). Кэш — sha256 исходников, сборка платформы и версия формата XML. `Form.bin` обычной формы собирает `host.py` (контейнер без индекса кода); `v8unpack` для этого не нужен.
 
 `/Execute` открывает обычную форму. В `ПриОткрытии` она создаёт объект обработки и подключает обработчик ожидания. Печать, отчёты, журнал и запись `.mxl`/`.pdf`/`.txt` выполняет модуль объекта. Снимок `open_form` — обмен маркерами в каталоге прогона; форму после снимка закрывает исполнитель.
 
 Стартовые модальные окна смотрит `xdotool search --pid` своего процесса: снимок, затем закрытие только по белому списку заголовков (в скрипте; дополняется `--dismiss-title «Текст|действие»`, действие `click-left`, `click-right`, `return` или `close`). Неизвестное модальное окно — снимок, ошибка, процесс снят. Enter и Escape без опознанного заголовка не нажимаются.
 
 ```bash
-tools/thick-client-check.sh scenario --params tools/thick-client-check/example-scenario.json
-tools/thick-client-check.sh --infobase onec-dev-server:2541/другая-база scenario --params путь/к/сценарию.json
+tools/thick-client-check.sh scenario --params .cursor/skills/1c-thick-client-test/scripts/example-scenario.json
+tools/thick-client-check.sh --infobase onec-dev-server:5541/другая-база --platform 8.3.14.1779 --ib-user '' scenario --params путь/к/сценарию.json
 tools/thick-client-check.sh snapshot --metadata Документ.РеализацияТоваровУслуг --number 00-000001
 tools/thick-client-check.sh --dry-run scenario --params путь/к/сценарию.json
 tools/thick-client-check.sh --self-test

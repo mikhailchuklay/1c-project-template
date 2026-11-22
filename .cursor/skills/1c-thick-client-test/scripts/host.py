@@ -5,6 +5,7 @@ import hashlib
 import json
 import pathlib
 import re
+import shutil
 import struct
 import sys
 
@@ -135,9 +136,14 @@ def build_report(run_dir, report_json, report_txt, meta_path):
             "nonempty": step.get("nonempty"),
             "pdf_error": step.get("pdf_error") or "",
             "ref": step.get("ref") or "",
+            "number": step.get("number") or "",
+            "report": step.get("report") or "",
             "layout_key": step.get("layout_key") or "",
             "external_print": step.get("external_print") or "",
             "invoice_ref": step.get("invoice_ref") or "",
+            "print_path": step.get("print_path") or "",
+            "print_path_note": step.get("print_path_note") or "",
+            "call": step.get("call") or "",
             "files": files,
         })
     if processor.get("fatal"):
@@ -148,8 +154,12 @@ def build_report(run_dir, report_json, report_txt, meta_path):
         for line in dismissed.read_text(encoding="utf-8", errors="replace").splitlines():
             if not line.strip():
                 continue
-            title, png = line.split("\t", 1)
-            dialogs.append({"title": title, **file_info(png)})
+            parts = line.split("\t")
+            title, png = parts[0], parts[1]
+            dialog = {"title": title, **file_info(png)}
+            if len(parts) > 2 and parts[2]:
+                dialog["note"] = parts[2]
+            dialogs.append(dialog)
     blocked = ""
     blocked_path = run / "blocked-modal.txt"
     if blocked_path.is_file():
@@ -202,7 +212,7 @@ def _render_txt(report):
         "Команда: %s" % report["command"],
         "Платформа: %s" % report["platform"],
         "База: %s %s" % (report["infobase_kind"], report["infobase"]),
-        "Пользователь: %s" % report["user"],
+        "Пользователь: %s" % (report["user"] or "без имени"),
         "Режим запуска: %s" % report["mode"],
         "Начало: %s" % report["started"],
         "Окончание: %s" % report["finished"],
@@ -222,8 +232,18 @@ def _render_txt(report):
         )
         if step["ref"]:
             lines.append("  объект: %s" % step["ref"])
+        if step.get("number"):
+            lines.append("  номер: %s" % step["number"])
+        if step.get("report"):
+            lines.append("  отчёт: %s" % step["report"])
         if step["layout_key"]:
             lines.append("  макет: %s" % step["layout_key"])
+        if step.get("print_path"):
+            lines.append("  путь печати: %s" % step["print_path"])
+        if step.get("print_path_note"):
+            lines.append("  %s" % step["print_path_note"])
+        if step.get("call"):
+            lines.append("  вызов: %s" % step["call"])
         if step["external_print"]:
             lines.append("  внешняя печатная форма: %s" % step["external_print"])
         if step["invoice_ref"]:
@@ -241,7 +261,7 @@ def _render_txt(report):
         lines.append("")
         lines.append("Стартовые окна (белый список, закрыты после снимка):")
         for dialog in report["startup_dialogs"]:
-            lines.append("  %s %s sha256=%s" % (dialog["title"], dialog["path"], dialog["sha256"]))
+            lines.append("  %s %s sha256=%s %s" % (dialog["title"], dialog["path"], dialog["sha256"], dialog.get("note") or ""))
     lines.append("")
     lines.append("Хвост /Out:")
     lines.append(report["out_log_tail"] or "(пусто)")
@@ -336,6 +356,55 @@ def _synthetic_xwd():
     black = struct.pack("<I", 0)
     pixels = (red + black) + (black + black)
     return blob + pixels
+
+
+def metadata_version(platform_build):
+    numbers = []
+    for part in str(platform_build).split("."):
+        if part.isdigit():
+            numbers.append(int(part))
+        else:
+            break
+    while len(numbers) < 3:
+        numbers.append(0)
+    major, minor, patch = numbers[0], numbers[1], numbers[2]
+    table = (
+        ((8, 3, 27), "2.20"),
+        ((8, 3, 24), "2.19"),
+        ((8, 3, 23), "2.18"),
+        ((8, 3, 21), "2.17"),
+        ((8, 3, 20), "2.16"),
+        ((8, 3, 18), "2.14"),
+        ((8, 3, 17), "2.13"),
+        ((8, 3, 16), "2.12"),
+        ((8, 3, 15), "2.11"),
+        ((8, 3, 14), "2.8"),
+        ((8, 3, 13), "2.9"),
+        ((8, 3, 12), "2.8"),
+        ((8, 3, 11), "2.7"),
+        ((8, 3, 10), "2.6"),
+    )
+    for gate, version in table:
+        if (major, minor, patch) >= gate:
+            return version
+    return "2.6"
+
+
+def prepare_sources(src_xml, dest_dir, version):
+    source = pathlib.Path(src_xml)
+    destination = pathlib.Path(dest_dir)
+    if destination.exists():
+        shutil.rmtree(destination)
+    shutil.copytree(source.parent / source.stem, destination / source.stem)
+    text = source.read_text(encoding="utf-8")
+    replaced, count = re.subn(r'(<MetaDataObject\b[^>]*\bversion=")[^"]+"', r"\g<1>" + version + '"', text, count=1)
+    if count != 1:
+        raise RuntimeError("в корневом XML нет version у MetaDataObject")
+    (destination / source.name).write_text(replaced, encoding="utf-8")
+    for xml in (destination / source.stem).rglob("*.xml"):
+        body = xml.read_text(encoding="utf-8")
+        body = re.sub(r'(<MetaDataObject\b[^>]*\bversion=")[^"]+"', r"\g<1>" + version + '"', body, count=1)
+        xml.write_text(body, encoding="utf-8")
 
 
 def snap_shell(path):
@@ -499,6 +568,12 @@ def main(argv):
         return 0
     if command == "write-ordinary-form":
         write_ordinary_form(argv[2], argv[3])
+        return 0
+    if command == "metadata-version":
+        print(metadata_version(argv[2]))
+        return 0
+    if command == "prepare-sources":
+        prepare_sources(argv[2], argv[3], argv[4])
         return 0
     if command == "snap-shell":
         snap_shell(argv[2])

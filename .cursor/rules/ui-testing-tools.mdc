@@ -17,7 +17,7 @@ Whether a UI check runs at all is gated by `UI_TESTING` — canon: `dev-standard
 
 State the chosen route, and the reason for a fallback, once in the report. `TOOL_QA=required` with the server missing or failing blocks the check; the web client does not satisfy it. A route that cannot run leaves its scenarios unverified; never report them passed.
 
-Обычное приложение и обычные формы (печать, отчёты, код `#Если Клиент` / `#Если ТолстыйКлиентОбычноеПриложение`) этот порядок не покрывает: тест-клиент их не ведёт. Такой шаг идёт через `tools/thick-client-check.sh` (`docs/headless-agent.md`, раздел «Обычные формы»). Управляемые формы остаются на маршруте выше.
+Обычное приложение и обычные формы (печать, отчёты, код `#Если Клиент` / `#Если ТолстыйКлиентОбычноеПриложение`) этот порядок не покрывает: тест-клиент их не ведёт. Такой шаг идёт через навык `1c-thick-client-test` (обёртка `tools/thick-client-check.sh`, раздел «Обычные формы» в `docs/headless-agent.md`). Управляемые формы остаются на маршруте выше.
 
 ## Saved regression suites
 

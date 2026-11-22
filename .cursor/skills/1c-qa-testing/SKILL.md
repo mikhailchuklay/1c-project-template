@@ -6,6 +6,8 @@ argument-hint: "<feature or scenario to check>"
 
 # 1c-qa-testing — UI checks through QA MCP
 
+The test client (`1cv8c /TestClient`) sees only managed forms. Ordinary forms and ordinary-application client code are not checked here: use the skill `1c-thick-client-test`.
+
 QA MCP (connection `1c-qa`) is the 1C test manager: it connects to a 1C test client (`/TestClient`) and drives its forms through the platform testing model — windows, fields, tables, commands, messages. It reads structured state, not pixels, so it is the main route for checking behaviour in the 1C interface. The web client (`.cursor/rules/ui-testing-tools.mdc`) is the fallback.
 
 ## When this route applies

@@ -19,8 +19,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=dev-standalone/_DevEnv.sh
 source "${SCRIPT_DIR}/dev-standalone/_DevEnv.sh"
-HOST="${SCRIPT_DIR}/thick-client-check/host.py"
-SRC_ROOT="${SCRIPT_DIR}/thick-client-check"
+SKILL_DIR="${SCRIPT_DIR}/../.cursor/skills/1c-thick-client-test"
+HOST="${SKILL_DIR}/scripts/host.py"
+SRC_ROOT="${SKILL_DIR}/scripts"
 SRC_XML="${SRC_ROOT}/ТолстыйКлиентПроверка.xml"
 
 usage() {
@@ -45,6 +46,11 @@ usage() {
   --date-to ГГГГ-ММ-ДД   snapshot: конец периода
   --infobase СЕРВЕР:ПОРТ/БАЗА
                          подменить базу из .dev.env на этот серверный адрес
+                         (и сборка EPF, и предприятие)
+  --platform КАТАЛОГ    каталог платформы или номер сборки (8.3.14.1779)
+                         (и сборка EPF, и предприятие)
+  --ib-user ИМЯ         пользователь базы; пустая строка — вход без /N
+                         (и сборка EPF, и предприятие)
   --dry-run              показать команду (пароль скрыт) и не запускать
   --self-test            проверить разбор сценария, белый список, маску пароля и XWD
   -h, --help             эта справка
@@ -57,8 +63,8 @@ EOF
 # Белый список стартовых окон: подстрока заголовка и способ закрытия.
 # Enter/Escape без опознанного заголовка не нажимаются.
 DEFAULT_DISMISS=(
-	"Предупреждение безопасности|click-left"
-	"Защита от опасных действий|click-left"
+	"Предупреждение безопасности|confirm-safe"
+	"Защита от опасных действий|confirm-safe"
 	"Легальность получения обновлений|click-left"
 	"Завершить работу|return"
 )
@@ -112,7 +118,7 @@ self_test() {
 		fails=1
 	fi
 	DISMISS=("${DEFAULT_DISMISS[@]}")
-	if [[ "$(dismiss_action "Предупреждение безопасности")" != "click-left" ]]; then
+	if [[ "$(dismiss_action "Предупреждение безопасности")" != "confirm-safe" ]]; then
 		echo "self-test: белый список не узнал предупреждение безопасности" >&2
 		fails=1
 	fi
@@ -153,6 +159,9 @@ SNAP_GENERATE=0
 SNAP_FROM=""
 SNAP_TO=""
 INFOBASE_OVERRIDE=""
+PLATFORM_OVERRIDE=""
+IB_USER_OVERRIDE=""
+IB_USER_SET=0
 DISMISS=("${DEFAULT_DISMISS[@]}")
 
 while [[ $# -gt 0 ]]; do
@@ -169,6 +178,13 @@ while [[ $# -gt 0 ]]; do
 		--date-to) SNAP_TO="${2:?--date-to требует значение}"; shift 2 ;;
 		--generate) SNAP_GENERATE=1; shift ;;
 		--infobase) INFOBASE_OVERRIDE="${2:?--infobase требует сервер:порт/база}"; shift 2 ;;
+		--platform) PLATFORM_OVERRIDE="${2:?--platform требует каталог или сборку}"; shift 2 ;;
+		--ib-user)
+			[[ $# -ge 2 ]] || refuse "--ib-user требует значение (пустая строка — вход без /N)"
+			IB_USER_OVERRIDE="$2"
+			IB_USER_SET=1
+			shift 2
+			;;
 		--dry-run) DRY_RUN=1; shift ;;
 		--self-test) self_test; exit $? ;;
 		-h|--help) usage; exit 0 ;;
@@ -188,9 +204,42 @@ if ! dev_env_load "$ROOT"; then
 	refuse "нет .dev.env в $ROOT — подключение к базе не из чего собрать"
 fi
 
+if [[ -n "$PLATFORM_OVERRIDE" ]]; then
+	if [[ -d "$PLATFORM_OVERRIDE" ]]; then
+		PLATFORM_PATH="$PLATFORM_OVERRIDE"
+	elif [[ -d "/opt/1cv8/x86_64/${PLATFORM_OVERRIDE}" ]]; then
+		PLATFORM_PATH="/opt/1cv8/x86_64/${PLATFORM_OVERRIDE}"
+	else
+		refuse "не найден каталог платформы: $PLATFORM_OVERRIDE"
+	fi
+fi
 if [[ -n "$INFOBASE_OVERRIDE" ]]; then
 	INFOBASE_KIND=server
 	INFOBASE_PATH="$INFOBASE_OVERRIDE"
+fi
+if ((IB_USER_SET)); then
+	IB_USER="$IB_USER_OVERRIDE"
+	if [[ -z "$IB_USER" ]]; then
+		IB_PASSWORD=""
+	fi
+fi
+if [[ -n "$PLATFORM_OVERRIDE" ]]; then
+	export DESIGNER_PLATFORM_PATH="$PLATFORM_PATH"
+else
+	unset DESIGNER_PLATFORM_PATH
+fi
+if [[ -n "$INFOBASE_OVERRIDE" ]]; then
+	export DESIGNER_INFOBASE_KIND="$INFOBASE_KIND"
+	export DESIGNER_INFOBASE_PATH="$INFOBASE_PATH"
+else
+	unset DESIGNER_INFOBASE_KIND DESIGNER_INFOBASE_PATH
+fi
+if ((IB_USER_SET)); then
+	export DESIGNER_IB_USER_SET=1
+	export DESIGNER_IB_USER="$IB_USER"
+	export DESIGNER_IB_PASSWORD="${IB_PASSWORD:-}"
+else
+	unset DESIGNER_IB_USER_SET DESIGNER_IB_USER DESIGNER_IB_PASSWORD
 fi
 
 TIMEOUT="${TIMEOUT:-900}"
@@ -253,8 +302,13 @@ elif [[ -n "${VRUNNER_IBCONNECTION:-}" ]]; then
 else
 	refuse "не задан INFOBASE_PATH (.dev.env) и нет VRUNNER_IBCONNECTION"
 fi
-USER_NAME="${IB_USER:-${VRUNNER_DBUSER:-}}"
-PASSWORD="${IB_PASSWORD:-${VRUNNER_DBPWD:-}}"
+if ((IB_USER_SET)); then
+	USER_NAME="$IB_USER"
+	PASSWORD="${IB_PASSWORD:-}"
+else
+	USER_NAME="${IB_USER:-${VRUNNER_DBUSER:-}}"
+	PASSWORD="${IB_PASSWORD:-${VRUNNER_DBPWD:-}}"
+fi
 IB_KIND="${INFOBASE_KIND:-}"
 IB_SHOWN="${INFOBASE_PATH:-${VRUNNER_IBCONNECTION:-}}"
 
@@ -279,20 +333,25 @@ python3 "$HOST" write-ordinary-form \
 	"${SRC_ROOT}/ТолстыйКлиентПроверка/Forms/Форма/Ext/Form.bin" \
 	|| refuse "не собрана обычная форма"
 SRC_HASH="$(hash_sources)"
+PLATFORM_BUILD="$(basename "$PLATFORM_PATH")"
+META_VERSION="$(python3 "$HOST" metadata-version "$PLATFORM_BUILD")"
 CACHE_DIR="${OUT_DIR}/thick-client-check/cache"
-EPF="${CACHE_DIR}/${SRC_HASH}.epf"
+EPF="${CACHE_DIR}/${SRC_HASH}-${PLATFORM_BUILD}-f${META_VERSION}.epf"
 mkdir -p "$CACHE_DIR"
 if [[ ! -f "$EPF" ]]; then
 	if ((DRY_RUN)); then
-		echo "thick-client-check: dry-run, сборка epf не запускается (кэша нет: $EPF)"
+		echo "thick-client-check: dry-run, сборка epf не запускается (кэша нет: $EPF, формат ${META_VERSION})"
 	else
 		BUILD_LOG="${OUT_DIR}/thick-client-check/build.log"
 		BUILD_RESULT="${OUT_DIR}/thick-client-check/build.result"
+		BUILD_SRC="${CACHE_DIR}/src-${SRC_HASH}-f${META_VERSION}"
 		mkdir -p "${OUT_DIR}/thick-client-check"
-		echo "thick-client-check: сборка обработки (sha256 исходников ${SRC_HASH})"
+		python3 "$HOST" prepare-sources "$SRC_XML" "$BUILD_SRC" "$META_VERSION" \
+			|| refuse "не подготовлены исходники формата ${META_VERSION}"
+		echo "thick-client-check: сборка обработки (sha256 исходников ${SRC_HASH}, платформа ${PLATFORM_BUILD}, формат ${META_VERSION})"
 		rm -f "$EPF"
 		"${SCRIPT_DIR}/designer-batch.sh" --timeout 300 --out "$BUILD_LOG" --result "$BUILD_RESULT" -- \
-			/LoadExternalDataProcessorOrReportFromFiles "$SRC_XML" "$EPF" \
+			/LoadExternalDataProcessorOrReportFromFiles "${BUILD_SRC}/ТолстыйКлиентПроверка.xml" "$EPF" \
 			|| refuse "сборка epf не удалась, лог $BUILD_LOG"
 		[[ -s "$EPF" ]] || refuse "сборка не создала $EPF, лог $BUILD_LOG"
 	fi
@@ -336,6 +395,7 @@ fi
 
 cp "$PARAMS" "$SCENARIO"
 printf '%s\n' "$EPF" >"${RUN_DIR}/executor.path"
+sha256sum "$EPF" | awk -v path="$EPF" '{print path; print $1}' >"${RUN_DIR}/executor.sha"
 : >"$OUT_LOG"
 printf 'startup\n' >"${RUN_DIR}/phase"
 rm -f "${RUN_DIR}/finished" "${RUN_DIR}/timeout.txt" "${RUN_DIR}/blocked-modal.txt" \
@@ -401,6 +461,24 @@ shot_window() {
 	fi
 	python3 "$HOST" xwd-to-png "$xwd" "$png"
 	rm -f "$xwd"
+}
+
+trusted_epf() {
+	local path sum got
+	[[ -f "${RUN_DIR}/executor.sha" ]] || return 1
+	path="$(sed -n '1p' "${RUN_DIR}/executor.sha")"
+	sum="$(sed -n '2p' "${RUN_DIR}/executor.sha")"
+	[[ "$path" == "${OUT_DIR}/thick-client-check/cache/"*.epf ]] || return 1
+	[[ -f "$path" ]] || return 1
+	got="$(sha256sum "$path" | awk '{print $1}')"
+	[[ "$got" == "$sum" ]]
+}
+
+click_named_button() {
+	local parent="$1" name="$2" id
+	id="$(xdotool search --onlyvisible --pid "$V8_PID" --name "$name" 2>/dev/null | head -1 || true)"
+	[[ -n "$id" && "$id" != "$parent" ]] || return 1
+	xdotool windowactivate --sync "$id" click --window "$id" 1
 }
 
 dismiss_window() {
@@ -471,14 +549,31 @@ watch_windows() {
 			SEEN[$id]=$now
 		fi
 		if action="$(dismiss_action "$title")"; then
-			if [[ -z "${HANDLED[$id]:-}" ]]; then
+			if [[ "$action" == "confirm-safe" ]]; then
+				if [[ "$phase" != "startup" ]] || ! trusted_epf; then
+					action=""
+				fi
+			fi
+			if [[ -n "$action" && -z "${HANDLED[$id]:-}" ]]; then
 				png="${RUN_DIR}/startup-${id}.png"
 				shot_window "$id" "$png" || true
-				printf '%s\t%s\n' "$title" "$png" >>"${RUN_DIR}/dismissed.tsv"
-				dismiss_window "$id" "$action" || true
+				note="$action"
+				if [[ "$action" == "confirm-safe" ]]; then
+					if click_named_button "$id" "Да" || click_named_button "$id" "Yes"; then
+						note="кнопка «Да»"
+					else
+						dismiss_window "$id" click-left || true
+						note="кнопка отдельным окном не найдена, нажата левая нижняя доля окна"
+					fi
+				else
+					dismiss_window "$id" "$action" || true
+				fi
+				printf '%s\t%s\t%s\n' "$title" "$png" "$note" >>"${RUN_DIR}/dismissed.tsv"
 				HANDLED[$id]=1
 			fi
-			continue
+			if [[ -n "$action" ]]; then
+				continue
+			fi
 		fi
 		if title_expected "$title"; then
 			continue
