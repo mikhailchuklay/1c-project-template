@@ -30,7 +30,7 @@ tools/thick-client-check.sh --infobase server:port/base --platform 8.3.14.1779 -
 
 `--infobase`, `--platform` and `--ib-user` override `.dev.env` for both the EPF build and the enterprise run. An empty `--ib-user` omits `/N`. Do not edit `.dev.env` for a one-off base. Cache key is the source sha256, the platform build and the metadata format version chosen for that build.
 
-Exit codes, stable for a later release-gate step `thick-client:<scenario>` (that step is not in this PR):
+Exit codes, read by the release-gate step `thick-client:<scenario>` (`tools/release-gate.sh --thick-client-scenarios`):
 
 | Code | Meaning |
 |---|---|
