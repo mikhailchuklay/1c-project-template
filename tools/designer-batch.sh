@@ -34,6 +34,9 @@ usage() {
   --main-config   осознанная проверка только основной конфигурации: снимает отказ
                   /CheckModules, /CheckConfig, /CheckCanApplyConfigurationExtensions
                   без -Extension при заданном EXTENSION_NAME
+  --repository    добавить параметры хранилища из .dev.env (/ConfigurationRepositoryF, N, P):
+                  нужны загрузке по списку файлов (/LoadConfigFromFiles -listFile) в базу,
+                  подключённую к хранилищу — полная загрузка туда платформой запрещена
   --self-test     прогнать разбор лога на контрольных строках и выйти
   -h, --help      эта справка
 
@@ -43,6 +46,8 @@ usage() {
 Переменные (.dev.env или окружение):
   PLATFORM_PATH, INFOBASE_KIND, INFOBASE_PATH, IB_USER, IB_PASSWORD
   (запасной вариант: VRUNNER_IBCONNECTION, VRUNNER_DBUSER, VRUNNER_DBPWD)
+  REPOSITORY_PATH, REPOSITORY_USER, REPOSITORY_PASSWORD  для --repository
+  (запасной вариант: VRUNNER_STORAGE_NAME, VRUNNER_STORAGE_USER, VRUNNER_STORAGE_PWD)
   DESIGNER_TIMEOUT          тайм-аут по умолчанию, с
   DESIGNER_HEAVY_LOCK       блокировка «одна тяжёлая операция на хост»
                             (по умолчанию $AGENT_LOCKS/designer-heavy.lock при заданном AGENT_LOCKS)
@@ -132,6 +137,7 @@ RESULT_FILE=""
 LOAD_MODE=0
 DRY_RUN=0
 MAIN_CONFIG=0
+WITH_REPO=0
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--timeout) TIMEOUT="${2:?--timeout требует значение}"; shift 2 ;;
@@ -140,6 +146,7 @@ while [[ $# -gt 0 ]]; do
 		--load) LOAD_MODE=1; shift ;;
 		--dry-run) DRY_RUN=1; shift ;;
 		--main-config) MAIN_CONFIG=1; shift ;;
+		--repository) WITH_REPO=1; shift ;;
 		--self-test) self_test; exit $? ;;
 		-h|--help) usage; exit 0 ;;
 		--) shift; break ;;
@@ -171,6 +178,9 @@ for i in "${!BATCH[@]}"; do
 	esac
 	if [[ "$a" =~ ^/[FSNP][^a-z] ]]; then
 		refuse "ключ «$a» задаёт обёртка — уберите его из аргументов"
+	fi
+	if [[ "$lc" == /configurationrepository* ]]; then
+		refuse "параметры хранилища («$a») обёртка ставит сама по ключу --repository из .dev.env"
 	fi
 	if [[ "$a" =~ ^/[A-Z][A-Za-z0-9]*$ ]]; then
 		cmd_count=$((cmd_count + 1))
@@ -265,12 +275,22 @@ PASSWORD="${IB_PASSWORD:-${VRUNNER_DBPWD:-}}"
 ARGS=(DESIGNER "${CONN[@]}")
 [[ -n "$USER_NAME" ]] && ARGS+=(/N "$USER_NAME")
 [[ -n "$PASSWORD" ]] && ARGS+=(/P "$PASSWORD")
-ARGS+=(/DisableStartupDialogs /DisableStartupMessages "${BATCH[@]}" /Out "$OUT_FILE" /DumpResult "$RESULT_FILE")
+ARGS+=(/DisableStartupDialogs /DisableStartupMessages)
+if ((WITH_REPO)); then
+	REPO_PATH="${REPOSITORY_PATH:-${VRUNNER_STORAGE_NAME:-}}"
+	REPO_USER="${REPOSITORY_USER:-${VRUNNER_STORAGE_USER:-}}"
+	REPO_PWD="${REPOSITORY_PASSWORD:-${VRUNNER_STORAGE_PWD:-}}"
+	[[ -n "$REPO_PATH" ]] || refuse "--repository: не задан REPOSITORY_PATH (.dev.env)"
+	ARGS+=(/ConfigurationRepositoryF "$REPO_PATH")
+	[[ -n "$REPO_USER" ]] && ARGS+=(/ConfigurationRepositoryN "$REPO_USER")
+	[[ -n "$REPO_PWD" ]] && ARGS+=(/ConfigurationRepositoryP "$REPO_PWD")
+fi
+ARGS+=("${BATCH[@]}" /Out "$OUT_FILE" /DumpResult "$RESULT_FILE")
 
 masked() {
 	local out=() prev=""
 	for a in "$@"; do
-		if [[ "${prev,,}" == /p ]]; then out+=("***"); else out+=("$a"); fi
+		if [[ "${prev,,}" == /p || "${prev,,}" == /configurationrepositoryp ]]; then out+=("***"); else out+=("$a"); fi
 		prev="$a"
 	done
 	printf '%q ' "${out[@]}"
