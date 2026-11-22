@@ -39,6 +39,8 @@ Write it with `jira_add_comment` without asking, then show the posted text in th
 
 No secrets (passwords, tokens, connection strings with credentials). One comment per milestone; do not post a comment that repeats the previous one.
 
+**Issue linked to an Omnidesk ticket** (обращение) and the `omnidesk` server is in the session → write this as an internal note in the ticket by `.cursor/skills/omnidesk-correspondence/SKILL.md` instead: the note reaches the Jira issue automatically, so a Jira comment would duplicate it. Worklog and attachments (Steps 3–4) stay here.
+
 ## Step 3 — worklog (ask, then write)
 
 **Duration.** From the previous milestone of this issue (or the start of work on it in this chat) to now; gaps in the conversation longer than 30 minutes are not counted. Call `jira_get_worklog` first and show what is already logged on the issue today, so the same work is not logged twice. The suggestion is a hint — the user's own value always wins.
