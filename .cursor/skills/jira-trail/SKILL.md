@@ -72,7 +72,8 @@ No secrets (passwords, tokens, connection strings with credentials). One comment
 Worth attaching: data exports, screenshots, query texts, verification reports, the effort-estimate file (SVC-001-R §917). Offer when such a file appeared at this milestone.
 
 - The file has a URL reachable from the server (including a public Yandex.Disk link) → after the user's yes, `jira_attach_from_urls`.
-- A local file only → the server cannot read container paths: name the file and its path so the user attaches it by hand.
+- A local file only (the server cannot read container paths) → after the user's yes, `jira_attach_file_contents`: `files: [{"filename": "<name.ext>", "content_base64": "<base64 -w0 of the file>", "content_type": "<mime, optional>"}]`. The content travels through the model's own output, so keep it to small files — query texts, short reports, a screenshot — up to about 100 KB; a larger file goes to Yandex.Disk and `jira_attach_from_urls`. The server caps one call at 5 MiB decoded (Jira itself at 10 MiB per file) and refuses the whole call on any bad item — then nothing is attached; fix the item or send the files one per call.
+- `jira_attach_file_contents` is absent from the session (older server) or refused → name the file and its path so the user attaches it by hand.
 - Never attach secrets; attach client personal data only when the issue needs it.
 
 ## Headless agent
