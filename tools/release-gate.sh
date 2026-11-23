@@ -7,6 +7,7 @@
 # extension — правка расширения (задан EXTENSION_NAME). Шаги по порядку:
 #   clean-tree        в каталоге расширения нет незакоммиченных правок (отчёт привязан к SHA HEAD);
 #   contains-main     ветка содержит origin/<основная> (как tools/stand-load-guard.sh);
+#   conflict-markers  в отслеживаемых текстовых файлах HEAD нет маркеров конфликта слияния;
 #   version           <Version> в Configuration.xml выше последнего релиза, тега с этим номером нет;
 #   check-bsl-calls   tools/check-bsl-calls.py по каталогу расширения;
 #   load              (только с --load) двухшаговая загрузка исходников HEAD в базу из .dev.env;
@@ -25,6 +26,7 @@
 #   (--baseline, до правок) check-modules и check-config на базовом состоянии → out/release-gate-baseline/;
 #   clean-tree        в рабочем дереве нет незакоммиченных и неотслеживаемых файлов;
 #   base              базовый коммит (--base) — предок HEAD и не равен ему;
+#   conflict-markers  в отслеживаемых текстовых файлах HEAD нет маркеров конфликта слияния;
 #   diff-scope        git diff base..HEAD содержит только файлы задачи (--files / --files-from);
 #   patch             git apply --check патча на индексе базового коммита, и патч воспроизводит HEAD;
 #   check-bsl-calls   tools/check-bsl-calls.py по HEAD и по базе: новых находок нет;
@@ -252,6 +254,19 @@ STEPS="$LOGS/steps.jsonl"
 # объект с дополнительными полями. run_step вливает их в запись steps.jsonl.
 # Общие поля (name, command, rc, status, log, duration_s, tail) не перезаписываются.
 # Шаг без такого файла остаётся в прежнем формате.
+# Маркеры конфликта слияния во всём репозитории (HEAD, только текстовые отслеживаемые файлы).
+# Ловит недоразрешённый merge origin/main: BSL, XML метаданных, openspec, коллекции API-проверок.
+step_conflict_markers() {
+	local hits
+	hits="$(git grep -I -n -E '^(<{7}|>{7})( |$)|^={7}$' HEAD -- . 2>/dev/null || true)"
+	if [[ -n "$hits" ]]; then
+		echo "Маркеры конфликта слияния в HEAD:"
+		printf '%s\n' "$hits" | head -n 50
+		return 1
+	fi
+	echo "Маркеров конфликта нет"
+}
+
 run_step() {
 	local name="$1" heavy="$2" shown="$3"; shift 4
 	local safe="${name//[:\/ ]/_}"
@@ -555,6 +570,7 @@ run_extension() {
 	echo "release-gate: $BRANCH $HEAD_SHA, расширение $EXT $VERSION"
 	run_step clean-tree 0 "git status --porcelain -- $EXT_DIR" -- step_clean_tree
 	run_step contains-main 0 "git merge-base --is-ancestor ${MAIN_REF:-origin/main} HEAD" -- step_contains_main
+	run_step conflict-markers 0 "git grep -I -n -E '^(<<<<<<<|>>>>>>>)( |$)|^=======$' HEAD" -- step_conflict_markers
 	run_step version 0 "<Version> $CONFIG > последний тег ${RELEASE_TAG:-—}; git tag -l '*$VERSION'" -- step_version
 	run_step check-bsl-calls 0 "python3 -I tools/check-bsl-calls.py $EXT_DIR" -- python3 -I "$TOOLS/check-bsl-calls.py" "$EXT_DIR"
 
@@ -816,6 +832,7 @@ PY
 	echo "release-gate: $BRANCH $HEAD_SHA, основная конфигурация $SRC (хранилище ${REPO:-—}), база $BASE_SHA"
 	run_step clean-tree 0 "git status --porcelain --untracked-files=all" -- step_clean_tree
 	run_step base 0 "git merge-base --is-ancestor $BASE_SHA HEAD" -- step_base
+	run_step conflict-markers 0 "git grep -I -n -E '^(<<<<<<<|>>>>>>>)( |$)|^=======$' HEAD" -- step_conflict_markers
 	run_step diff-scope 0 "git diff --name-only $BASE_SHA HEAD ⊆ ${FILES[*]:-<не задано>}" -- step_diff_scope
 	run_step patch 0 "git apply --check --cached $PATCH на индексе $BASE_SHA; результат = HEAD:$SRC" -- step_patch
 	[[ -s "$PATCH" ]] && PATCH_SHA="$(sha256sum "$PATCH" | cut -d' ' -f1)"
