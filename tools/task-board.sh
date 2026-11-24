@@ -37,9 +37,10 @@ usage() {
                                  забрать расход агента (usage из agent-status.json задачи в контейнере:
                                  номер N -> dev-agent<N>) в tokens/cost_usd/api_equiv_usd; задач у issue
                                  может быть несколько — суммируются; --file — локальный agent-status.json
-  version reserve <issue> [--patch] [--from X.Y.Z.W] [--ttl часы]
+  version reserve <issue> [--patch] [--from X.Y.Z.W] [--first X.Y.Z.W] [--ttl часы]
                                  слот слияния и номер выпуска: следующий от последнего тега в origin
-                                 (MINOR, --patch — PATCH; --from — хотфикс от указанного выпуска).
+                                 (MINOR, --patch — PATCH; --from — хотфикс от указанного выпуска;
+                                 --first — номер первого выпуска, когда тегов в origin ещё нет).
                                  Слот один на репозиторий: держит другая задача — код 1 и кто держит.
                                  Повтор той же задачей возвращает её номер. Слот снимается сам, когда
                                  тег с номером появился в origin или истёк срок (по умолчанию 3 ч)
@@ -474,11 +475,19 @@ def cmd_version(args):
         if base:
             if base not in tags:
                 die(f"Выпуска {base} нет среди тегов origin", 1)
+        first = opts.get("first")
+        if first and tags:
+            die("--first только для первого выпуска: в origin уже есть теги", 1)
+        if first:
+            if not re.fullmatch(r"\d+\.\d+\.\d+\.\d+", first):
+                die("--first: номер вида X.Y.Z.W")
+            base, ver = None, first
         elif not tags:
-            die("В origin нет тегов выпусков: номер задай вручную", 1)
+            die("В origin нет тегов выпусков: задай номер первого выпуска --first X.Y.Z.W", 1)
         else:
             base = max(tags, key=vkey)
-        ver = bump(base, bool(opts.get("patch")))
+        if not first:
+            ver = bump(base, bool(opts.get("patch")))
         if ver in tags:
             die(f"Номер {ver} уже занят тегом в origin", 1)
         ttl = float(opts.get("ttl", 3))
