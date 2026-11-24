@@ -59,6 +59,8 @@ usage() {
   DESIGNER_HEAVY_LOCK       блокировка «одна тяжёлая операция на хост»
                             (по умолчанию $AGENT_LOCKS/designer-heavy.lock при заданном AGENT_LOCKS)
   DESIGNER_BATCH_MAIN_CONFIG_APPROVED=1  --main-config агенту после согласования архитектора
+  DESIGNER_BATCH_REPO_BIND_APPROVED=1    /ConfigurationRepositoryBindCfg и UnbindCfg после
+                            согласования архитектора (только окружение, не .dev.env)
   DESIGNER_XVFB_FIRST       первый номер дисплея для поиска свободного (по умолчанию 99)
   DESIGNER_DISPLAY          готовый виртуальный экран (например, общий Xvfb агента);
                             не может совпадать с DISPLAY сеанса
@@ -123,6 +125,10 @@ refuse() { echo "designer-batch: $*" >&2; exit 2; }
 # CopyUsers, OptimizeData) — не здесь: Devbox MCP storage_* или владелец хранилища.
 REPO_COMMANDS=" bindcfg unbindcfg lock unlock commit updatecfg dumpcfg report setlabel clearcache clearglobalcache clearlocalcache "
 REPO_ADMIN_COMMANDS=" create adduser copyusers optimizedata "
+# Подключение базы к хранилищу и отключение — только по согласованию архитектора
+# (инварианты 5–6 навыка 1c-repository-manage): DESIGNER_BATCH_REPO_BIND_APPROVED=1
+# в окружении запуска. Значение из .dev.env не действует: .dev.env читается после проверки.
+REPO_BIND_COMMANDS=" bindcfg unbindcfg "
 
 # Разбор аргументов пакетной команды. Отказ — refuse (код 2). Задаёт CMD — команду
 # в нижнем регистре — и REPO_CMD=1, если это команда хранилища (ей нужны параметры
@@ -156,6 +162,9 @@ check_batch() {
 			fi
 			if [[ ! "$a" =~ ^/[A-Za-z]+$ || "$REPO_COMMANDS" != *" $sub "* ]]; then
 				refuse "неизвестная команда хранилища «$a»: обёртка запускает только /ConfigurationRepository{BindCfg,UnbindCfg,Lock,UnLock,Commit,UpdateCfg,DumpCfg,Report,SetLabel,ClearCache,ClearGlobalCache,ClearLocalCache}"
+			fi
+			if [[ "$REPO_BIND_COMMANDS" == *" $sub "* && "${DESIGNER_BATCH_REPO_BIND_APPROVED:-}" != 1 ]]; then
+				refuse "«$a» — подключение базы к хранилищу или отключение от него: только по согласованию архитектора (инварианты 5–6 навыка 1c-repository-manage). Агенту — agent-state question с причиной; после ответа запуск с DESIGNER_BATCH_REPO_BIND_APPROVED=1 (designer-batch-checks.mdc → Configuration repository operations)."
 			fi
 			REPO_CMD=1
 		fi
@@ -212,19 +221,26 @@ EOF
 	echo "self-test: разбор лога исправен"
 
 	# Аргументы пакетной команды: ожидаемый вердикт check_batch (ok — принят, refuse — код 2).
-	local args
+	# approved:<вердикт> — тот же разбор с DESIGNER_BATCH_REPO_BIND_APPROVED=1, иначе без него.
+	local args approved
 	local -a argv
 	while IFS='|' read -r expect args; do
 		[[ -z "$expect" ]] && continue
+		approved=""
+		if [[ "$expect" == approved:* ]]; then approved=1; expect="${expect#approved:}"; fi
 		eval "argv=($args)"
-		if (check_batch "${argv[@]}") >/dev/null 2>&1; then got=ok; else got=refuse; fi
+		if (DESIGNER_BATCH_REPO_BIND_APPROVED="$approved"; check_batch "${argv[@]}") >/dev/null 2>&1; then got=ok; else got=refuse; fi
 		if [[ "$got" != "$expect" ]]; then
 			echo "НЕВЕРНО: аргументы — ожидалось $expect, получено $got: $args" >&2
 			fails=$((fails + 1))
 		fi
 	done <<'ARGS'
 ok|/CheckModules -Extension Расш1 -Server
-ok|/ConfigurationRepositoryBindCfg -Extension Расш1 -forceBindAlreadyBindedUser -forceReplaceCfg
+refuse|/ConfigurationRepositoryBindCfg -Extension Расш1 -forceBindAlreadyBindedUser -forceReplaceCfg
+refuse|/ConfigurationRepositoryUnbindCfg -Extension Расш1 -force
+approved:ok|/ConfigurationRepositoryBindCfg -Extension Расш1 -forceBindAlreadyBindedUser -forceReplaceCfg
+approved:ok|/ConfigurationRepositoryUnbindCfg -Extension Расш1 -force
+approved:refuse|/ConfigurationRepositoryCreate -Extension Расш1
 ok|/ConfigurationRepositoryLock -Extension Расш1 -Objects /tmp/objects.xml
 ok|/ConfigurationRepositoryCommit -Extension Расш1 -Objects /tmp/objects.xml -comment "BM-1707"
 ok|/ConfigurationRepositoryUnLock -Extension Расш1 -Objects /tmp/objects.xml
