@@ -13,6 +13,7 @@
 
 ## 2026-11-24
 
+- `tools/designer-batch.sh`: `/ConfigurationRepositoryBindCfg` и `UnbindCfg` — только с `DESIGNER_BATCH_REPO_BIND_APPROVED=1` в окружении запуска (значение из `.dev.env` не действует), иначе отказ, код 2: инструмент снова согласован с инвариантами 5–6 `1c-repository-manage`. `headless-agent.mdc` п. 2а: перепривязка — по поручению в промпте или ответу архитектора на `question`. Проекту: синхронизироваться; в промпте задачи, где агент перепривязывает копию, прямо поручить это и назвать переменную.
 - `tools/designer-batch.sh`: команды хранилища `/ConfigurationRepository{BindCfg,UnbindCfg,Lock,UnLock,Commit,UpdateCfg,DumpCfg,Report,SetLabel,Clear*Cache}` запускаются, параметры подключения к хранилищу ставит обёртка (`REPOSITORY_PATH`/`REPOSITORY_USER`/`REPOSITORY_PASSWORD`, затем `REPOSITORY_PASSWORD_FILE`, по умолчанию `~/.secrets/storage-password`), пароль скрыт; `/ConfigurationRepositoryF|N|P` в аргументах (отдельно или слитно) и администрирование хранилища — отказ. Разбор `/Out` больше не считает диагностикой слова внутри имён объектов (`ОбщийМакет.Расш1К_ЗвукОшибки` при захвате). `--self-test` проверяет и разбор аргументов. `designer-batch-checks.mdc` → «Configuration repository operations», `headless-agent.mdc` п. 2а, `docs/headless-agent.md` (BM-1707). Проекту: синхронизироваться; в промптах операции хранилища — через обёртку, без ключей хранилища в аргументах.
 
 ## 2026-11-23
