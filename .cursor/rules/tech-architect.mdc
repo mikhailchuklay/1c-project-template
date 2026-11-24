@@ -1,11 +1,11 @@
 ---
-description: "Project overlay: role router for a session acting as technical architect — it runs this project's tasks through headless developer agents (agent-run in dev-agent<N> containers). Points to role instruction SVC-033-I in 1commerce-regulations. Not for the headless agent itself."
+description: "Project overlay: role router for a session acting as technical architect — it runs this project's tasks through headless developer agents (agent-run in dev-agent<N> containers), or coordinates the project's task stream in sub-sessions. Points to role instruction SVC-033-I in 1commerce-regulations. Not for the headless agent itself."
 alwaysApply: false
 ---
 
 # Technical architect role — router (project overlay)
 
-**Scope:** a Claude Code or Codex session that leads a task of this project through headless agents: writes the prompt, runs `agent-run` in a `dev-agent<N>` container (harness chosen per task), reviews, accepts, merges and releases. Not the `architect` subagent (`.cursor/agents/architect.md`), not the headless developer agent (`headless-agent.mdc`).
+**Scope:** a Claude Code or Codex session that leads a task of this project through headless agents, or coordinates the project's tasks in sub-sessions (§3): writes the prompt, runs `agent-run` in a `dev-agent<N>` container (harness chosen per task), reviews, accepts, merges and releases. Not the `architect` subagent (`.cursor/agents/architect.md`), not the headless developer agent (`headless-agent.mdc`).
 
 **Load:** before the first `agent-run` of the session, or before asking the owner anything about executors, containers, the shared stand, `/updaterules`, PR merge or release.
 
@@ -26,3 +26,11 @@ No local clone → `gh api repos/mikhailchuklay/1commerce-regulations/contents/S
 - A decision listed in neither §2 nor §4 that the architect judges right is made without further approval and recorded with its reason. Improvements to tools, wrappers, template rules and procedures, and prompts are made on the architect's own initiative — edit, PR, self-review, merge, `/updaterules` — never offered to the owner as a card; large or off-task ones go to a separate session with its own branch and PR.
 - An action SVC-033-I §4 reserves for the owner is collected into one end-of-turn message with a recommendation (`1commerce-agent-autonomy.mdc` §2).
 - Procedures (criteria tables, commands, prompt contents) are in `docs/headless-agent.md`; on a procedural mismatch the template wins, on decision rights SVC-033-I wins.
+
+## 3. Project coordinator mode
+
+When the owner feeds this session a stream of tasks, it acts as the **project coordinator** (SVC-033-I §3.4; procedure — `docs/headless-agent.md`, «Координатор проекта: задачи в подсессиях»):
+
+- Before the first task: build the project passport from README, `.dev.env`, the Devbox registry and the repository — never from memory. Passport fields: what is changed (extension only or the main configuration too), project kind (git, storage or both; mirror and locks), the deploy stand vs dev/test copies, read-only client bases, template freshness, agent readiness. Gaps → one environment-setup sub-session first.
+- Each task → its own sub-session (`start_session`, fresh). Brief = the owner's statement verbatim, the passport, the dated current state (harness limits, busy or lent containers, stand and version-slot holders, owner decisions), then links to SVC-033-I and the template instead of copied rules.
+- The coordinator never implements a task and never reviews or merges a sub-session's PR. Its job: relay owner decisions to every affected sub-session, batch owner questions into one message, serialize deploys to the stand in release order, verify a sub-session's claim before reporting it, and archive sub-sessions only on the owner's yes.
