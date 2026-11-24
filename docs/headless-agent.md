@@ -200,7 +200,7 @@
 
 | Операция | Инструмент | Почему не vrunner |
 |---|---|---|
-| Хранилище: захват, обновление, помещение, отпуск | `vrunner` в оболочке (`xvfb-run -a vrunner …`) | MCP `repo_lock` не передал пользователя базы, захват прошёл только из оболочки |
+| Хранилище: подключение, захват, обновление, помещение, отпуск, отчёт | `tools/designer-batch.sh -- /ConfigurationRepository<Команда> [-Extension <имя>] …` — путь, пользователя и пароль хранилища (`REPOSITORY_PATH`, `REPOSITORY_USER`, `~/.secrets/storage-password`) ставит обёртка, пароль скрыт; ключи `/ConfigurationRepositoryF\|N\|P` в аргументах — отказ, склеивать их нельзя. Запасной путь — `vrunner` в оболочке (`xvfb-run -a vrunner …`) | MCP `repo_lock` не передал пользователя базы; у vrunner нет вердикта по трём сигналам. До 24.11.2026 обёртка отклоняла все команды хранилища (BM-1707) |
 | Выгрузка конфигурации, `infobase update`, загрузка расширения | `vrunner` (раздел ниже) | — |
 | Загрузка основной конфигурации в базу, подключённую к хранилищу | `tools/designer-batch.sh --load --repository -- /LoadConfigFromFiles <src> -listFile <список>` — только захваченные объекты; гейт `release-gate.sh --load` в режиме `main-config` собирает список сам | полный `vrunner cf load` платформа отклоняет («Загрузка невозможна: текущая конфигурация помещена в хранилище»), а `cf load` не передаёт параметры хранилища |
 | Кластер и сеансы: список, завершение своих | `rac` или Devbox MCP (`infobase_sessions`, `infobase_session_terminate`) | `vrunner cluster session list` и MCP `session_list` падают в irac («Значение не является значением объектного типа»), без `VRUNNER_RAS` идут на `localhost:1545`; `rac` работает |

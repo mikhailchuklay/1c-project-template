@@ -36,18 +36,25 @@ usage() {
                   без -Extension при заданном EXTENSION_NAME
   --repository    добавить параметры хранилища из .dev.env (/ConfigurationRepositoryF, N, P):
                   нужны загрузке по списку файлов (/LoadConfigFromFiles -listFile) в базу,
-                  подключённую к хранилищу — полная загрузка туда платформой запрещена
+                  подключённую к хранилищу — полная загрузка туда платформой запрещена.
+                  Командам хранилища (/ConfigurationRepositoryBindCfg, Lock, UnLock, Commit,
+                  UpdateCfg, DumpCfg, Report, …) параметры добавляются сами, ключ не нужен
   --self-test     прогнать разбор лога на контрольных строках и выйти
   -h, --help      эта справка
 
-Одна пакетная команда на запуск. Подключение (/F, /S, /N, /P), /Out, /DumpResult
-и /DisableStartup* обёртка ставит сама — в аргументах их не передавать.
+Одна пакетная команда на запуск. Подключение к базе (/F, /S, /N, /P) и к хранилищу
+(/ConfigurationRepositoryF, N, P), /Out, /DumpResult и /DisableStartup* обёртка ставит
+сама — в аргументах их не передавать (отказ, код 2). Пароли в выводе скрыты.
+Расширение в своём хранилище: REPOSITORY_PATH — хранилище расширения, у команды
+ключ -Extension <имя>, например:
+  tools/designer-batch.sh -- /ConfigurationRepositoryLock -Extension Расш1 -Objects список.xml
 
 Переменные (.dev.env или окружение):
   PLATFORM_PATH, INFOBASE_KIND, INFOBASE_PATH, IB_USER, IB_PASSWORD
   (запасной вариант: VRUNNER_IBCONNECTION, VRUNNER_DBUSER, VRUNNER_DBPWD)
-  REPOSITORY_PATH, REPOSITORY_USER, REPOSITORY_PASSWORD  для --repository
-  (запасной вариант: VRUNNER_STORAGE_NAME, VRUNNER_STORAGE_USER, VRUNNER_STORAGE_PWD)
+  REPOSITORY_PATH, REPOSITORY_USER, REPOSITORY_PASSWORD  для хранилища
+  (запасной вариант: VRUNNER_STORAGE_NAME, VRUNNER_STORAGE_USER, VRUNNER_STORAGE_PWD;
+  пароль — ещё файл REPOSITORY_PASSWORD_FILE, по умолчанию ~/.secrets/storage-password)
   DESIGNER_TIMEOUT          тайм-аут по умолчанию, с
   DESIGNER_HEAVY_LOCK       блокировка «одна тяжёлая операция на хост»
                             (по умолчанию $AGENT_LOCKS/designer-heavy.lock при заданном AGENT_LOCKS)
@@ -83,13 +90,20 @@ success = [
     r'errors\s*:\s*0(?![\d.,])', r'warnings\s*:\s*0(?![\d.,])',
     r'(?<![\d.,])0\s+(errors?|warnings?)\b',
 ]
-errors = r'ошиб|не\s+найден|не\s+обнаружен|не\s+удалось|не\s+может\s+быть\s+применен|невозможно|\berror|\bfatal|\bfailed|\bfailure|\bexception'
-warnings = r'предупрежд|\bwarning'
+# Слова диагностики — только с начала слова: «ЗвукОшибки», «Расш1К_ОшибкиОбмена»
+# в именах объектов не диагностика (BM-1707: «Объект захвачен для редактирования:
+# ОбщийМакет.Расш1К_ЗвукОшибки» при коде 0 и /DumpResult 0).
+errors = r'\bошиб|\bне\s+найден|\bне\s+обнаружен|\bне\s+удалось|\bне\s+может\s+быть\s+применен|\bневозможно|\berror|\bfatal|\bfailed|\bfailure|\bexception'
+warnings = r'\bпредупрежд|\bwarning'
+# Полные имена объектов метаданных (Справочник.Ошибки, ОбщийМакет.Х.Макет) — данные,
+# а не текст платформы: из строки убираются до поиска слов диагностики.
+object_name = r'[^\W\d]\w*(?:\.[^\W\d]\w*)+'
 bad = []
 for line in text.splitlines():
     low = line.lower()
     for pat in success:
         low = re.sub(pat, ' ', low)
+    low = re.sub(object_name, ' ', low)
     if re.search(errors, low) or (not load_mode and re.search(warnings, low)):
         bad.append(line.strip())
 for line in bad[:20]:
@@ -100,6 +114,69 @@ PY
 classify_log() {
 	# $1 — файл лога или "-" для stdin; $2 — 1, если предупреждения не считаются провалом.
 	python3 -c "$CLASSIFY_PY" "$1" "${2:-0}"
+}
+
+refuse() { echo "designer-batch: $*" >&2; exit 2; }
+
+# Команды хранилища, которые обёртка запускает (имена в нижнем регистре, без
+# префикса /ConfigurationRepository). Администрирование хранилища (Create, AddUser,
+# CopyUsers, OptimizeData) — не здесь: Devbox MCP storage_* или владелец хранилища.
+REPO_COMMANDS=" bindcfg unbindcfg lock unlock commit updatecfg dumpcfg report setlabel clearcache clearglobalcache clearlocalcache "
+REPO_ADMIN_COMMANDS=" create adduser copyusers optimizedata "
+
+# Разбор аргументов пакетной команды. Отказ — refuse (код 2). Задаёт CMD — команду
+# в нижнем регистре — и REPO_CMD=1, если это команда хранилища (ей нужны параметры
+# хранилища из .dev.env, как при --repository).
+check_batch() {
+	local BATCH=("$@") cmd_count=0 i a lc next name
+	CMD=""
+	REPO_CMD=0
+	for i in "${!BATCH[@]}"; do
+		a="${BATCH[$i]}"
+		lc="${a,,}"
+		# Подключение, вывод и режим запуска ставит обёртка. Слитная форма (/F/путь,
+		# /N"имя") ловится по заглавной букве ключа, пути вида /srv/… не задевает.
+		case "$lc" in
+			designer|enterprise|/f|/s|/n|/p|/ibconnectionstring|/ibname|/out|/dumpresult|/disablestartupdialogs|/disablestartupmessages)
+				refuse "ключ «$a» задаёт обёртка — уберите его из аргументов" ;;
+		esac
+		if [[ "$a" =~ ^/[FSNP][^a-z] ]]; then
+			refuse "ключ «$a» задаёт обёртка — уберите его из аргументов"
+		fi
+		if [[ "$lc" == /configurationrepository* ]]; then
+			local sub="${lc#/configurationrepository}"
+			# Подключение к хранилищу (F — путь, N — пользователь, P — пароль), отдельной
+			# или слитной формой: только из .dev.env, как /N и /P базы.
+			if [[ "$sub" =~ ^[fnp]([^a-z]|$) ]]; then
+				local key="${sub:0:1}"
+				refuse "ключ «/ConfigurationRepository${key^^}» задаёт обёртка из REPOSITORY_PATH, REPOSITORY_USER и REPOSITORY_PASSWORD (или ~/.secrets/storage-password) — уберите его из аргументов"
+			fi
+			if [[ "$REPO_ADMIN_COMMANDS" == *" $sub "* ]]; then
+				refuse "«$a» — администрирование хранилища, не пакетная работа агента: Devbox MCP (storage_*) или владелец хранилища"
+			fi
+			if [[ ! "$a" =~ ^/[A-Za-z]+$ || "$REPO_COMMANDS" != *" $sub "* ]]; then
+				refuse "неизвестная команда хранилища «$a»: обёртка запускает только /ConfigurationRepository{BindCfg,UnbindCfg,Lock,UnLock,Commit,UpdateCfg,DumpCfg,Report,SetLabel,ClearCache,ClearGlobalCache,ClearLocalCache}"
+			fi
+			REPO_CMD=1
+		fi
+		if [[ "$a" =~ ^/[A-Z][A-Za-z0-9]*$ ]]; then
+			cmd_count=$((cmd_count + 1))
+			CMD="$lc"
+		fi
+		case "$lc" in
+			/erasedata) refuse "/EraseData запрещён правилами (designer-batch-checks.mdc → Never run)" ;;
+			/ibcheckandrepair) refuse "/IBCheckAndRepair запрещён правилами" ;;
+			-allextensions) refuse "-AllExtensions запрещён правилами" ;;
+			-disablesupport) refuse "/ManageCfgSupport -disableSupport запрещён правилами" ;;
+		esac
+		if [[ "$lc" == /deletecfg ]]; then
+			next="${BATCH[$((i + 1))]:-}"; name="${BATCH[$((i + 2))]:-}"
+			if [[ "${next,,}" != -extension || -z "${name// /}" ]]; then
+				refuse "/DeleteCfg без непустого -Extension <имя> запрещён (удаляет первое расширение списка)"
+			fi
+		fi
+	done
+	((cmd_count == 1)) || refuse "нужна ровно одна пакетная команда на запуск, передано: $cmd_count (платформа выполняет только последнюю)"
 }
 
 self_test() {
@@ -123,9 +200,50 @@ fail|Объект метаданных не существует: Ошибка �
 fail|Error: object not found
 pass|Обновление конфигурации успешно завершено
 fail|Не найдена лицензия. Не обнаружен ключ защиты программы или полученная программная лицензия!
+pass|Объект захвачен для редактирования: ОбщийМакет.Расш1К_ЗвукОшибки
+pass|Захват объекта отменен: ОбщийМакет.Расш1К_ЗвукОшибки
+pass|Объект помещен в хранилище: Справочник.Ошибки
+pass|Обработка РегистрацияОшибокОбмена получена из хранилища
+fail|{ОбщийМодуль.Расш1К_ЗвукОшибки.Модуль(12,5)}: Ошибка компиляции
+fail|Справочник.Ошибки: не удалось захватить объект
+fail|Объект ОбщийМакет.Расш1К_ЗвукОшибки захвачен другим пользователем. Невозможно захватить объект
 EOF
 	if ((fails)); then return 1; fi
 	echo "self-test: разбор лога исправен"
+
+	# Аргументы пакетной команды: ожидаемый вердикт check_batch (ok — принят, refuse — код 2).
+	local args
+	local -a argv
+	while IFS='|' read -r expect args; do
+		[[ -z "$expect" ]] && continue
+		eval "argv=($args)"
+		if (check_batch "${argv[@]}") >/dev/null 2>&1; then got=ok; else got=refuse; fi
+		if [[ "$got" != "$expect" ]]; then
+			echo "НЕВЕРНО: аргументы — ожидалось $expect, получено $got: $args" >&2
+			fails=$((fails + 1))
+		fi
+	done <<'ARGS'
+ok|/CheckModules -Extension Расш1 -Server
+ok|/ConfigurationRepositoryBindCfg -Extension Расш1 -forceBindAlreadyBindedUser -forceReplaceCfg
+ok|/ConfigurationRepositoryLock -Extension Расш1 -Objects /tmp/objects.xml
+ok|/ConfigurationRepositoryCommit -Extension Расш1 -Objects /tmp/objects.xml -comment "BM-1707"
+ok|/ConfigurationRepositoryUnLock -Extension Расш1 -Objects /tmp/objects.xml
+ok|/ConfigurationRepositoryUpdateCfg -Extension Расш1 -force
+ok|/ConfigurationRepositoryReport /tmp/report.mxl -Extension Расш1
+refuse|/ConfigurationRepositoryF tcp://srv/repo /ConfigurationRepositoryLock
+refuse|/ConfigurationRepositoryN agent1 /ConfigurationRepositoryLock
+refuse|/ConfigurationRepositoryP secret /ConfigurationRepositoryLock
+refuse|'/ConfigurationRepositoryF"tcp://srv/repo"' /ConfigurationRepositoryLock
+refuse|/ConfigurationRepositoryNagent1 /ConfigurationRepositoryLock
+refuse|/ConfigurationRepositoryPsecret /ConfigurationRepositoryLock
+refuse|/ConfigurationRepositoryCreate -Extension Расш1
+refuse|/ConfigurationRepositoryAddUser -User x -Pwd y
+refuse|/ConfigurationRepositoryLock /ConfigurationRepositoryCommit
+refuse|/N admin /CheckModules
+refuse|/EraseData
+ARGS
+	if ((fails)); then return 1; fi
+	echo "self-test: разбор аргументов исправен"
 }
 
 # ---------------------------------------------------------------------------
@@ -155,8 +273,6 @@ while [[ $# -gt 0 ]]; do
 done
 BATCH=("$@")
 
-refuse() { echo "designer-batch: $*" >&2; exit 2; }
-
 [[ ${#BATCH[@]} -gt 0 ]] || { usage >&2; exit 2; }
 
 case "$(uname -s)" in
@@ -164,42 +280,8 @@ case "$(uname -s)" in
 		refuse "Windows: используйте PowerShell-рецепт designer-batch-checks.mdc (Start-Process -WindowStyle Hidden)" ;;
 esac
 
-# Одна пакетная команда, без ключей подключения и вывода, без запрещённых операций.
-cmd_count=0
-CMD=""
-for i in "${!BATCH[@]}"; do
-	a="${BATCH[$i]}"
-	lc="${a,,}"
-	# Подключение, вывод и режим запуска ставит обёртка. Слитная форма (/F/путь,
-	# /N"имя") ловится по заглавной букве ключа, пути вида /srv/… не задевает.
-	case "$lc" in
-		designer|enterprise|/f|/s|/n|/p|/ibconnectionstring|/ibname|/out|/dumpresult|/disablestartupdialogs|/disablestartupmessages)
-			refuse "ключ «$a» задаёт обёртка — уберите его из аргументов" ;;
-	esac
-	if [[ "$a" =~ ^/[FSNP][^a-z] ]]; then
-		refuse "ключ «$a» задаёт обёртка — уберите его из аргументов"
-	fi
-	if [[ "$lc" == /configurationrepository* ]]; then
-		refuse "параметры хранилища («$a») обёртка ставит сама по ключу --repository из .dev.env"
-	fi
-	if [[ "$a" =~ ^/[A-Z][A-Za-z0-9]*$ ]]; then
-		cmd_count=$((cmd_count + 1))
-		CMD="$lc"
-	fi
-	case "$lc" in
-		/erasedata) refuse "/EraseData запрещён правилами (designer-batch-checks.mdc → Never run)" ;;
-		/ibcheckandrepair) refuse "/IBCheckAndRepair запрещён правилами" ;;
-		-allextensions) refuse "-AllExtensions запрещён правилами" ;;
-		-disablesupport) refuse "/ManageCfgSupport -disableSupport запрещён правилами" ;;
-	esac
-	if [[ "$lc" == /deletecfg ]]; then
-		next="${BATCH[$((i + 1))]:-}"; name="${BATCH[$((i + 2))]:-}"
-		if [[ "${next,,}" != -extension || -z "${name// /}" ]]; then
-			refuse "/DeleteCfg без непустого -Extension <имя> запрещён (удаляет первое расширение списка)"
-		fi
-	fi
-done
-((cmd_count == 1)) || refuse "нужна ровно одна пакетная команда на запуск, передано: $cmd_count (платформа выполняет только последнюю)"
+check_batch "${BATCH[@]}"
+((REPO_CMD)) && WITH_REPO=1
 
 # Известная ловушка: частичная (-listFile) или инкрементальная (-update) выгрузка
 # в каталог без полной выгрузки падает с ошибкой «объект метаданных не существует».
@@ -299,7 +381,12 @@ if ((WITH_REPO)); then
 	REPO_PATH="${REPOSITORY_PATH:-${VRUNNER_STORAGE_NAME:-}}"
 	REPO_USER="${REPOSITORY_USER:-${VRUNNER_STORAGE_USER:-}}"
 	REPO_PWD="${REPOSITORY_PASSWORD:-${VRUNNER_STORAGE_PWD:-}}"
-	[[ -n "$REPO_PATH" ]] || refuse "--repository: не задан REPOSITORY_PATH (.dev.env)"
+	# В контейнере агента пароль хранилища лежит в файле, а не в .dev.env.
+	REPO_PWD_FILE="${REPOSITORY_PASSWORD_FILE:-$HOME/.secrets/storage-password}"
+	if [[ -z "$REPO_PWD" && -r "$REPO_PWD_FILE" ]]; then
+		REPO_PWD="$(tr -d '\r\n' <"$REPO_PWD_FILE")"
+	fi
+	[[ -n "$REPO_PATH" ]] || refuse "${CMD} требует хранилище: не задан REPOSITORY_PATH (.dev.env) и нет VRUNNER_STORAGE_NAME"
 	ARGS+=(/ConfigurationRepositoryF "$REPO_PATH")
 	[[ -n "$REPO_USER" ]] && ARGS+=(/ConfigurationRepositoryN "$REPO_USER")
 	[[ -n "$REPO_PWD" ]] && ARGS+=(/ConfigurationRepositoryP "$REPO_PWD")

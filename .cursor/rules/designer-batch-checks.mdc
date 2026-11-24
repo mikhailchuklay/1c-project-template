@@ -42,10 +42,11 @@ A naive "does the log contain `Ошибка` / `Error`" test is **wrong**, and i
 Classify a log line in this order:
 
 1. **Recognize success fragments only.** Neutralize exact phrases such as `ошибок не обнаружено` / `предупреждений не обнаружено`, `ошибок: 0` / `предупреждений: 0`, `errors were not found`, `0 errors`; require phrase / numeric boundaries, so `0` never matches the beginning of `01` or another non-zero count. Never skip the whole line because one fragment is clean.
-2. **Then inspect every remaining fragment — any diagnostic fails the line.** `ошиб*` / `предупрежд*` in any case form, `не найден*` (method, licence), `не обнаружен*`, `не удалось`, `не может быть применен*`, `невозможно`, and `error` / `fatal` / `failed` / `failure` / `exception`.
-3. Everything else is informational.
+2. **Drop qualified metadata object names** (`Справочник.Ошибки`, `ОбщийМакет.Расш1К_ЗвукОшибки`, `ОбщийМодуль.Х.Модуль`) — they are data the platform echoes, not its verdict.
+3. **Then inspect every remaining fragment — any diagnostic fails the line.** Word-initial `ошиб*` / `предупрежд*` in any case form, `не найден*` (method, licence), `не обнаружен*`, `не удалось`, `не может быть применен*`, `невозможно`, and `error` / `fatal` / `failed` / `failure` / `exception`. Word-initial only: a stem inside an identifier (`ЗвукОшибки`, `РегистрацияОшибокОбмена`) is not a diagnostic.
+4. Everything else is informational.
 
-Regression cases: `Ошибок: 0; предупреждений: 1` fails; `Ошибок не обнаружено. Не найден метод ...` fails; `Ошибок: 0; предупреждений: 0` passes the diagnostic-text signal. The other two signals still must pass.
+Regression cases: `Ошибок: 0; предупреждений: 1` fails; `Ошибок не обнаружено. Не найден метод ...` fails; `Ошибок: 0; предупреждений: 0` passes the diagnostic-text signal; `Объект захвачен для редактирования: ОбщийМакет.Расш1К_ЗвукОшибки` passes (a false «не прошло» on a clean lock, BM-1707); `{ОбщийМодуль.Расш1К_ЗвукОшибки.Модуль(12,5)}: Ошибка компиляции` fails. The other two signals still must pass.
 
 `Не найден метод ...` is the signature failure of a broken extension interceptor, and it is routinely emitted **with process exit code 0**. That is why the exit code alone is never the verdict.
 
@@ -73,7 +74,21 @@ Invariant in every environment: a `1cv8` / `1cv8c` process the agent starts neve
 tools/designer-batch.sh -- /CheckModules -ThinClient -Server -ExternalConnection -Extension "$EXTENSION_NAME"
 ```
 
-The wrapper reads `PLATFORM_PATH`, `INFOBASE_KIND`, `INFOBASE_PATH`, `IB_USER`, `IB_PASSWORD` from `.dev.env` (fallback `VRUNNER_*`), adds the connection, the four flags and the timeout (`--timeout`, `DESIGNER_TIMEOUT`, default 600 s; kills only its own process group), deletes a stale result file, and prints the three-signal verdict below (exit 0 = all clean, 1 = failed or timed out, 2 = refused, 3 = no virtual display). It refuses more than one batch command, connection / output keys in the arguments, the switches of **Never run these switches**, and a partial dump without a full one. `--load` stops warnings from failing a load / apply run; `--dry-run` prints the masked command line.
+The wrapper reads `PLATFORM_PATH`, `INFOBASE_KIND`, `INFOBASE_PATH`, `IB_USER`, `IB_PASSWORD` from `.dev.env` (fallback `VRUNNER_*`), adds the connection, the four flags and the timeout (`--timeout`, `DESIGNER_TIMEOUT`, default 600 s; kills only its own process group), deletes a stale result file, and prints the three-signal verdict below (exit 0 = all clean, 1 = failed or timed out, 2 = refused, 3 = no virtual display). It refuses more than one batch command, connection / output keys in the arguments, the switches of **Never run these switches**, and a partial dump without a full one. `--load` stops warnings from failing a load / apply run; `--dry-run` prints the masked command line. `tools/designer-batch.sh --self-test` runs the log classifier and the argument checks on fixed cases.
+
+### Configuration repository operations (Linux)
+
+```bash
+tools/designer-batch.sh -- /ConfigurationRepositoryLock -Extension "$EXTENSION_NAME" -Objects objects.xml
+tools/designer-batch.sh -- /ConfigurationRepositoryCommit -Extension "$EXTENSION_NAME" -Objects objects.xml -comment "<id> <KEY>"
+tools/designer-batch.sh -- /ConfigurationRepositoryUnLock -Extension "$EXTENSION_NAME" -Objects objects.xml
+```
+
+- The wrapper runs `BindCfg`, `UnbindCfg`, `Lock`, `UnLock`, `Commit`, `UpdateCfg`, `DumpCfg`, `Report`, `SetLabel` and the `Clear*Cache` commands of `/ConfigurationRepository…`, and adds the repository connection itself: `/ConfigurationRepositoryF` from `REPOSITORY_PATH`, `N` from `REPOSITORY_USER`, `P` from `REPOSITORY_PASSWORD`, then `REPOSITORY_PASSWORD_FILE` (default `~/.secrets/storage-password`, the agent container's secret); fallback `VRUNNER_STORAGE_*`. The password is masked in `--dry-run` and in the echoed line. `--repository` is needed only for non-repository commands that must see the repository (`/LoadConfigFromFiles -listFile` into a bound base).
+- **Never pass `/ConfigurationRepositoryF|N|P` in the arguments** — separate or glued (`/ConfigurationRepositoryF"…"`). The wrapper refuses them (exit 2) exactly like `/N` / `/P` of the infobase; gluing a key to dodge the check is a bypass, not a workaround — report the tool gap instead.
+- Repository administration (`Create`, `AddUser`, `CopyUsers`, `OptimizeData`) and unknown `/ConfigurationRepository…` commands are refused: Devbox MCP `storage_*` or the repository owner.
+- An extension kept in its own repository: `REPOSITORY_PATH` is that repository and every command carries `-Extension <name>`. What a headless agent may do in a repository (explicit object lists, no force, no bind/unbind) — `headless-agent.mdc` §2а and the `1c-repository-manage` skill.
+- Lock/UnLock/Commit logs echo object names; the classifier ignores qualified names, so a clean lock of `ОбщийМакет.Расш1К_ЗвукОшибки` is not a failure. The verdict is still all three signals.
 
 ### Windows
 
