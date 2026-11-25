@@ -370,6 +370,14 @@ if ((Test-Path $giPath) -and (Select-String -Path $giPath -Pattern '^/?\.task-bo
     Write-Host "  OK .gitignore += .task-board/"
 }
 
+# docs/project-patterns.md belongs to the project: seed when missing, never overwrite.
+Write-Step "Seed docs/project-patterns.md (only if missing)"
+if (-not (Test-Path (Join-Path $ProjectRoot 'docs\project-patterns.md'))) {
+    Copy-FileSync -SourceFile (Join-Path $cache 'docs\project-patterns.md') -DestFile (Join-Path $ProjectRoot 'docs\project-patterns.md') -Label 'docs/project-patterns.md'
+} else {
+    Write-Host "  docs/project-patterns.md exists - kept"
+}
+
 # tools/vrunner.init.json holds a specific base's connection: never committed (template: .example).
 Write-Step "Ensure .gitignore ignores tools/vrunner.init.json"
 if ((Test-Path $giPath) -and (Select-String -Path $giPath -Pattern '^/?tools/vrunner\.init\.json$' -Quiet)) {
