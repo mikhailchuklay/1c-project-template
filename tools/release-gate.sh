@@ -97,6 +97,8 @@ usage() {
                        в out/<проект>-<sha>.cf и sha256
   --cf PATH            не собирать .cf, а взять готовый файл (sha256 считается по нему)
   --accepted FILE      новые замечания CheckModules/CheckConfig, которые архитектор принял
+                       (в режиме extension — известные замечания /CheckModules по модулям основной
+                       конфигурации: шаг проходит, если все строки /Out есть в файле)
                        (строка /Out как в отчёте гейта, без «(стр,кол)»; «#…» — комментарий);
                        файл даёт архитектор в промпте или ответе, путь и sha256 идут в отчёт
 
@@ -222,7 +224,7 @@ case "$MODE" in
 	*) echo "--mode: extension или main-config, а не «$MODE»" >&2; exit 2 ;;
 esac
 if [[ "$MODE" == extension ]]; then
-	for opt in "$BASE_REV" "$FILES_ARG" "$FILES_FROM" "$PATCH_GIVEN" "$IMPORT_CM" "$BASELINE_DIR_ARG" "$CF_GIVEN" "$ACCEPTED"; do
+	for opt in "$BASE_REV" "$FILES_ARG" "$FILES_FROM" "$PATCH_GIVEN" "$IMPORT_CM" "$BASELINE_DIR_ARG" "$CF_GIVEN"; do
 		[[ -z "$opt" ]] || { echo "--base/--files/--patch/--baseline*/--cf — ключи режима main-config" >&2; exit 2; }
 	done
 	((BASELINE_RUN == 0 && BUILD_CF == 0)) || { echo "--baseline и --build-cf — ключи режима main-config" >&2; exit 2; }
@@ -483,6 +485,43 @@ print("Новых непринятых замечаний относительн
 PY
 )
 
+# Режим extension с --accepted: каждая находка /Out (позиция «(стр,кол)» отброшена) должна быть в файле.
+ACCEPTED_ONLY_PY=$(cat <<'PY'
+import collections, os, re, sys
+rc, wrapper, out, accepted_path = int(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4]
+
+def read(path):
+    data = open(path, "rb").read()
+    for enc in ("utf-8-sig", "utf-16", "cp1251"):
+        try:
+            return data.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return data.decode("utf-8", "replace")
+
+NEUTRAL = re.compile(r"^(синтаксических\s+)?ошибок\s+не\s+обнаружено|^проверка\s+\w*\s*(завершена|закончена)"
+                     r"|^соединение\s+с\s+хранилищем\s+конфигурации\s+не\s+установлено|^errors\s+were\s+not\s+found")
+norm = lambda line: re.sub(r"\((\d+,\d+)?\)", "", re.sub(r"\s+", " ", line.replace("\ufeff", "")).strip())
+wrap = read(wrapper) if os.path.exists(wrapper) else ""
+if rc not in (0, 1):
+    print(f"designer-batch.sh завершился с кодом {rc}: проверка не выполнена"); sys.exit(1)
+if re.search(r"сигнал 1, код возврата: тайм-аут", wrap):
+    print("тайм-аут: проверка не завершилась"); sys.exit(1)
+if not os.path.exists(out) or os.path.getsize(out) == 0:
+    print(f"лог /Out пуст или не записан: {out}"); sys.exit(1)
+found = collections.Counter(n for n in map(norm, read(out).splitlines()) if n and not NEUTRAL.search(n.lower()))
+accepted = {norm(l) for l in read(accepted_path).splitlines() if l.strip() and not l.lstrip().startswith("#")}
+taken = collections.Counter({k: v for k, v in found.items() if k in accepted})
+rest = found - taken
+print(f"Замечаний: {sum(found.values())}; принятых архитектором: {sum(taken.values())}; остальных: {sum(rest.values())}")
+for line in list(taken.elements())[:200]:
+    print(f"  = {line}")
+for line in list(rest.elements())[:200]:
+    print(f"  + {line}")
+sys.exit(1 if rest else 0)
+PY
+)
+
 # ===========================================================================
 # Режим extension
 # ===========================================================================
@@ -583,8 +622,24 @@ run_extension() {
 	fi
 
 	CM=(/CheckModules -ThinClient -WebClient -Server -ExternalConnection -ThickClientManagedApplication -Extension "$EXT")
-	run_step check-modules 1 "tools/designer-batch.sh --timeout $TIMEOUT -- $(q "${CM[@]}")" -- \
-		"${DB[@]}" --out "$LOGS/check-modules.1cv8.log" --result "$LOGS/check-modules.result" -- "${CM[@]}"
+	if [[ -n "$ACCEPTED" ]]; then
+		[[ -s "$ACCEPTED" ]] || { echo "--accepted: нет файла или он пуст: $ACCEPTED" >&2; exit 2; }
+		# Клиентские режимы /CheckModules компилируют и модули основной конфигурации: известные ошибки
+		# типовой (например, тип, которого нет в сборке платформы) архитектор принимает файлом --accepted.
+		# Шаг проходит, только если каждая строка /Out есть в этом файле.
+		step_check_modules_accepted() {
+			local out="$LOGS/check-modules.1cv8.log" wrap="$LOGS/check-modules.wrapper.log" rc
+			"${DB[@]}" --out "$out" --result "$LOGS/check-modules.result" -- "${CM[@]}" >"$wrap" 2>&1
+			rc=$?
+			cat "$wrap"
+			echo "--- сверка с принятыми замечаниями ($ACCEPTED)"
+			python3 -I -c "$ACCEPTED_ONLY_PY" "$rc" "$wrap" "$out" "$ACCEPTED"
+		}
+		run_step check-modules 1 "tools/designer-batch.sh --timeout $TIMEOUT -- $(q "${CM[@]}"); все замечания ⊆ --accepted" -- step_check_modules_accepted
+	else
+		run_step check-modules 1 "tools/designer-batch.sh --timeout $TIMEOUT -- $(q "${CM[@]}")" -- \
+			"${DB[@]}" --out "$LOGS/check-modules.1cv8.log" --result "$LOGS/check-modules.result" -- "${CM[@]}"
+	fi
 	CA=(/CheckCanApplyConfigurationExtensions -Extension "$EXT")
 	run_step check-can-apply 1 "tools/designer-batch.sh --timeout $TIMEOUT -- $(q "${CA[@]}")" -- \
 		"${DB[@]}" --out "$LOGS/check-can-apply.1cv8.log" --result "$LOGS/check-can-apply.result" -- "${CA[@]}"
@@ -612,7 +667,8 @@ run_extension() {
 
 	export R_EXT="$EXT" R_VERSION="$VERSION" R_MAIN_REF="$MAIN_REF" R_MAIN_SHA="$MAIN_SHA" \
 		R_RELEASE_TAG="$RELEASE_TAG" R_RELEASE_VERSION="$RELEASE_VERSION" R_CFE="$CFE" R_CFE_SHA="$CFE_SHA" \
-		R_DEMO_BASES="$DEMO_BASES"
+		R_DEMO_BASES="$DEMO_BASES" \
+		R_ACCEPTED="$ACCEPTED" R_ACCEPTED_SHA="$( [[ -n "$ACCEPTED" ]] && sha256sum "$ACCEPTED" | cut -d' ' -f1)"
 }
 
 # ===========================================================================
@@ -923,6 +979,8 @@ report = {
     "cfe_sha256": g("R_CFE_SHA"),
     "demo_bases": [b.strip() for b in g("R_DEMO_BASES").split(",") if b.strip()],
     "thick_client_scenarios": [p for p in g("R_THICK_SCENARIOS").splitlines() if p],
+    "accepted_findings": g("R_ACCEPTED"),
+    "accepted_findings_sha256": g("R_ACCEPTED_SHA"),
 }
 if e["MODE"] == "main-config":
     meta_path = os.path.join(g("R_BASELINE_DIR"), "meta.json")
