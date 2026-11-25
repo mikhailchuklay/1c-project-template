@@ -236,6 +236,66 @@ fi
 [[ -n "$TIMEOUT" ]] || { [[ "$MODE" == extension ]] && TIMEOUT=1800 || TIMEOUT=21600; }
 [[ "$TIMEOUT" =~ ^[1-9][0-9]*$ ]] || { echo "--timeout: нужно положительное число секунд" >&2; exit 2; }
 
+# ---------------------------------------------------------------------------
+# Целевая база: одна на все шаги. Загрузка (vrunner) читает VRUNNER_IBCONNECTION, проверки
+# (designer-batch.sh) — INFOBASE_PATH из .dev.env или DESIGNER_INFOBASE_PATH. Если они разошлись,
+# гейт загрузил бы одну базу, а проверил другую; вне agent-run VRUNNER_IBCONNECTION бывает
+# пустым или унаследованным. Поэтому гейт сам выводит строку vrunner из того же источника,
+# что и designer-batch.sh, и отказывает, если цель — запрещённая база (стенд заказчика, prod).
+# ---------------------------------------------------------------------------
+gate_norm_target() {
+	# сервер:порт/база | сервер:порт\база | /Sсервер:порт\база | /S"…" | /Fпуть → сравнимая форма
+	local t="$1"
+	t="${t//\"/}"
+	case "$t" in /S*|/s*) t="${t:2}" ;; /F*|/f*) t="file:${t:2}" ;; esac
+	t="${t//\\//}"
+	printf '%s' "${t,,}"
+}
+if [[ -n "${DESIGNER_INFOBASE_PATH:-}" ]]; then
+	GATE_IB_PATH="$DESIGNER_INFOBASE_PATH"; GATE_IB_KIND="${DESIGNER_INFOBASE_KIND:-server}"
+else
+	GATE_IB_PATH="$(dev_env_value INFOBASE_PATH)"; GATE_IB_KIND="$(dev_env_value INFOBASE_KIND)"
+fi
+GATE_CONN=""
+if [[ -n "$GATE_IB_PATH" ]]; then
+	case "$GATE_IB_PATH" in
+		/F*|/S*) GATE_CONN="$GATE_IB_PATH" ;;
+		*) if [[ "${GATE_IB_KIND:-file}" == server ]]; then GATE_CONN="/S${GATE_IB_PATH/\//\\}"; else GATE_CONN="/F$GATE_IB_PATH"; fi ;;
+	esac
+elif [[ -n "${VRUNNER_IBCONNECTION:-}" ]]; then
+	GATE_CONN="$VRUNNER_IBCONNECTION"
+fi
+[[ -n "$GATE_CONN" ]] || { echo "Не задана база гейта: INFOBASE_PATH в .dev.env (или DESIGNER_INFOBASE_PATH)" >&2; exit 2; }
+GATE_TARGET="$(gate_norm_target "$GATE_CONN")"
+if [[ -n "${VRUNNER_IBCONNECTION:-}" && "$(gate_norm_target "$VRUNNER_IBCONNECTION")" != "$GATE_TARGET" ]]; then
+	echo "release-gate: VRUNNER_IBCONNECTION=$VRUNNER_IBCONNECTION расходится с базой проверок ($GATE_CONN) — загрузка пойдёт в базу проверок" >&2
+fi
+export VRUNNER_IBCONNECTION="$GATE_CONN"
+gate_forbidden="${GATE_FORBIDDEN_TARGETS:-},$(dev_env_value GATE_FORBIDDEN_TARGETS)"
+IFS=',' read -r -a gate_forbidden_list <<<"$gate_forbidden"
+for f in "${gate_forbidden_list[@]}"; do
+	f="${f#"${f%%[![:space:]]*}"}"; f="${f%"${f##*[![:space:]]}"}"
+	[[ -n "$f" ]] || continue
+	if [[ "$(gate_norm_target "$f")" == "$GATE_TARGET" ]]; then
+		echo "Отказ: база гейта $GATE_CONN в GATE_FORBIDDEN_TARGETS (стенд/prod). Гейт идёт только во временной копии." >&2
+		exit 2
+	fi
+done
+if ((LOAD)) && [[ "$(dev_env_value INFOBASE_ROLE)" == prod ]]; then
+	echo "Отказ: INFOBASE_ROLE=prod в .dev.env — гейт с --load в эту базу не пишет" >&2
+	exit 2
+fi
+# Два гейта на одну базу (повторный запуск поверх незавершённого) дают ложный FAIL: занятый
+# Конфигуратор, загрузка поверх проверки. Блокировка по базе, а не по рабочему дереву.
+if command -v flock >/dev/null 2>&1; then
+	GATE_LOCK="${TMPDIR:-/tmp}/release-gate-$(printf '%s' "$GATE_TARGET" | tr -c 'A-Za-z0-9._-' '_').lock"
+	exec 9>"$GATE_LOCK"
+	if ! flock -n 9; then
+		echo "Гейт на базу $GATE_CONN уже идёт (блокировка $GATE_LOCK). Дождитесь его или остановите; второй запуск не начинаю." >&2
+		exit 2
+	fi
+fi
+
 OUT="$ROOT/out"
 LOGS="$OUT/release-gate"
 mkdir -p "$LOGS" || exit 2

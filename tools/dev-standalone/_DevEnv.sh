@@ -6,15 +6,25 @@ set -euo pipefail
 
 dev_env_project_root() {
 	local script_path="$1"
-	local base
+	local base script_root cwd_root
 	base="$(cd "$(dirname "$script_path")" && pwd)"
 	if [[ "$base" == */tools/dev-standalone ]]; then
-		(cd "$base/../.." && pwd)
+		script_root="$(cd "$base/../.." && pwd)"
 	elif [[ "$base" == */tools ]]; then
-		(cd "$base/.." && pwd)
+		script_root="$(cd "$base/.." && pwd)"
 	else
-		(cd "$base/../.." && pwd)
+		script_root="$(cd "$base/../.." && pwd)"
 	fi
+	# Рабочее дерево, из которого вызвали скрипт, важнее места самого скрипта: вызов
+	# <базовый клон>/tools/designer-batch.sh из git worktree задачи иначе молча берёт
+	# .dev.env базового клона (чужая копия базы, чужой пользователь хранилища).
+	cwd_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+	if [[ -n "$cwd_root" && "$cwd_root" != "$script_root" && -f "$cwd_root/.dev.env" ]]; then
+		echo "dev-env: .dev.env берётся из текущего рабочего дерева $cwd_root, а не из $script_root (скрипт вызван из другого клона)" >&2
+		printf '%s\n' "$cwd_root"
+		return 0
+	fi
+	printf '%s\n' "$script_root"
 }
 
 # .dev.env читается как текст, а не через source: source съедает «\» (сервер\база → серверbase),
@@ -41,13 +51,16 @@ dev_env_parse() {
 
 dev_env_load() {
 	local project_root="$1"
-	local f
-	for f in "$project_root/.dev.env" "$project_root/.dev.env.example"; do
-		if [[ -f "$f" ]]; then
-			dev_env_parse "$f"
-			return 0
-		fi
-	done
+	# Только .dev.env. Откат на .dev.env.example убран: в шаблоне пустые значения, а в проекте
+	# туда могли попасть боевые адреса — запуск без своего .dev.env должен падать явно.
+	if [[ -f "$project_root/.dev.env" ]]; then
+		dev_env_parse "$project_root/.dev.env"
+		export DEV_ENV_FILE="$project_root/.dev.env"
+		return 0
+	fi
+	if [[ -f "$project_root/.dev.env.example" ]]; then
+		echo "dev-env: нет $project_root/.dev.env (есть только .dev.env.example). Скопируйте пример в .dev.env и заполните; .dev.env.example больше не читается." >&2
+	fi
 	return 1
 }
 
