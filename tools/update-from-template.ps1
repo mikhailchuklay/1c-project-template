@@ -352,6 +352,7 @@ Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-monitor.sh') -DestFile 
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-workspace-cleanup.sh') -DestFile (Join-Path $ProjectRoot 'tools\agent-workspace-cleanup.sh') -Label 'tools/agent-workspace-cleanup.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\release-gate.sh') -DestFile (Join-Path $ProjectRoot 'tools\release-gate.sh') -Label 'tools/release-gate.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\task-board.sh') -DestFile (Join-Path $ProjectRoot 'tools\task-board.sh') -Label 'tools/task-board.sh'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\pr-merge.sh') -DestFile (Join-Path $ProjectRoot 'tools\pr-merge.sh') -Label 'tools/pr-merge.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\lists\bsl-global-names.txt') -DestFile (Join-Path $ProjectRoot 'tools\lists\bsl-global-names.txt') -Label 'tools/lists/bsl-global-names.txt'
 $ds = Copy-TreeSync -SourceDir (Join-Path $cache 'tools\dev-standalone') -DestDir (Join-Path $ProjectRoot 'tools\dev-standalone')
 Write-Host ("  dev-standalone: +{0} ~{1} skip {2}" -f $ds.Added, $ds.Updated, $ds.Skipped)
@@ -368,6 +369,20 @@ if ((Test-Path $giPath) -and (Select-String -Path $giPath -Pattern '^/?\.task-bo
     [System.IO.File]::AppendAllText($giPath, "`n# Project task board (tools/task-board.sh), shared by worktrees`n.task-board/`n", $utf8)
     Write-Host "  OK .gitignore += .task-board/"
 }
+
+# tools/vrunner.init.json holds a specific base's connection: never committed (template: .example).
+Write-Step "Ensure .gitignore ignores tools/vrunner.init.json"
+if ((Test-Path $giPath) -and (Select-String -Path $giPath -Pattern '^/?tools/vrunner\.init\.json$' -Quiet)) {
+    Write-Host "  .gitignore already ignores tools/vrunner.init.json"
+} elseif ($DryRun) {
+    Write-Host "  [dry-run] append tools/vrunner.init.json to .gitignore"
+} else {
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::AppendAllText($giPath, "`n# vrunner connection to a specific base - local only (template: tools/vrunner.init.json.example)`ntools/vrunner.init.json`n", $utf8)
+    Write-Host "  OK .gitignore += tools/vrunner.init.json"
+}
+& git -C $ProjectRoot ls-files --error-unmatch tools/vrunner.init.json 2>$null | Out-Null
+if ($LASTEXITCODE -eq 0) { Write-Warning "tools/vrunner.init.json is tracked by git (connection to a specific base): git rm --cached tools/vrunner.init.json" }
 
 # .gitattributes: the project may have its own rules - create when missing, never overwrite.
 Write-Step "Sync .gitattributes (only if missing)"

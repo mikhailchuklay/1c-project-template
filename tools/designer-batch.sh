@@ -396,11 +396,18 @@ ARGS+=(/DisableStartupDialogs /DisableStartupMessages)
 if ((WITH_REPO)); then
 	REPO_PATH="${REPOSITORY_PATH:-${VRUNNER_STORAGE_NAME:-}}"
 	REPO_USER="${REPOSITORY_USER:-${VRUNNER_STORAGE_USER:-}}"
-	REPO_PWD="${REPOSITORY_PASSWORD:-${VRUNNER_STORAGE_PWD:-}}"
-	# В контейнере агента пароль хранилища лежит в файле, а не в .dev.env.
-	REPO_PWD_FILE="${REPOSITORY_PASSWORD_FILE:-$HOME/.secrets/storage-password}"
-	if [[ -z "$REPO_PWD" && -r "$REPO_PWD_FILE" ]]; then
-		REPO_PWD="$(tr -d '\r\n' <"$REPO_PWD_FILE")"
+	if [[ "${REPOSITORY_PASSWORD_EMPTY:-}" == 1 ]]; then
+		# Явно пустой пароль пользователя хранилища (например, agent<N> без пароля). Ни
+		# VRUNNER_STORAGE_PWD, ни общий ~/.secrets/storage-password не подставляются: там пароль
+		# другого пользователя или проекта, и хранилище отвечает «неверный пароль».
+		REPO_PWD=""
+	else
+		REPO_PWD="${REPOSITORY_PASSWORD:-${VRUNNER_STORAGE_PWD:-}}"
+		# В контейнере агента пароль хранилища лежит в файле, а не в .dev.env.
+		REPO_PWD_FILE="${REPOSITORY_PASSWORD_FILE:-$HOME/.secrets/storage-password}"
+		if [[ -z "$REPO_PWD" && -r "$REPO_PWD_FILE" ]]; then
+			REPO_PWD="$(tr -d '\r\n' <"$REPO_PWD_FILE")"
+		fi
 	fi
 	[[ -n "$REPO_PATH" ]] || refuse "${CMD} требует хранилище: не задан REPOSITORY_PATH (.dev.env) и нет VRUNNER_STORAGE_NAME"
 	ARGS+=(/ConfigurationRepositoryF "$REPO_PATH")

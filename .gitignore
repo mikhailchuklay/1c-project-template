@@ -41,3 +41,5 @@ __pycache__/
 
 # Доска задач проекта (tools/task-board.sh), общая для рабочих деревьев
 .task-board/
+# Подключение vrunner с адресом и пользователем конкретной базы — только локально (шаблон: tools/vrunner.init.json.example)
+tools/vrunner.init.json
