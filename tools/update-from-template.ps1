@@ -377,6 +377,7 @@ if (-not (Test-Path (Join-Path $ProjectRoot 'docs\project-patterns.md'))) {
 } else {
     Write-Host "  docs/project-patterns.md exists - kept"
 }
+
 # tools/vrunner.init.json holds a specific base's connection: never committed (template: .example).
 Write-Step "Ensure .gitignore ignores tools/vrunner.init.json"
 if ((Test-Path $giPath) -and (Select-String -Path $giPath -Pattern '^/?tools/vrunner\.init\.json$' -Quiet)) {

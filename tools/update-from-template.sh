@@ -259,6 +259,8 @@ if [[ ! -e "$PROJECT_ROOT/docs/project-patterns.md" ]]; then
 	copy_file docs/project-patterns.md && echo "  OK docs/project-patterns.md"
 else
 	echo "  docs/project-patterns.md exists - kept"
+fi
+
 # tools/vrunner.init.json — адрес и пользователь конкретной базы: не коммитится (шаблон — .example).
 step "Ensure .gitignore ignores tools/vrunner.init.json"
 if [[ -f "$PROJECT_ROOT/.gitignore" ]] && grep -qxE '/?tools/vrunner\.init\.json' "$PROJECT_ROOT/.gitignore"; then
