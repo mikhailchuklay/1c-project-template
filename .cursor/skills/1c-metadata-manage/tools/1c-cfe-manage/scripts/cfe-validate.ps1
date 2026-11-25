@@ -5,6 +5,7 @@
 #        cfe-borrow writes none, as Configurator 2.20 does; an own form still needs one.
 # Local: check 12 reports a missing CommonPicture or a StyleItem outside the platform style list as
 #        an error (the platform refuses to load the form); a missing enum value stays a warning.
+#        Any Latin style name counts as a platform style item (ast-docmng-corp, 25.11.2026: FieldAlternativeBackColor).
 [CmdletBinding(PositionalBinding=$false)]
 param(
 	[Parameter(Mandatory, Position=0)]
@@ -1324,6 +1325,9 @@ foreach ($bf in $script:borrowedFormsWithTree) {
 	foreach ($siName in $siRefs.Keys) {
 		$depCheckCount++
 		if ($platformStyleItems.ContainsKey($siName)) { continue }
+		# Platform style items have Latin names (FieldAlternativeBackColor etc.); the list above is not
+		# exhaustive, so any Latin name is treated as a platform item. Configuration style items are Cyrillic.
+		if ($siName -cmatch '^[A-Za-z_][A-Za-z0-9_]*$') { continue }
 		if (-not $siIndex -or -not $siIndex.ContainsKey($siName)) {
 			$missingErrors += "StyleItem.${siName}"
 		}
