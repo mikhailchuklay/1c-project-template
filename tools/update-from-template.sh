@@ -238,6 +238,7 @@ copy_file tools/agent-monitor.sh && echo "  OK tools/agent-monitor.sh"
 copy_file tools/agent-workspace-cleanup.sh && echo "  OK tools/agent-workspace-cleanup.sh"
 copy_file tools/release-gate.sh && echo "  OK tools/release-gate.sh"
 copy_file tools/task-board.sh && echo "  OK tools/task-board.sh"
+copy_file tools/pr-merge.sh && echo "  OK tools/pr-merge.sh"
 copy_file tools/lists/bsl-global-names.txt && echo "  OK tools/lists/bsl-global-names.txt"
 sync_tree tools/dev-standalone
 
@@ -250,6 +251,20 @@ elif ((DRY_RUN)); then
 else
 	printf '\n# Доска задач проекта (tools/task-board.sh), общая для рабочих деревьев\n.task-board/\n' >>"$PROJECT_ROOT/.gitignore"
 	echo "  OK .gitignore += .task-board/"
+fi
+
+# tools/vrunner.init.json — адрес и пользователь конкретной базы: не коммитится (шаблон — .example).
+step "Ensure .gitignore ignores tools/vrunner.init.json"
+if [[ -f "$PROJECT_ROOT/.gitignore" ]] && grep -qxE '/?tools/vrunner\.init\.json' "$PROJECT_ROOT/.gitignore"; then
+	echo "  .gitignore already ignores tools/vrunner.init.json"
+elif ((DRY_RUN)); then
+	echo "  [dry-run] append tools/vrunner.init.json to .gitignore"
+else
+	printf '\n# Подключение vrunner к конкретной базе — только локально (шаблон: tools/vrunner.init.json.example)\ntools/vrunner.init.json\n' >>"$PROJECT_ROOT/.gitignore"
+	echo "  OK .gitignore += tools/vrunner.init.json"
+fi
+if git -C "$PROJECT_ROOT" ls-files --error-unmatch tools/vrunner.init.json >/dev/null 2>&1; then
+	warn "tools/vrunner.init.json is tracked by git (connection to a specific base): git rm --cached tools/vrunner.init.json"
 fi
 
 # .gitattributes: у проекта могут быть свои правила — только создать, не перезаписывать.
