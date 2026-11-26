@@ -5,7 +5,7 @@
 # Использование: tools/pr-merge.sh <номер PR> [--admin] [--dry-run] [--method squash|merge|rebase]
 #                                  [--ignore-slot "причина"]
 #
-# Настройки проекта в .dev.env:
+# Настройки проекта в .dev.env (в рабочем дереве без него — .dev.env основной копии):
 #   MIRROR_SRC_PATHS  каталоги зеркала через запятую (например src/cfe/Расширение1Коммерция);
 #                     пусто — проекта без зеркала;
 #   PR_MERGE_METHOD   способ слияния: squash (по умолчанию) | merge | rebase. Проект, которому
@@ -40,9 +40,16 @@ command -v gh >/dev/null || { echo "Нужен gh" >&2; exit 2; }
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "Не git-репозиторий" >&2; exit 2; }
 cd "$ROOT" || exit 2
 
+# .dev.env вне git: в рабочем дереве задачи его обычно нет — тогда берётся файл основной копии
+# (там же, где доска задач), иначе настройки проекта (способ слияния, зеркало) молча терялись бы.
+DEV_ENV=".dev.env"
+if [[ ! -f "$DEV_ENV" ]]; then
+	common="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+	[[ -n "$common" && -f "$(dirname "$common")/.dev.env" ]] && DEV_ENV="$(dirname "$common")/.dev.env"
+fi
 dev_env_value() {
-	[[ -f .dev.env ]] || return 0
-	sed -n "s/^$1=//p" .dev.env | tail -n1 | tr -d '\r' | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/"
+	[[ -f "$DEV_ENV" ]] || return 0
+	sed -n "s/^$1=//p" "$DEV_ENV" | tail -n1 | tr -d '\r' | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/"
 }
 
 read -r STATE BASE HEAD_SHA HEAD_REF < <(gh pr view "$PR" --json state,baseRefName,headRefOid,headRefName \
