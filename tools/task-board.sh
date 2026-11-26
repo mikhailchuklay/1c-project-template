@@ -37,7 +37,7 @@ usage() {
                                  забрать расход агента (usage из agent-status.json задачи в контейнере:
                                  номер N -> dev-agent<N>) в tokens/cost_usd/api_equiv_usd; задач у issue
                                  может быть несколько — суммируются; --file — локальный agent-status.json
-  version reserve <issue> [--patch] [--from X.Y.Z.W] [--first X.Y.Z.W] [--ttl часы]
+  version reserve <issue> [--patch] [--from X.Y.Z.W] [--first X.Y.Z.W] [--ttl часы] [--branch ветка]
                                  слот слияния и номер выпуска: следующий от последнего тега в origin
                                  (MINOR, --patch — PATCH; --from — хотфикс от указанного выпуска;
                                  --first — номер первого выпуска, когда тегов в origin ещё нет).
@@ -45,7 +45,10 @@ usage() {
                                  Повтор той же задачей возвращает её номер. Слот снимается сам, когда
                                  тег с номером появился в origin или истёк срок (по умолчанию 3 ч)
   version release <issue>        отдать слот (слияние отменено или отложено)
-  version list                   кто держит слот
+  version list [--json]          кто держит слот (--json — объект слота или {})
+                                 Слот публикуется в GitHub (переменная репозитория MERGE_SLOT) для статуса
+                                 merge-slot на PR; --branch — ветка PR держателя, если по имени ветки и
+                                 тексту PR задачу не узнать. Нужен gh; TASK_BOARD_NO_PUBLISH=1 — не публиковать
   card <issue> [--markdown]      карточка задачи (markdown — для комментария в issue)
   scorecard [--days N]           сводка по исполнителям/харнесам за N дней (по умолчанию 7)
   path                           путь к файлу доски
@@ -436,24 +439,64 @@ def bump(v, patch):
     return ".".join(map(str, p))
 
 
+def publish_slot(slot):
+    """Слот — в переменную репозитория MERGE_SLOT и перезапуск статуса merge-slot на PR (GitHub).
+
+    Сбой публикации слот не отменяет: доска остаётся источником истины, но статус на PR устареет.
+    TASK_BOARD_NO_PUBLISH=1 — не публиковать (проект без GitHub, тесты)."""
+    if os.environ.get("TASK_BOARD_NO_PUBLISH") == "1":
+        return
+    body = json.dumps({k: slot[k] for k in ("issue", "version", "expires_at", "branch") if slot.get(k)},
+                      ensure_ascii=False) if slot else "{}"
+    try:
+        subprocess.run(["gh", "variable", "set", "MERGE_SLOT", "--body", body], capture_output=True,
+                       text=True, timeout=60, check=True)
+    except (subprocess.SubprocessError, OSError) as e:
+        err = getattr(e, "stderr", "") or str(e)
+        print(f"Предупреждение: слот не опубликован в GitHub (gh variable set MERGE_SLOT): {err.strip()}",
+              file=sys.stderr)
+        return
+    try:
+        subprocess.run(["gh", "workflow", "run", "merge-slot.yml"], capture_output=True, text=True,
+                       timeout=60, check=True)
+    except (subprocess.SubprocessError, OSError):
+        print("Предупреждение: workflow merge-slot.yml не запущен — статус на PR обновится при следующем "
+              "событии PR или теге", file=sys.stderr)
+
+
 def cmd_version(args):
     if not args or args[0] not in ("reserve", "release", "list"):
         die("version reserve|release|list (tools/task-board.sh --help)")
     sub, args = args[0], args[1:]
-    opts, rest = parse_opts(args, flags=("patch",))
+    opts, rest = parse_opts(args, flags=("patch", "json"))
     tags = remote_versions() if sub != "release" else set()
-    with Board(sub != "list") as data:
+    publish = []  # публикация в GitHub — после записи доски и снятия блокировки
+    try:
+        _cmd_version(sub, opts, rest, tags, publish)
+    finally:
+        if publish:
+            publish_slot(publish[-1][0])
+
+
+def _cmd_version(sub, opts, rest, tags, publish):
+    as_json = bool(opts.get("json"))
+    with Board(True) as data:
         slot = data.get("merge_slot")
         if slot:
             expired = dt.datetime.fromisoformat(slot["expires_at"]) <= dt.datetime.now().astimezone()
             if slot["version"] in tags or expired:
                 why = "тег выпущен" if slot["version"] in tags else "срок истёк"
-                print(f"Слот #{slot['issue']} ({slot['version']}) снят: {why}")
+                print(f"Слот #{slot['issue']} ({slot['version']}) снят: {why}",
+                      file=sys.stderr if as_json else sys.stdout)
                 data.setdefault("merge_slot_log", []).append(dict(slot, closed_at=now(), closed=why))
                 data["merge_slot"] = slot = None
+                publish.append((None,))
         if sub == "list":
-            print(f"Слот слияния: #{slot['issue']} {slot['version']} до {slot['expires_at']}" if slot
-                  else "Слот слияния свободен")
+            if as_json:
+                print(json.dumps(slot or {}, ensure_ascii=False))
+            else:
+                print(f"Слот слияния: #{slot['issue']} {slot['version']} до {slot['expires_at']}" if slot
+                      else "Слот слияния свободен")
             return
         if not rest:
             die(f"version {sub} <issue>")
@@ -463,12 +506,14 @@ def cmd_version(args):
                 die(f"#{issue} не держит слот слияния", 1)
             data.setdefault("merge_slot_log", []).append(dict(slot, closed_at=now(), closed="отдан"))
             data["merge_slot"] = None
+            publish.append((None,))
             print(f"#{issue}: слот отдан")
             return
         if slot and slot["issue"] != issue:
             die(f"Слот слияния держит #{slot['issue']} ({slot['version']}) до {slot['expires_at']}: "
                 "дождись его тега или договорись с его архитектором", 1)
         if slot:
+            publish.append((slot,))  # повтор той же задачей заодно чинит несостоявшуюся публикацию
             print(slot["version"])
             return
         base = opts.get("from")
@@ -493,6 +538,9 @@ def cmd_version(args):
         ttl = float(opts.get("ttl", 3))
         expires = (dt.datetime.now().astimezone() + dt.timedelta(hours=ttl)).isoformat(timespec="seconds")
         data["merge_slot"] = {"issue": issue, "version": ver, "base": base, "at": now(), "expires_at": expires}
+        if opts.get("branch"):
+            data["merge_slot"]["branch"] = opts["branch"]
+        publish.append((data["merge_slot"],))
         if issue in data["tasks"]:
             data["tasks"][issue].setdefault("log", []).append({"at": now(), "event": "version",
                                                                "note": f"слот слияния, номер {ver}"})

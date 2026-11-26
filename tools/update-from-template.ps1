@@ -353,6 +353,10 @@ Copy-FileSync -SourceFile (Join-Path $cache 'tools\agent-workspace-cleanup.sh') 
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\release-gate.sh') -DestFile (Join-Path $ProjectRoot 'tools\release-gate.sh') -Label 'tools/release-gate.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\task-board.sh') -DestFile (Join-Path $ProjectRoot 'tools\task-board.sh') -Label 'tools/task-board.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\pr-merge.sh') -DestFile (Join-Path $ProjectRoot 'tools\pr-merge.sh') -Label 'tools/pr-merge.sh'
+Copy-FileSync -SourceFile (Join-Path $cache 'tools\merge-slot.sh') -DestFile (Join-Path $ProjectRoot 'tools\merge-slot.sh') -Label 'tools/merge-slot.sh'
+# merge-slot status on pull requests (merge slot in GitHub): workflow and its script.
+Copy-FileSync -SourceFile (Join-Path $cache '.github\workflows\merge-slot.yml') -DestFile (Join-Path $ProjectRoot '.github\workflows\merge-slot.yml') -Label '.github/workflows/merge-slot.yml'
+Copy-FileSync -SourceFile (Join-Path $cache '.github\scripts\merge-slot-status.sh') -DestFile (Join-Path $ProjectRoot '.github\scripts\merge-slot-status.sh') -Label '.github/scripts/merge-slot-status.sh'
 Copy-FileSync -SourceFile (Join-Path $cache 'tools\lists\bsl-global-names.txt') -DestFile (Join-Path $ProjectRoot 'tools\lists\bsl-global-names.txt') -Label 'tools/lists/bsl-global-names.txt'
 $ds = Copy-TreeSync -SourceDir (Join-Path $cache 'tools\dev-standalone') -DestDir (Join-Path $ProjectRoot 'tools\dev-standalone')
 Write-Host ("  dev-standalone: +{0} ~{1} skip {2}" -f $ds.Added, $ds.Updated, $ds.Skipped)

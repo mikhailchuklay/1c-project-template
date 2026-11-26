@@ -239,6 +239,10 @@ copy_file tools/agent-workspace-cleanup.sh && echo "  OK tools/agent-workspace-c
 copy_file tools/release-gate.sh && echo "  OK tools/release-gate.sh"
 copy_file tools/task-board.sh && echo "  OK tools/task-board.sh"
 copy_file tools/pr-merge.sh && echo "  OK tools/pr-merge.sh"
+copy_file tools/merge-slot.sh && echo "  OK tools/merge-slot.sh"
+# Статус «merge-slot» на PR (слот слияния в GitHub): workflow и его скрипт.
+copy_file .github/workflows/merge-slot.yml && echo "  OK .github/workflows/merge-slot.yml"
+copy_file .github/scripts/merge-slot-status.sh && echo "  OK .github/scripts/merge-slot-status.sh"
 copy_file tools/lists/bsl-global-names.txt && echo "  OK tools/lists/bsl-global-names.txt"
 sync_tree tools/dev-standalone
 
