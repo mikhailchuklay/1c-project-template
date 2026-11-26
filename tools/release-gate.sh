@@ -6,7 +6,8 @@
 #
 # extension — правка расширения (задан EXTENSION_NAME). Шаги по порядку:
 #   clean-tree        в каталоге расширения нет незакоммиченных правок (отчёт привязан к SHA HEAD);
-#   contains-main     ветка содержит origin/<основная> (как tools/stand-load-guard.sh);
+#   contains-main     ветка содержит origin/<основная> (как tools/stand-load-guard.sh) либо основная ветка
+#                     ушла вперёд только нейтральными путями (документация — tools/merge-slot.sh);
 #   conflict-markers  в отслеживаемых текстовых файлах HEAD нет маркеров конфликта слияния;
 #   version           <Version> в Configuration.xml выше последнего релиза, тега с этим номером нет;
 #   check-bsl-calls   tools/check-bsl-calls.py по каталогу расширения;
@@ -632,8 +633,20 @@ run_extension() {
 		if git merge-base --is-ancestor "$MAIN_REF" HEAD; then
 			echo "Ветка $BRANCH содержит $MAIN_REF ($MAIN_SHA)"
 		else
-			echo "Ветка $BRANCH не содержит актуальный $MAIN_REF ($MAIN_SHA): перенесите ветку на него"
-			return 1
+			# Основная ветка ушла вперёд. Если она ушла только нейтральными путями (документация,
+			# спецификации — tools/merge-slot.sh), в сборку они не входят и перегонять гейт не нужно.
+			local ahead
+			ahead="$(git -c core.quotePath=false diff --name-only "HEAD...$MAIN_REF" | bash tools/merge-slot.sh significant)"
+			if [[ -z "$ahead" ]]; then
+				echo "Ветка $BRANCH не содержит $MAIN_REF ($MAIN_SHA), но основная ветка ушла вперёд только" \
+					"нейтральными путями ($(bash tools/merge-slot.sh patterns | tr '\n' ' ')): допустимо"
+				git -c core.quotePath=false diff --name-only "HEAD...$MAIN_REF" | sed 's/^/  /'
+			else
+				echo "Ветка $BRANCH не содержит актуальный $MAIN_REF ($MAIN_SHA): перенесите ветку на него."
+				echo "Значимые файлы основной ветки, которых нет в ветке:"
+				sed 's/^/  /' <<<"$ahead"
+				return 1
+			fi
 		fi
 	}
 	step_version() {
@@ -668,7 +681,7 @@ run_extension() {
 	DB=("$TOOLS/designer-batch.sh" --timeout "$TIMEOUT")
 	echo "release-gate: $BRANCH $HEAD_SHA, расширение $EXT $VERSION"
 	run_step clean-tree 0 "git status --porcelain -- $EXT_DIR" -- step_clean_tree
-	run_step contains-main 0 "git merge-base --is-ancestor ${MAIN_REF:-origin/main} HEAD" -- step_contains_main
+	run_step contains-main 0 "git merge-base --is-ancestor ${MAIN_REF:-origin/main} HEAD || tools/merge-slot.sh significant-diff HEAD ${MAIN_REF:-origin/main}" -- step_contains_main
 	run_step conflict-markers 0 "git grep -I -n -E '^(<<<<<<<|>>>>>>>)( |$)|^=======$' HEAD" -- step_conflict_markers
 	run_step version 0 "<Version> $CONFIG > последний тег ${RELEASE_TAG:-—}; git tag -l '*$VERSION'" -- step_version
 	run_step check-bsl-calls 0 "python3 -I tools/check-bsl-calls.py $EXT_DIR" -- python3 -I "$TOOLS/check-bsl-calls.py" "$EXT_DIR"

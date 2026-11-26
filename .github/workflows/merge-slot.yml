@@ -1,0 +1,43 @@
+# Статус «merge-slot» на PR в основную ветку: красный, пока слот слияния (tools/task-board.sh
+# version reserve) держит другая задача, а PR меняет не только документацию.
+# Слот публикуется в переменную репозитория MERGE_SLOT; при смене слота task-board.sh запускает
+# этот workflow (workflow_dispatch), при выпуске тега он запускается сам.
+# Чтобы статус запрещал слияние, включите его обязательным в защите основной ветки
+# (docs/headless-agent.md, «Слот слияния в GitHub»).
+name: merge-slot
+
+on:
+  # pull_request_target: код workflow и скриптов берётся из основной ветки, а не из PR.
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+  push:
+    tags: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+concurrency:
+  group: merge-slot
+  cancel-in-progress: false
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: |
+            tools/merge-slot.sh
+            .github/scripts/merge-slot-status.sh
+          sparse-checkout-cone-mode: false
+      - name: Set merge-slot status on open pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_SLOT: ${{ vars.MERGE_SLOT }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: bash .github/scripts/merge-slot-status.sh
