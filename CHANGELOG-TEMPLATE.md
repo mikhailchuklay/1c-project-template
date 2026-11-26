@@ -13,7 +13,7 @@
 
 ## 2026-11-26
 
-- `tools/lists/bsl-global-names.txt`: добавлены `ПроверитьЗаполнение` и `ПоместитьФайлНаСерверАсинх` — `tools/check-bsl-calls.py` давал на них ложное UNDEFINED, и шаг гейта `check-bsl-calls` падал на модулях форм (1commerce-bank-statements-autoload#20). Проекту: синхронизироваться. (#PR)
+- `tools/lists/bsl-global-names.txt`: добавлены `ПроверитьЗаполнение` и `ПоместитьФайлНаСерверАсинх` — `tools/check-bsl-calls.py` давал на них ложное UNDEFINED, и шаг гейта `check-bsl-calls` падал на модулях форм (1commerce-bank-statements-autoload#20). Проекту: синхронизироваться. (#117)
 
 ## 2026-11-25
 
