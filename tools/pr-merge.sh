@@ -12,10 +12,13 @@
 #                     нужна история коммитов задачи в основной ветке, ставит merge.
 #
 # Проверки перед слиянием:
-#   1. PR открыт и указывает в основную ветку origin;
-#   2. слот слияния (tools/task-board.sh version list): занят другой задачей, а PR меняет значимые
-#      файлы (tools/merge-slot.sh) → отказ. PR держателя слота и PR только с документацией проходят;
-#      --ignore-slot "причина" — слить вопреки, причина печатается и должна попасть в отчёт;
+#   1. PR открыт;
+#   2. слот слияния (tools/task-board.sh version list) — только для PR в основную ветку: занят
+#      другой задачей, а PR меняет значимые файлы (tools/merge-slot.sh) → отказ. PR держателя слота
+#      и PR только с документацией проходят; --ignore-slot "причина" — слить вопреки, причина
+#      печатается и должна попасть в отчёт. PR в другую ветку (интеграционная ветка пачки,
+#      release/…) основную не сдвигает и слота не ждёт: слот берётся один раз, на слияние
+#      интеграционной ветки в основную;
 #   3. MIRROR_SRC_PATHS задан → git diff origin/<основная>...<голова PR> -- <каталоги> пуст
 #      (иначе src уйдёт в основную ветку мимо зеркала, и devbox остановит зеркало: foreign_change),
 #      и способ слияния — только squash (merge-коммит с коммитами агента по src тоже останавливает зеркало).
@@ -56,12 +59,14 @@ read -r STATE BASE HEAD_SHA HEAD_REF < <(gh pr view "$PR" --json state,baseRefNa
 	--jq '[.state,.baseRefName,.headRefOid,.headRefName]|@tsv') || { echo "PR #$PR не найден" >&2; exit 2; }
 [[ "$STATE" == OPEN ]] || { echo "PR #$PR не открыт ($STATE)" >&2; exit 1; }
 DEFAULT="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
-[[ "$BASE" == "$DEFAULT" ]] || echo "Внимание: PR #$PR указывает в $BASE, основная ветка — $DEFAULT" >&2
 
 git fetch -q origin "$BASE" "+refs/pull/$PR/head:refs/remotes/origin/pr/$PR" || { echo "git fetch не прошёл" >&2; exit 2; }
 
 # Слот слияния: пока его держит другая задача, значимые изменения в основную ветку не идут.
-SLOT_JSON="$(bash tools/task-board.sh version list --json 2>/dev/null || true)"
+SLOT_JSON=""
+if [[ "$BASE" == "$DEFAULT" ]]; then
+	SLOT_JSON="$(bash tools/task-board.sh version list --json 2>/dev/null || true)"
+fi
 SLOT_ISSUE="$(python3 -I -c 'import json,sys; print(json.loads(sys.argv[1] or "{}").get("issue",""))' "$SLOT_JSON" 2>/dev/null || true)"
 if [[ -n "$SLOT_ISSUE" ]]; then
 	SLOT_VERSION="$(python3 -I -c 'import json,sys; print(json.loads(sys.argv[1]).get("version",""))' "$SLOT_JSON")"
@@ -83,6 +88,8 @@ if [[ -n "$SLOT_ISSUE" ]]; then
 			exit 1
 		fi
 	fi
+elif [[ "$BASE" != "$DEFAULT" ]]; then
+	echo "PR #$PR указывает в $BASE, а не в основную ветку $DEFAULT — слот слияния не проверяется"
 else
 	echo "Слот слияния свободен"
 fi
